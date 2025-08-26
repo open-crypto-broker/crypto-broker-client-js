@@ -1,0 +1,59 @@
+{
+  "name": "cryptobroker-client",
+  "version": "0.1.0",
+  "main": "./dist/cli.js",
+  "type": "module",
+  "exports": "./dist/lib/client.js",
+  "types": "./dist/lib/client.d.ts",
+  "files": [
+    "./dist"
+  ],
+  "scripts": {
+    "build": "npm run gen-types && tsc --declaration",
+    "build-docker": "docker buildx build -t client_app_js:latest .",
+    "hash": "npm run build --silent && node ./dist/cli.js --profile=Default hash 'Hello' ",
+    "sign": "npm run build --silent &&  node ./dist/cli.js --profile=Default sign ../crypto-broker-deployment/k8s/kube-broker/files/certificates/end-entity.csr ../crypto-broker-deployment/k8s/kube-broker/files/certificates/ca_cert.pem ../crypto-broker-deployment/k8s/kube-broker/files/certificates/private_key.pem ",
+    "lint": "eslint 'src/**/*.{ts,tsx}'",
+    "format": "npx eslint --fix && prettier --write 'src/**/*.{ts,tsx,js,json,md}'",
+    "gen-types": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/lib/proto -I ./protobuf/ messages.proto",
+    "test": "jest",
+    "prepare": "husky || true"
+  },
+  "keywords": [
+    "cryptobroker",
+    "crypto-broker",
+    "crypto-broker-client",
+    "apeiro",
+    "apeirora",
+    "crypto",
+    "agility"
+  ],
+  "author": "Arturo Guridi",
+  "license": "Apache-2.0",
+  "description": "Client Javascript repository to interact with a deployed Crypto Broker Server",
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.5.2",
+    "@grpc/grpc-js": "1.13.3",
+    "bufbuild": "^0.2.0",
+    "minimist": "^1.2.8",
+    "tsconfig": "^7.0.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@tsconfig/node22": "^22.0.2",
+    "@types/jest": "^30.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.34.1",
+    "@typescript-eslint/parser": "^8.34.1",
+    "eslint": "^9.29.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.0",
+    "husky": "^9.1.7",
+    "jest": "^29.6.2",
+    "prettier": "^3.5.3",
+    "ts-jest": "^29.4.0",
+    "ts-proto": "^2.7.0",
+    "tsx": "^4.19.4",
+    "typescript": "5.8.3"
+  }
+}

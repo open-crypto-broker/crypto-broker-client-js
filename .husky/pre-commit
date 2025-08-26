@@ -1,0 +1,5 @@
+npm run build
+npm run format
+npm test
+
+git add -u

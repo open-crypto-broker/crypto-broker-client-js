@@ -1,21 +1,106 @@
-[![REUSE status](https://api.reuse.software/badge/github.com/open-crypto-broker/crypto-broker-client-js)](https://api.reuse.software/info/github.com/open-crypto-broker/crypto-broker-client-js)
+# Crypto Broker Client
 
-# crypto-broker-client-js
+## Usage
 
-## About this project
+The Crypto Broker Client is a NodeJS library written in Typescript that allows users to interact with a Crypto Broker Server running on the same machine. The library is a lightweight wrapper around the communication protocol (gRPC) and the basic structures used to call the server from a JS client.
 
-Sample Node.js client for the crypto broker based on GRPC
+### Installation
 
-## Requirements and Setup
+`TODO`: Change this once the package is published to npm.js
 
-*Insert a short description what is required to get your project running...*
+Optionally, you can also directly download the package (`cryptobroker-client-x.x.x.tgz`) from the Releases (`TODO`: Insert releases link here) folder into your development environment. Then, from the node.js project you want to install it, simply install it with:
+
+```bash
+npm install <path-to-cryptobroker-client-x.y.z.tgz>
+```
+
+### Library Usage
+
+To use the Crypto Broker Library, simply create a client instance and call the functions with the specified parameters.
+
+```ts
+import { CryptoBrokerClient } from "cryptobroker-client";
+
+const cryptoLib = new CryptoBrokerClient();
+
+const hashResponse = await cryptoLib.hashData({
+      profile: profile,
+      input: Buffer.from(data),
+      // Optional values
+      metadata: {
+        id : uuidv4(),
+        createdAt: new Date().toString()
+      },
+});
+console.log(`Hashed response: ${hashResponse.hashValue}`);
+
+const signResponse = await cryptoLib.signCertificate({
+      profile: profile,
+      csr: csr,
+      caPrivateKey: caPrivateKey,
+      caCert: caCert,
+      // Optional values
+      validNotBeforeOffset: "0s",
+      validNotAfterOffset: "8740h",
+      subject: "SERIALNUMBER=01234556,CN=MyCert,O=SAP,ST=BA,C=DE",
+      crlDistributionPoint: "URL Distribution Point",
+      metadata: {
+        id: uuidv4(),
+        createdAt: new Date().toString()
+      },
+});
+console.log("Certificate signed by CryptoBroker in PEM format\n", signResponse.signedCertificate)
+```
+
+## Development
+
+This section covers how to contribute to the project and develop it further.
+
+### Pre-requisites
+
+In order to develop and build the project, you need both NodeJs and [protoc](https://protobuf.dev/installation/) to compile and test the binaries. Additionally, this repository uses husky as a pre-commit hook for the project. Make sure to run `npm install` at least once before committing to this repository.
+
+For building the Docker image, you need to have Docker/Docker Desktop or any other alternative (e.g. Podman) installed.
+
+The [server repository](https://github.com/open-crypto-broker/crypto-broker-server/), is recommended in order to perform end2end testing.
+
+### Building
+
+The source code is under the `/src` folder. This code is compiled and the output saved in the `/dist` folder. In order to compile the code, run:
+
+```bash
+npm run build
+```
+
+This re-generates type definitions and code stubs from protobuf. Note that re-generated files are supposed to be committed to the repo.
+
+### Testing
+
+The client uses `jest` as a testing framework. The only logic tested is the one of the client itself. For this, the gRPC server functions are mocked, and their responses hard-coded. The purpose of this testing is thus to ensure compliance project-wide and that the client follows the general [library's specification](https://github.com/open-crypto-broker/crypto-broker-documentation/blob/main/spec/0003-library.md). For a full end to end testing, please check the [deployment repository](https://github.com/open-crypto-broker/crypto-broker-deployment)
+
+```bash
+npm test
+```
+
+You can do a local end2end testing of the application yourself with the provided CLI. To run the CLI, you first need to have the Go server running in your Unix localhost environment. Once done, you can run one of the following in another terminal:
+
+```bash
+npm run hash
+# or
+npm run sign
+```
+
+For the sign command, you need to have the [deployment repository](https://github.com/open-crypto-broker/crypto-broker-deployment) in the same parent directory as this repository. Check the command definitions in the `package.json` file to run your own custom commands.
+
+More thorough testing is also provided in the deployment repository. The same pipeline will run in GitHub Actions when submitting a PR, so it is recommended to also clone and run the testing of the deployment repository.
 
 ## Support, Feedback, Contributing
 
-This project is open to feature requests/suggestions, bug reports etc. via [GitHub issues](https://github.com/open-crypto-broker/<your-project>/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
+This project is open to feature requests/suggestions, bug reports etc. via [GitHub issues](https://github.com/open-crypto-broker/crypto-broker-client-js/issues). Contribution and feedback are encouraged and always welcome. For more information about how to contribute, the project structure, as well as additional contribution information, see our [Contribution Guidelines](CONTRIBUTING.md).
 
 ## Security / Disclosure
-If you find any bug that may be a security problem, please follow our instructions at [in our security policy](https://github.com/open-crypto-broker/<your-project>/security/policy) on how to report it. Please do not create GitHub issues for security-related doubts or problems.
+
+If you find any bug that may be a security problem, please follow our instructions at [in our security policy](https://github.com/open-crypto-broker/crypto-broker-client-js/security/policy) on how to report it. Please do not create GitHub issues for security-related doubts or problems.
 
 ## Code of Conduct
 
@@ -23,4 +108,4 @@ We as members, contributors, and leaders pledge to make participation in our com
 
 ## Licensing
 
-Copyright 2025 SAP SE or an SAP affiliate company and crypto-broker-client-js contributors. Please see our [LICENSE](LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/open-crypto-broker/<your-project>).
+Copyright 2025 SAP SE or an SAP affiliate company and Open Crypto Broker contributors. Please see our [LICENSE](LICENSE) for copyright and license information. Detailed information including third-party components and their licensing/copyright information is available [via the REUSE tool](https://api.reuse.software/info/github.com/open-crypto-broker/crypto-broker-client-js).
