@@ -82,7 +82,7 @@ The client uses `jest` as a testing framework. The only logic tested is the one 
 npm test
 ```
 
-You can do a local end2end testing of the application yourself with the provided CLI. To run the CLI, you first need to have the Go server running in your Unix localhost environment. Once done, you can run one of the following in another terminal:
+You can do a local end2end testing of the application yourself with the provided CLI. To run the CLI, you first need to have the [Crypto Broker server](https://github.com/open-crypto-broker/crypto-broker-server/) running in your Unix localhost environment. Once done, you can run one of the following in another terminal:
 
 ```bash
 npm run hash
