@@ -8,7 +8,7 @@ The Crypto Broker Client is a NodeJS library written in Typescript that allows u
 
 `TODO`: Change this once the package is published to npm.js
 
-Optionally, you can also directly download the package (`cryptobroker-client-x.x.x.tgz`) from the Releases (`TODO`: Insert releases link here) folder into your development environment. Then, from the node.js project you want to install it, simply install it with:
+Optionally, you can also directly download the package `cryptobroker-client-x.x.x.tgz` from the Releases (`TODO`: Insert releases link here) folder into your development environment. Then, from the node.js project you want to install it, simply install it with:
 
 ```bash
 npm install <path-to-cryptobroker-client-x.y.z.tgz>
