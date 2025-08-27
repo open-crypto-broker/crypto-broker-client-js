@@ -11,8 +11,8 @@
   "scripts": {
     "build": "npm run gen-types && tsc --declaration",
     "build-docker": "docker buildx build -t client_app_js:latest .",
-    "hash": "npm run build --silent && node ./dist/cli.js --profile=Default hash 'Hello' ",
-    "sign": "npm run build --silent &&  node ./dist/cli.js --profile=Default sign ../crypto-broker-deployment/k8s/kube-broker/files/certificates/end-entity.csr ../crypto-broker-deployment/k8s/kube-broker/files/certificates/ca_cert.pem ../crypto-broker-deployment/k8s/kube-broker/files/certificates/private_key.pem ",
+    "hash": "node ./dist/cli.js --profile=Default hash 'Hello' ",
+    "sign": "node ./dist/cli.js --profile=Default sign ../crypto-broker-deployment/k8s/kube-broker/files/certificates/end-entity.csr ../crypto-broker-deployment/k8s/kube-broker/files/certificates/ca_cert.pem ../crypto-broker-deployment/k8s/kube-broker/files/certificates/private_key.pem ",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "format": "npx eslint --fix && prettier --write 'src/**/*.{ts,tsx,js,json,md}'",
     "gen-types": "git submodule update --init --recursive && protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/lib/proto -I ./protobuf/ messages.proto",
