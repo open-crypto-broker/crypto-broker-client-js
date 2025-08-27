@@ -9,7 +9,7 @@ import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 
 export const protobufPackage = "protobuf";
 
-/** Metadata shared accross al methods */
+/** Metadata shared across al methods */
 export interface Metadata {
   id: string;
   createdAt: string;
