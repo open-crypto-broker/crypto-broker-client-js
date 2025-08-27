@@ -8,20 +8,15 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: [self-hosted, solinas]
+    runs-on: ubuntu-latest
     container:
         image: node:22
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        #with:
-        #  submodules: recursive
-      - name: Check protos dir
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -la
-          ls -la protobuf || echo "protobuf/ not found"
+        with:
+          submodules: recursive
 
       - name: Install Protobuf
         run: apt-get update -y && apt-get install protobuf-compiler -y
