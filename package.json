@@ -15,7 +15,7 @@
     "sign": "npm run build --silent &&  node ./dist/cli.js --profile=Default sign ../crypto-broker-deployment/k8s/kube-broker/files/certificates/end-entity.csr ../crypto-broker-deployment/k8s/kube-broker/files/certificates/ca_cert.pem ../crypto-broker-deployment/k8s/kube-broker/files/certificates/private_key.pem ",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "format": "npx eslint --fix && prettier --write 'src/**/*.{ts,tsx,js,json,md}'",
-    "gen-types": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/lib/proto -I ./protobuf/ messages.proto",
+    "gen-types": "git submodule update --init --recursive && protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/lib/proto -I ./protobuf/ messages.proto",
     "test": "jest",
     "prepare": "husky || true"
   },
