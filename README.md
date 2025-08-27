@@ -62,7 +62,7 @@ In order to develop and build the project, you need both NodeJs and [protoc](htt
 
 For building the Docker image, you need to have Docker/Docker Desktop or any other alternative (e.g. Podman) installed.
 
-The [server repository](https://github.com/open-crypto-broker/crypto-broker-server/), is recommended in order to perform end2end testing.
+The [server repository](https://github.com/open-crypto-broker/crypto-broker-server/), is recommended in order to perform end-to-end testing.
 
 ### Building
 
@@ -82,7 +82,7 @@ The client uses `jest` as a testing framework. The only logic tested is the one 
 npm test
 ```
 
-You can do a local end2end testing of the application yourself with the provided CLI. To run the CLI, you first need to have the [Crypto Broker server](https://github.com/open-crypto-broker/crypto-broker-server/) running in your Unix localhost environment. Once done, you can run one of the following in another terminal:
+You can do a local end-to-end testing of the application yourself with the provided CLI. To run the CLI, you first need to have the [Crypto Broker server](https://github.com/open-crypto-broker/crypto-broker-server/) running in your Unix localhost environment. Once done, you can run one of the following in another terminal:
 
 ```bash
 npm run hash
@@ -92,7 +92,7 @@ npm run sign
 
 For the sign command, you need to have the [deployment repository](https://github.com/open-crypto-broker/crypto-broker-deployment) in the same parent directory as this repository. Check the command definitions in the `package.json` file to run your own custom commands.
 
-More thorough testing is also provided in the deployment repository. The same pipeline will run in GitHub Actions when submitting a PR, so it is recommended to also clone and run the testing of the deployment repository.
+More thorough testing is also provided in the deployment repository. The same pipeline will run in GitHub Actions when submitting a Pull Request, so it is recommended to also clone and run the testing of the deployment repository.
 
 ## Support, Feedback, Contributing
 
