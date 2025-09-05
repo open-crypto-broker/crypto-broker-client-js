@@ -57,6 +57,7 @@ console.log("Certificate signed by CryptoBroker in PEM format\n", signResponse.s
 This section covers how to contribute to the project and develop it further.
 
 ### Pre-requisites
+
 In order to develop, build and test the project locally, you need Node.js installed and run the installation with `npm install`.
 
 For running commands using the `Taskfile` tool, you need to have Taskfile installed. Please check the documentation on [how to install Taskfile](https://taskfile.dev/installation/). If you don't have Taskfile support, you can directly use the commands specified in the Taskfile on your local terminal, provided you meet the requirements.
@@ -66,6 +67,7 @@ If you want to update the protobuf files you need to install the [protoc](https:
 ```bash
 go-task tools && go-task proto
 ```
+
 Note: The task assumes that "apt" is your package manager.
 
 Please note, that the generated files are supposed to be committed to the repository.
