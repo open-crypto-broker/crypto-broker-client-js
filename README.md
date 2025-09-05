@@ -62,6 +62,7 @@ In order to develop, build and test the project locally, you need Node.js instal
 For running commands using the `Taskfile` tool, you need to have Taskfile installed. Please check the documentation on [how to install Taskfile](https://taskfile.dev/installation/). If you don't have Taskfile support, you can directly use the commands specified in the Taskfile on your local terminal, provided you meet the requirements.
 
 If you want to update the protobuf files you need to install the [protoc](https://protobuf.dev/installation/) tool and run the proto task:
+
 ```bash
 go-task tools && go-task proto
 ```
@@ -78,6 +79,7 @@ The [server repository](https://github.com/open-crypto-broker/crypto-broker-serv
 
 The source code is under the `/src` folder. This code is compiled and the output saved in the `/dist` folder.
 To compile the binaries you can use `npm run build`, or simply use the Taskfile:
+
 ```bash
 go-task build
 ```
@@ -90,6 +92,7 @@ Further, the installation of docker-buildx is recommended. Note: `go-task tools`
 The client uses `jest` as a testing framework. The only logic tested is the one of the client itself. For this, the gRPC server functions are mocked, and their responses hard-coded. The purpose of this testing is thus to ensure compliance project-wide and that the client follows the general [library's specification](https://github.com/open-crypto-broker/crypto-broker-documentation/blob/main/spec/0003-library.md). For a full end-to-end testing, please check the [deployment repository](https://github.com/open-crypto-broker/crypto-broker-deployment).
 
 To start the tests you can use `npm run test`, or simply use the Taskfile:
+
 ```bash
 go-task test
 ```
