@@ -11,7 +11,7 @@ tasks:
   tools:
     desc: "Installs the required tools to develop the project"
     cmds:
-      - apt install -y protobuf-compiler docker-buildx
+      - apt-get update && apt-get install -y protobuf-compiler docker-buildx
 
   proto:
     desc: "Generates JS stubs from proto files"
