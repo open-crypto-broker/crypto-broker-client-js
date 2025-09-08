@@ -65,7 +65,7 @@ For running commands using the `Taskfile` tool, you need to have Taskfile instal
 If you want to update the protobuf files you need to install the [protoc](https://protobuf.dev/installation/) tool and run the proto task:
 
 ```bash
-go-task tools && go-task proto
+task tools && task proto
 ```
 
 Note: The task assumes that "apt" is your package manager.
@@ -83,11 +83,11 @@ The source code is under the `/src` folder. This code is compiled and the output
 To compile the binaries you can use `npm run build`, or simply use the Taskfile:
 
 ```bash
-go-task build
+task build
 ```
 
 For building the Docker image, you need to have Docker/Docker Desktop or any other alternative (e.g. Podman) installed.
-Further, the installation of docker-buildx is recommended. Note: `go-task tools` will install this.
+Further, the installation of docker-buildx is recommended. Note: `task tools` will install this.
 
 ### Testing
 
@@ -96,15 +96,15 @@ The client uses `jest` as a testing framework. The only logic tested is the one 
 To start the tests you can use `npm run test`, or simply use the Taskfile:
 
 ```bash
-go-task test
+task test
 ```
 
 You can do a local end-to-end testing of the application yourself with the provided CLI. To run the CLI, you first need to have the [Crypto Broker server](https://github.com/open-crypto-broker/crypto-broker-server/) running in your Unix localhost environment. Once done, you can run one of the following in another terminal:
 
 ```bash
-go-task test-hash
+task test-hash
 # or
-go-task test-sign
+task test-sign
 ```
 
 For the sign command, you need to have the [deployment repository](https://github.com/open-crypto-broker/crypto-broker-deployment) in the same parent directory as this repository. Check the command definitions in the `package.json` file to run your own custom commands.
