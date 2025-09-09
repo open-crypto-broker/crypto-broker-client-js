@@ -99,6 +99,13 @@ To start the tests you can use `npm run test`, or simply use the Taskfile:
 task test
 ```
 
+If you want to additionally invoke the local pipeline for code formatting, testing and vulnerability checks,
+you can run all of these commands with:
+
+```bash
+task ci
+```
+
 You can do a local end-to-end testing of the application yourself with the provided CLI. To run the CLI, you first need to have the [Crypto Broker server](https://github.com/open-crypto-broker/crypto-broker-server/) running in your Unix localhost environment. Once done, you can run one of the following in another terminal:
 
 ```bash
