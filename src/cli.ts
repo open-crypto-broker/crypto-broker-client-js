@@ -1,9 +1,7 @@
 import { CryptoBrokerClient } from './lib/client.js';
 import * as fs from 'fs';
-import minimist from 'minimist';
 import { v4 as uuidv4 } from 'uuid';
-
-const argv = minimist(process.argv.slice(2));
+import { ArgumentParser } from 'argparse';
 
 function logDuration(label: string, start: bigint, end: bigint) {
   const durationMicroS = (end - start) / BigInt(1000.0);
@@ -11,19 +9,48 @@ function logDuration(label: string, start: bigint, end: bigint) {
 }
 
 async function execute(cryptoLib: CryptoBrokerClient) {
-  const command = argv['_'][0];
-  const profile = argv['profile'] || 'Default';
+  const parser = new ArgumentParser();
+  const sub_parsers = parser.add_subparsers({
+    help: 'Command Selection',
+    dest: 'command',
+  });
+
+  // main parser arguments
+  parser.add_argument('--profile', {
+    help: 'Profile Selection',
+    default: 'Default',
+  });
+
+  // hash sub-parser and arguments
+  const hash_parser = sub_parsers.add_parser('hash', {
+    help: 'create a hash',
+  });
+  hash_parser.add_argument('data');
+
+  // sign sub-parser and arguments
+  const sign_parser = sub_parsers.add_parser('sign', {
+    help: 'sign a CSR etc',
+  });
+  sign_parser.add_argument('csrPath', {
+    help: 'Path to CSR file',
+  });
+  sign_parser.add_argument('caCertPath', {
+    help: 'Path to CA cert file',
+  });
+  sign_parser.add_argument('signingKeyPath', {
+    help: 'Path to CA private key file',
+  });
+
+  const parsed_args = parser.parse_args();
+  const command = parsed_args.command;
+  const profile = parsed_args.profile || 'Default';
 
   // Data hashing
+  // Usage: cli.js [--profile=<profile>] hash <data>
   if (command === 'hash') {
-    // Usage: hash <data> <--profile=profile>
-    const [data] = argv['_'].slice(1);
-    if (!data || !profile) {
-      throw new Error(
-        'Hash command requires 2 arguments: <data> and <profile>',
-      );
-    }
-    console.log(`Hashing '${data}' using ${profile} profile`);
+    const data = parsed_args.data;
+
+    console.log(`Hashing '${data}' using "${profile}" profile`);
     const start = process.hrtime.bigint();
     const hashResponse = await cryptoLib.hashData({
       profile: profile,
@@ -39,14 +66,12 @@ async function execute(cryptoLib: CryptoBrokerClient) {
     logDuration('Data Hashing', start, end);
 
     // Certificate signing
+    // Usage: cli.js [--profile=<profile>] sign <csrPath> <caCertPath> <signingKeyPath>
   } else if (command === 'sign') {
-    // Usage: sign <--profile=profile> <csrPath> <signingKeyPath> <caCertPath>
-    const [csrPath, caCertPath, signingKeyPath] = argv['_'].slice(1);
-    if (!profile || !csrPath || !signingKeyPath || !caCertPath) {
-      throw new Error(
-        'Usage: cert <profile> <csrPath> <signingKeyPath> <caCertPath>',
-      );
-    }
+    const csrPath = parsed_args.csrPath;
+    const caCertPath = parsed_args.caCertPath;
+    const signingKeyPath = parsed_args.signingKeyPath;
+
     const csr = fs.readFileSync(csrPath, 'utf8');
     const caCert = fs.readFileSync(caCertPath, 'utf8');
     const caPrivateKey = fs.readFileSync(signingKeyPath, 'utf8');
@@ -58,19 +83,15 @@ async function execute(cryptoLib: CryptoBrokerClient) {
       csr: csr,
       caPrivateKey: caPrivateKey,
       caCert: caCert,
+      subject: 'SERIALNUMBER=01234556,CN=MyCert,O=SAP,ST=BA,C=DE',
       metadata: {
         id: uuidv4(),
         createdAt: new Date().toString(),
       },
-      subject: 'SERIALNUMBER =01234556, CN=MyCert, O=SAP, ST=BA, C=DE',
     });
     const end = process.hrtime.bigint();
     console.log('Sign response:\n', JSON.stringify(signResponse, null, 2));
     logDuration('Certificate Signing', start, end);
-  } else {
-    throw new Error(
-      `Unsupported command '${command}, only available commands are hash and sign'`,
-    );
   }
 }
 

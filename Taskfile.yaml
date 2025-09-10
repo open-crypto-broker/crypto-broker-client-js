@@ -1,0 +1,75 @@
+version: '3'
+
+tasks:
+
+  # This command may require to be run with "sudo".
+  #
+  # Additional resources:
+  # - https://protobuf.dev/getting-started/gotutorial/
+  # - https://protobuf.dev/installation/
+  # - https://docs.docker.com/reference/cli/docker/buildx/
+  tools:
+    desc: "Installs the required tools to develop the project"
+    cmds:
+      - apt-get update && apt-get install -y protobuf-compiler docker-buildx
+
+  proto:
+    desc: "Generates JS stubs from proto files"
+    cmds:
+      - git submodule update --init --recursive
+      - protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/lib/proto -I ./protobuf/ messages.proto
+
+  build:
+    desc: "Builds the js files including declarations and CLI"
+    cmds:
+      - npm run build
+
+  build-docker:
+    desc: "Builds the Docker image for the client app"
+    vars:
+      TAG: '{{.TAG| default "latest"}}'
+    cmds:
+      - docker buildx build -t client_app_js:latest .
+
+  clean:
+    desc: "Cleans the transpiled JS files"
+    cmds:
+      - npm run clean
+
+  vulnerability-check:
+    desc: "Runs the npm audition to identify vulnerabilities"
+    cmds:
+      - "npm audit"
+
+  test-hash:
+    desc: "Quick command for easy testing: runs the hashing command with Default profile"
+    cmds:
+      - node ./dist/cli.js --profile=Default hash "Hello"
+
+  test-sign:
+    desc: "Quick command for easy testing: runs certificate signing command with Default profile"
+    cmds:
+      - node ./dist/cli.js --profile=Default sign ../crypto-broker-deployment/deployments/k8s/kube-broker/files/certificates/end-entity.csr ../crypto-broker-deployment/deployments/k8s/kube-broker/files/certificates/ca_cert.pem ../crypto-broker-deployment/deployments/k8s/kube-broker/files/certificates/private_key.pem
+
+  test:
+    desc: "Runs the tests"
+    cmds:
+      - npm run test
+
+  lint:
+    desc: "Runs the linter"
+    cmds:
+      - npm run lint
+
+  format:
+    desc: "Runs the formatter"
+    cmds:
+      - npm run format
+
+  ci:
+    desc: "Runs local continuous integration checks on source code"
+    cmds:
+    - task: format
+    - task: lint
+    - task: test
+    - task: vulnerability-check
