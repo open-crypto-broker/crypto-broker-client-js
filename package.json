@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "tsc --declaration",
+    "clean": "tsc --build --clean --declaration",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "format": "eslint --fix && prettier --write 'src/**/*.{ts,tsx,js,json,md}'",
     "test": "jest",

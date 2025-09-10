@@ -31,6 +31,11 @@ tasks:
     cmds:
       - docker buildx build -t client_app_js:latest .
 
+  clean:
+    desc: "Cleans the transpiled JS files"
+    cmds:
+      - npm run clean
+
   vulnerability-check:
     desc: "Runs the npm audition to identify vulnerabilities"
     cmds:
