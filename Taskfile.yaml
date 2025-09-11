@@ -28,8 +28,9 @@ tasks:
     desc: "Builds the Docker image for the client app"
     vars:
       TAG: '{{.TAG| default "latest"}}'
+    dotenv: ['.env']
     cmds:
-      - docker buildx build -t client_app_js:latest .
+      - docker buildx build -t client_app_js:{{.TAG}} .
 
   clean:
     desc: "Cleans the transpiled JS files"

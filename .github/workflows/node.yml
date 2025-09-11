@@ -1,10 +1,9 @@
-name: CI
+name: JS-Client Continuous Improvement
 
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 jobs:
   build-and-test:
@@ -13,24 +12,18 @@ jobs:
         image: node:22
 
     steps:
+      - name: Install Task
+        uses: arduino/setup-task@v2
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install Protobuf
-        run: apt-get update -y && apt-get install protobuf-compiler -y
-
-      - name: Install dependencies
+      - name: Install dependencies (clean install)
         run: npm ci
         env:
           HUSKY: 0
 
-      - name: Lint code
-        run: npm run lint
-
-      #- name: Build TypeScript
-      #  run: npm run build
-
-      - name: Run tests
-        run: npm test
+      - name: Run CI task from Taskfile (continuous integration)
+        run: task ci
