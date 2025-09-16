@@ -1,11 +1,11 @@
-import { jest, describe, expect, beforeEach, it } from '@jest/globals';
-import { CryptoBrokerClient } from './client.js';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { CertEncoding, CryptoBrokerClient } from './client.js';
 import { validate } from 'uuid';
 import {
-  HashResponse,
-  SignResponse,
   HashRequest,
+  HashResponse,
   SignRequest,
+  SignResponse,
 } from './proto/messages.js';
 
 // Mock the protobuf client under the hood, returning the same values after doing a gRPC call functions
@@ -99,7 +99,13 @@ describe('CryptoBrokerClient', () => {
       subject: 'CN=Test',
       crlDistributionPoint: ['http://example.com/crl'],
     };
-    const response: SignResponse = await client.signCertificate(payload);
+    const options = {
+      encoding: CertEncoding.B64,
+    };
+    const response: SignResponse = await client.signCertificate(
+      payload,
+      options,
+    );
 
     expect(response).toEqual({
       signedCertificate:
@@ -119,12 +125,61 @@ describe('CryptoBrokerClient', () => {
       subject: 'CN=Test',
       crlDistributionPoint: ['http://example.com/crl'],
     };
-    const response: SignResponse = await client.signCertificate(payload);
+    const options = {
+      encoding: CertEncoding.B64,
+    };
+    const response: SignResponse = await client.signCertificate(
+      payload,
+      options,
+    );
 
     // Test that the response is a subset of the object
     expect(response).toMatchObject({
       signedCertificate:
         'MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQwgYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAoBgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQIEwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAxMjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuzGNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjfpxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1EcUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==',
+    });
+
+    // assert that the metadata was correctly autofilled
+    expect(response.metadata).toBeDefined();
+    expect(response.metadata?.id).not.toEqual('empty');
+    expect(validate(response.metadata?.id)).toBeTruthy();
+    expect(response.metadata?.createdAt).not.toEqual('empty');
+    expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
+      'Invalid Date',
+    );
+  });
+
+  it('should return mocked sign response (PEM-encoded)', async () => {
+    const payload = {
+      profile: 'Default',
+      csr: 'mocked-csr',
+      caPrivateKey: 'mocked-key',
+      caCert: 'mocked-cert',
+      validNotBeforeOffset: '0',
+      validNotAfterOffset: '1',
+      subject: 'CN=Test',
+      crlDistributionPoint: ['http://example.com/crl'],
+    };
+    const response: SignResponse = await client.signCertificate(payload);
+
+    // Test that the response is a subset of the object
+    expect(response).toMatchObject({
+      signedCertificate:
+        '-----BEGIN CERTIFICATE-----\n' +
+        'MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQw\n' +
+        'gYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0\n' +
+        'LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAo\n' +
+        'BgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3\n' +
+        'MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQI\n' +
+        'EwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAx\n' +
+        'MjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuz\n' +
+        'GNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjf\n' +
+        'pxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMC\n' +
+        'BaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAW\n' +
+        'gBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE\n' +
+        '01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1E\n' +
+        'cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==\n' +
+        '-----END CERTIFICATE-----',
     });
 
     // assert that the metadata was correctly autofilled
