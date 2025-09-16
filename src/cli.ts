@@ -71,7 +71,7 @@ async function execute(cryptoLib: CryptoBrokerClient) {
     logDuration('Data Hashing', start, end);
 
     // Certificate signing
-    // Usage: cli.js [--profile=<profile>] sign <csrPath> <caCertPath> <signingKeyPath> [--encoding={PEM,PER}]
+    // Usage: cli.js [--profile=<profile>] sign <csrPath> <caCertPath> <signingKeyPath> [--encoding={B64,PEM}]
   } else if (command === 'sign') {
     const csrPath = parsed_args.csrPath;
     const caCertPath = parsed_args.caCertPath;
