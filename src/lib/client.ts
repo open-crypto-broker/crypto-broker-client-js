@@ -1,6 +1,7 @@
 import * as grpc from '@grpc/grpc-js';
 import { UnaryCallback } from '@grpc/grpc-js/build/src/client.js';
 import { v4 as uuidv4 } from 'uuid';
+import x509 from '@peculiar/x509';
 import {
   CryptoBrokerClientImpl,
   HashRequest,
@@ -35,6 +36,23 @@ export interface SignPayload {
   subject?: string;
   crlDistributionPoint?: string[];
 }
+
+export enum CertEncoding {
+  B64 = 'B64',
+  PEM = 'PEM',
+}
+const encoders = {
+  [CertEncoding.B64]: (input: SignResponse): SignResponse => input, // the server provides this already
+  [CertEncoding.PEM]: (input: SignResponse): SignResponse => {
+    const cert = new x509.X509Certificate(input.signedCertificate);
+    input.signedCertificate = cert.toString();
+    return input;
+  },
+};
+
+type CertOptions = {
+  encoding: CertEncoding;
+};
 
 export class CryptoBrokerClient {
   private client: CryptoBrokerClientImpl;
@@ -99,7 +117,11 @@ export class CryptoBrokerClient {
     return this.client.Hash(req).then((res: HashResponse) => res);
   }
 
-  async signCertificate(payload: SignPayload): Promise<SignResponse> {
+  async signCertificate(
+    payload: SignPayload,
+    options?: CertOptions,
+  ): Promise<SignResponse> {
+    // Prepare the Request
     const req: SignRequest = {
       profile: payload.profile,
       csr: payload.csr,
@@ -114,7 +136,12 @@ export class CryptoBrokerClient {
       subject: payload.subject,
       crlDistributionPoints: payload.crlDistributionPoint || [],
     };
-    return this.client.Sign(req).then((res: SignResponse) => res);
+    // Apply options
+    const encoding = (options && options.encoding) || CertEncoding.PEM;
+    // Send the Request
+    return this.client
+      .Sign(req)
+      .then((res: SignResponse) => encoders[encoding](res));
   }
 }
 

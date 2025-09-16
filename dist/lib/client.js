@@ -1,6 +1,20 @@
 import * as grpc from '@grpc/grpc-js';
 import { v4 as uuidv4 } from 'uuid';
+import x509 from '@peculiar/x509';
 import { CryptoBrokerClientImpl, } from './proto/messages.js';
+export var CertEncoding;
+(function (CertEncoding) {
+    CertEncoding["B64"] = "B64";
+    CertEncoding["PEM"] = "PEM";
+})(CertEncoding || (CertEncoding = {}));
+const encoders = {
+    [CertEncoding.B64]: (input) => input, // the server provides this already
+    [CertEncoding.PEM]: (input) => {
+        const cert = new x509.X509Certificate(input.signedCertificate);
+        input.signedCertificate = cert.toString();
+        return input;
+    },
+};
 export class CryptoBrokerClient {
     client;
     address;
@@ -42,7 +56,8 @@ export class CryptoBrokerClient {
         };
         return this.client.Hash(req).then((res) => res);
     }
-    async signCertificate(payload) {
+    async signCertificate(payload, options) {
+        // Prepare the Request
         const req = {
             profile: payload.profile,
             csr: payload.csr,
@@ -57,7 +72,12 @@ export class CryptoBrokerClient {
             subject: payload.subject,
             crlDistributionPoints: payload.crlDistributionPoint || [],
         };
-        return this.client.Sign(req).then((res) => res);
+        // Apply options
+        const encoding = (options && options.encoding) || CertEncoding.PEM;
+        // Send the Request
+        return this.client
+            .Sign(req)
+            .then((res) => encoders[encoding](res));
     }
 }
 export const credentials = grpc.credentials;

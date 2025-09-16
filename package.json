@@ -31,6 +31,7 @@
   "dependencies": {
     "@bufbuild/protobuf": "^2.5.2",
     "@grpc/grpc-js": "1.13.3",
+    "@peculiar/x509": "^1.14.0",
     "argparse": "^2.0.1",
     "bufbuild": "^0.2.0",
     "tsconfig": "^7.0.0",
