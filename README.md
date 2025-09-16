@@ -19,37 +19,47 @@ npm install <path-to-cryptobroker-client-x.y.z.tgz>
 To use the Crypto Broker Library, simply create a client instance and call the functions with the specified parameters.
 
 ```ts
-import { CryptoBrokerClient } from "cryptobroker-client";
+import { CertEncoding, CryptoBrokerClient } from "cryptobroker-client";
+import { v4 as uuidv4 } from 'uuid';
 
 const cryptoLib = new CryptoBrokerClient();
 
 const hashResponse = await cryptoLib.hashData({
-      profile: profile,
-      input: Buffer.from(data),
-      // Optional values
-      metadata: {
+    profile: profile,
+    input: Buffer.from(data),
+    // Optional values
+    metadata: {
         id : uuidv4(),
         createdAt: new Date().toString()
-      },
+    },
 });
 console.log(`Hashed response: ${hashResponse.hashValue}`);
 
 const signResponse = await cryptoLib.signCertificate({
-      profile: profile,
-      csr: csr,
-      caPrivateKey: caPrivateKey,
-      caCert: caCert,
-      // Optional values
-      validNotBeforeOffset: "0s",
-      validNotAfterOffset: "8740h",
-      subject: "SERIALNUMBER=01234556,CN=MyCert,O=SAP,ST=BA,C=DE",
-      crlDistributionPoint: "URL Distribution Point",
-      metadata: {
+    profile: profile,
+    csr: csr,
+    caPrivateKey: caPrivateKey,
+    caCert: caCert,
+    // Optional values
+    validNotBeforeOffset: "0s",
+    validNotAfterOffset: "8740h",
+    subject: "SERIALNUMBER=01234556,CN=MyCert,O=SAP,ST=BA,C=DE",
+    crlDistributionPoint: "URL Distribution Point",
+    metadata: {
         id: uuidv4(),
-        createdAt: new Date().toString()
-      },
+        createdAt: new Date().toString(),
+    },
 });
 console.log("Certificate signed by CryptoBroker in PEM format\n", signResponse.signedCertificate)
+```
+
+If desired, options for the certificate encoding output can be specified as follows:
+
+```ts
+const options = {
+    encoding: CertEncoding.B64,  // encode as Base64 string, default is PEM
+}
+const signResponse = await cryptoLib.signCertificate({...}, options);
 ```
 
 ## Development

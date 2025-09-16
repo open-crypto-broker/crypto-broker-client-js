@@ -1,4 +1,4 @@
-import { CryptoBrokerClient } from './lib/client.js';
+import { CertEncoding, CryptoBrokerClient } from './lib/client.js';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { ArgumentParser } from 'argparse';
@@ -35,9 +35,14 @@ async function execute(cryptoLib) {
     sign_parser.add_argument('signingKeyPath', {
         help: 'Path to CA private key file',
     });
+    sign_parser.add_argument('--encoding', {
+        default: CertEncoding.PEM,
+        choices: CertEncoding,
+        help: 'Specifies which encoding should be used for the signedCertificate',
+    });
     const parsed_args = parser.parse_args();
     const command = parsed_args.command;
-    const profile = parsed_args.profile || 'Default';
+    const profile = parsed_args.profile;
     // Data hashing
     // Usage: cli.js [--profile=<profile>] hash <data>
     if (command === 'hash') {
@@ -56,12 +61,16 @@ async function execute(cryptoLib) {
         console.log('Hashed response:\n', JSON.stringify(hashResponse, null, 2));
         logDuration('Data Hashing', start, end);
         // Certificate signing
-        // Usage: cli.js [--profile=<profile>] sign <csrPath> <caCertPath> <signingKeyPath>
+        // Usage: cli.js [--profile=<profile>] sign <csrPath> <caCertPath> <signingKeyPath> [--encoding={PEM,PER}]
     }
     else if (command === 'sign') {
         const csrPath = parsed_args.csrPath;
         const caCertPath = parsed_args.caCertPath;
         const signingKeyPath = parsed_args.signingKeyPath;
+        const encoding = parsed_args.encoding;
+        const options = {
+            encoding: encoding,
+        };
         const csr = fs.readFileSync(csrPath, 'utf8');
         const caCert = fs.readFileSync(caCertPath, 'utf8');
         const caPrivateKey = fs.readFileSync(signingKeyPath, 'utf8');
@@ -77,7 +86,7 @@ async function execute(cryptoLib) {
                 id: uuidv4(),
                 createdAt: new Date().toString(),
             },
-        });
+        }, options);
         const end = process.hrtime.bigint();
         console.log('Sign response:\n', JSON.stringify(signResponse, null, 2));
         logDuration('Certificate Signing', start, end);

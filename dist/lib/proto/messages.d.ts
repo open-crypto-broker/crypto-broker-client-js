@@ -1,4 +1,4 @@
-import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
 export declare const protobufPackage = "protobuf";
 /** Metadata shared across al methods */
 export interface Metadata {

@@ -24,12 +24,19 @@ export interface SignPayload {
     subject?: string;
     crlDistributionPoint?: string[];
 }
+export declare enum CertEncoding {
+    B64 = "B64",
+    PEM = "PEM"
+}
+type CertOptions = {
+    encoding: CertEncoding;
+};
 export declare class CryptoBrokerClient {
     private client;
     private address;
     constructor(opts?: CreateCryptoBrokerClientParams);
     hashData(payload: HashPayload): Promise<HashResponse>;
-    signCertificate(payload: SignPayload): Promise<SignResponse>;
+    signCertificate(payload: SignPayload, options?: CertOptions): Promise<SignResponse>;
 }
 export declare const credentials: {
     combineChannelCredentials: (channelCredentials: grpc.ChannelCredentials, ...callCredentials: grpc.CallCredentials[]) => grpc.ChannelCredentials;
