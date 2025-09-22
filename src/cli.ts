@@ -45,6 +45,9 @@ async function execute(cryptoLib: CryptoBrokerClient) {
     choices: CertEncoding,
     help: 'Specifies which encoding should be used for the signedCertificate',
   });
+  sign_parser.add_argument('--subject', {
+    help: 'Subject for the signing request (will override the subject in the CSR)',
+  });
 
   const parsed_args = parser.parse_args();
   const command: string = parsed_args.command;
@@ -53,7 +56,7 @@ async function execute(cryptoLib: CryptoBrokerClient) {
   // Data hashing
   // Usage: cli.js [--profile=<profile>] hash <data>
   if (command === 'hash') {
-    const data = parsed_args.data;
+    const data: string = parsed_args.data;
 
     console.log(`Hashing '${data}' using "${profile}" profile`);
     const start = process.hrtime.bigint();
@@ -71,12 +74,13 @@ async function execute(cryptoLib: CryptoBrokerClient) {
     logDuration('Data Hashing', start, end);
 
     // Certificate signing
-    // Usage: cli.js [--profile=<profile>] sign <csrPath> <caCertPath> <signingKeyPath> [--encoding={B64,PEM}]
+    // Usage: cli.js [--profile=<profile>] sign <csrPath> <caCertPath> <signingKeyPath> [--encoding={B64,PEM}] [--subject]
   } else if (command === 'sign') {
     const csrPath = parsed_args.csrPath;
     const caCertPath = parsed_args.caCertPath;
     const signingKeyPath = parsed_args.signingKeyPath;
     const encoding: CertEncoding = parsed_args.encoding;
+    const subject: string = parsed_args.subject;
     const options = {
       encoding: encoding,
     };
@@ -85,22 +89,25 @@ async function execute(cryptoLib: CryptoBrokerClient) {
     const caCert = fs.readFileSync(caCertPath, 'utf8');
     const caPrivateKey = fs.readFileSync(signingKeyPath, 'utf8');
 
+    const payload = {
+      profile: profile,
+      csr: csr,
+      caPrivateKey: caPrivateKey,
+      caCert: caCert,
+      metadata: {
+        id: uuidv4(),
+        createdAt: new Date().toString(),
+      },
+    };
+    // add subject to payload if it was provided
+    if (subject) {
+      payload['subject'] = subject;
+      console.log(`Note: The CSR subject will be overridden by "${subject}".`);
+    }
+
     // Starting certificate signing
     const start = process.hrtime.bigint();
-    const signResponse = await cryptoLib.signCertificate(
-      {
-        profile: profile,
-        csr: csr,
-        caPrivateKey: caPrivateKey,
-        caCert: caCert,
-        subject: 'SERIALNUMBER=01234556,CN=MyCert,O=SAP,ST=BA,C=DE',
-        metadata: {
-          id: uuidv4(),
-          createdAt: new Date().toString(),
-        },
-      },
-      options,
-    );
+    const signResponse = await cryptoLib.signCertificate(payload, options);
     const end = process.hrtime.bigint();
     console.log('Sign response:\n', JSON.stringify(signResponse, null, 2));
     logDuration('Certificate Signing', start, end);
