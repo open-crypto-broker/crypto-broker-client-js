@@ -18,6 +18,8 @@ const encoders = {
 export class CryptoBrokerClient {
     client;
     address;
+    conn_max_retries = 5;
+    conn_retry_delay_ms = 5000;
     constructor(opts = {}) {
         this.address = 'unix:/tmp/cryptobroker.sock';
         const conn = new grpc.Client(this.address, opts.credentials || grpc.credentials.createInsecure(), opts.options || {});
@@ -38,8 +40,24 @@ export class CryptoBrokerClient {
                 function passThrough(argument) {
                     return argument;
                 }
-                // Using passThrough as the deserialize functions
-                conn.makeUnaryRequest(path, (d) => Buffer.from(d), passThrough, data, resultCallback);
+                const sendRetryRequest = (tries = 1) => {
+                    const now = new Date();
+                    const deadline = now.setMilliseconds(now.getMilliseconds() + this.conn_retry_delay_ms);
+                    if (tries <= this.conn_max_retries) {
+                        conn.waitForReady(deadline, async (err) => {
+                            if (err) {
+                                console.log(`Could not establish connection. Retrying... (${tries}/${this.conn_max_retries})`);
+                                sendRetryRequest(tries + 1);
+                            }
+                            else {
+                                // Using passThrough as the deserialize functions
+                                conn.makeUnaryRequest(path, (d) => Buffer.from(d), passThrough, data, resultCallback);
+                            }
+                        });
+                    }
+                };
+                // retry until a connection was successful or the maximum retry amount was reached
+                sendRetryRequest();
             });
         };
         const rpc = { request: sendRequest };

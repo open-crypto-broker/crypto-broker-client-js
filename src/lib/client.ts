@@ -57,6 +57,8 @@ type CertOptions = {
 export class CryptoBrokerClient {
   private client: CryptoBrokerClientImpl;
   private address: string;
+  private conn_max_retries: number = 5;
+  private conn_retry_delay_ms: number = 5000;
 
   constructor(opts: CreateCryptoBrokerClientParams = {}) {
     this.address = 'unix:/tmp/cryptobroker.sock';
@@ -91,14 +93,34 @@ export class CryptoBrokerClient {
           return argument;
         }
 
-        // Using passThrough as the deserialize functions
-        conn.makeUnaryRequest(
-          path,
-          (d) => Buffer.from(d),
-          passThrough,
-          data,
-          resultCallback,
-        );
+        const sendRetryRequest = (tries: number = 1) => {
+          const now = new Date();
+          const deadline = now.setMilliseconds(
+            now.getMilliseconds() + this.conn_retry_delay_ms,
+          );
+          if (tries <= this.conn_max_retries) {
+            conn.waitForReady(deadline, async (err: Error | undefined) => {
+              if (err) {
+                console.log(
+                  `Could not establish connection. Retrying... (${tries}/${this.conn_max_retries})`,
+                );
+                sendRetryRequest(tries + 1);
+              } else {
+                // Using passThrough as the deserialize functions
+                conn.makeUnaryRequest(
+                  path,
+                  (d) => Buffer.from(d),
+                  passThrough,
+                  data,
+                  resultCallback,
+                );
+              }
+            });
+          }
+        };
+
+        // retry until a connection was successful or the maximum retry amount was reached
+        sendRetryRequest();
       });
     };
     const rpc = { request: sendRequest };

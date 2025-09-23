@@ -34,6 +34,8 @@ type CertOptions = {
 export declare class CryptoBrokerClient {
     private client;
     private address;
+    private conn_max_retries;
+    private conn_retry_delay_ms;
     constructor(opts?: CreateCryptoBrokerClientParams);
     hashData(payload: HashPayload): Promise<HashResponse>;
     signCertificate(payload: SignPayload, options?: CertOptions): Promise<SignResponse>;
