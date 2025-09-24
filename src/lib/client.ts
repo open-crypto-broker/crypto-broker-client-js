@@ -57,8 +57,8 @@ type CertOptions = {
 export class CryptoBrokerClient {
   private client: CryptoBrokerClientImpl;
   private address: string;
-  private conn_max_retries: number = 5;
-  private conn_retry_delay_ms: number = 5000;
+  private conn_max_retries: number = 60;
+  private conn_retry_delay_ms: number = 1000;
 
   constructor(opts: CreateCryptoBrokerClientParams = {}) {
     this.address = 'unix:/tmp/cryptobroker.sock';

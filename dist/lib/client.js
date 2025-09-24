@@ -18,8 +18,8 @@ const encoders = {
 export class CryptoBrokerClient {
     client;
     address;
-    conn_max_retries = 5;
-    conn_retry_delay_ms = 5000;
+    conn_max_retries = 60;
+    conn_retry_delay_ms = 1000;
     constructor(opts = {}) {
         this.address = 'unix:/tmp/cryptobroker.sock';
         const conn = new grpc.Client(this.address, opts.credentials || grpc.credentials.createInsecure(), opts.options || {});
