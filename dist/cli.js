@@ -1,13 +1,15 @@
 import { CertEncoding, CryptoBrokerClient } from './lib/client.js';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { ArgumentParser } from 'argparse';
+import { ArgumentParser, ArgumentDefaultsHelpFormatter, ArgumentTypeError, } from 'argparse';
 function logDuration(label, start, end) {
     const durationMicroS = (end - start) / BigInt(1000.0);
     console.log(`${label} took ${durationMicroS} µs`);
 }
-async function execute(cryptoLib) {
-    const parser = new ArgumentParser();
+function init_parser() {
+    const parser = new ArgumentParser({
+        formatter_class: ArgumentDefaultsHelpFormatter,
+    });
     const sub_parsers = parser.add_subparsers({
         help: 'Command Selection',
         dest: 'command',
@@ -16,6 +18,17 @@ async function execute(cryptoLib) {
     parser.add_argument('--profile', {
         help: 'Profile Selection',
         default: 'Default',
+    });
+    parser.add_argument('--loop', {
+        help: 'Loops the request with the specified delay (in ms).',
+        dest: 'delay',
+        type: (arg) => {
+            const int_arg = parseInt(arg);
+            if (int_arg <= 0 || int_arg > 1000) {
+                throw new ArgumentTypeError('The delay value must be between 1ms and 1000ms.');
+            }
+            return int_arg;
+        },
     });
     // hash sub-parser and arguments
     const hash_parser = sub_parsers.add_parser('hash', {
@@ -43,11 +56,15 @@ async function execute(cryptoLib) {
     sign_parser.add_argument('--subject', {
         help: 'Subject for the signing request (will override the subject in the CSR)',
     });
-    const parsed_args = parser.parse_args();
+    return parser.parse_args();
+}
+// initializes the parsers
+const parsed_args = init_parser();
+async function execute(cryptoLib) {
     const command = parsed_args.command;
     const profile = parsed_args.profile;
     // Data hashing
-    // Usage: cli.js [--profile=<profile>] hash <data>
+    // Usage: cli.js [--profile <profile>] [--loop <delay>] hash <data>
     if (command === 'hash') {
         const data = parsed_args.data;
         console.log(`Hashing '${data}' using "${profile}" profile`);
@@ -61,10 +78,12 @@ async function execute(cryptoLib) {
             },
         });
         const end = process.hrtime.bigint();
+        if (parsed_args.data_only)
+            console.log(hashResponse.hashValue);
         console.log('Hashed response:\n', JSON.stringify(hashResponse, null, 2));
         logDuration('Data Hashing', start, end);
         // Certificate signing
-        // Usage: cli.js [--profile=<profile>] sign <csrPath> <caCertPath> <signingKeyPath> [--encoding={B64,PEM}] [--subject]
+        // Usage: cli.js [--profile <profile>] [--loop <delay>] sign <csrPath> <caCertPath> <signingKeyPath> [--encoding={B64,PEM}] [--subject]
     }
     else if (command === 'sign') {
         const csrPath = parsed_args.csrPath;
@@ -91,7 +110,7 @@ async function execute(cryptoLib) {
         // add subject to payload if it was provided
         if (subject) {
             payload['subject'] = subject;
-            console.log(`Note: The CSR subject will be overridden by "${subject}".`);
+            console.log(`Note: The CSR subject will be overwritten by "${subject}".`);
         }
         // Starting certificate signing
         const start = process.hrtime.bigint();
@@ -103,19 +122,26 @@ async function execute(cryptoLib) {
 }
 async function main() {
     const cryptoLib = new CryptoBrokerClient();
-    const isDeployed = process.env.DOCKER_DEPLOYED || '';
-    if (isDeployed.toLowerCase() === 'true') {
-        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-        while (true) {
-            await sleep(5000);
-            await execute(cryptoLib);
-        }
-    }
-    else {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    // signal handling
+    let stop = false;
+    process.on('SIGINT', () => {
+        stop = true;
+        console.log('Received SIGINT, stopping...');
+    });
+    process.on('SIGTERM', () => {
+        stop = true;
+        console.log('Received SIGTERM, stopping...');
+    });
+    await execute(cryptoLib);
+    while (parsed_args.delay) {
+        await sleep(parsed_args.delay);
+        if (stop)
+            break;
         await execute(cryptoLib);
     }
 }
 main().catch((err) => {
-    console.log('Error:', err);
+    console.error('Error:', err);
 });
 //# sourceMappingURL=cli.js.map
