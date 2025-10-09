@@ -43,7 +43,7 @@ const signResponse = await cryptoLib.signCertificate({
     // Optional values
     validNotBeforeOffset: "0s",
     validNotAfterOffset: "8740h",
-    subject: "SERIALNUMBER=01234556,CN=MyCert,O=SAP,ST=BA,C=DE",
+    subject: "CN=MyCert,O=SAP,ST=BA,C=DE",
     crlDistributionPoint: "URL Distribution Point",
     metadata: {
         id: uuidv4(),
