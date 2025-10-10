@@ -54,7 +54,7 @@ function init_parser() {
         help: 'Specifies which encoding should be used for the signedCertificate',
     });
     sign_parser.add_argument('--subject', {
-        help: 'Subject for the signing request (will override the subject in the CSR)',
+        help: 'Subject for the signing request (will overwrite the subject in the CSR)',
     });
     return parser.parse_args();
 }
