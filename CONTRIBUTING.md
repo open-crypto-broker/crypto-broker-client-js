@@ -34,10 +34,11 @@ The following rule governs code contributions:
 
 ## Commits
 
-We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). They ensure that the commit history remains clear and automated tools can run on top of. 
+We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). They ensure that the commit history remains clear and automated tools can run on top of.
 This convention complements SemVer, by describing the features, fixes, and breaking changes made in commit messages.
 
 For any commit made to the repository, a keyword must precede the commit. Common keywords are
+
 * **fix:** for bug fixes, and
 * **feat:** for new features,
 
