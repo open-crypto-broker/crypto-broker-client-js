@@ -39,14 +39,17 @@ function init_parser() {
     const sign_parser = sub_parsers.add_parser('sign', {
         help: 'sign a CSR etc',
     });
-    sign_parser.add_argument('csrPath', {
+    sign_parser.add_argument('--csr', {
         help: 'Path to CSR file',
+        required: true,
     });
-    sign_parser.add_argument('caCertPath', {
-        help: 'Path to CA cert file',
+    sign_parser.add_argument('--caCert', {
+        help: 'Path to CA certificate file',
+        required: true,
     });
-    sign_parser.add_argument('signingKeyPath', {
+    sign_parser.add_argument('--caKey', {
         help: 'Path to CA private key file',
+        required: true,
     });
     sign_parser.add_argument('--encoding', {
         default: CertEncoding.PEM,
@@ -86,9 +89,9 @@ async function execute(cryptoLib) {
         // Usage: cli.js [--profile <profile>] [--loop <delay>] sign <csrPath> <caCertPath> <signingKeyPath> [--encoding={B64,PEM}] [--subject]
     }
     else if (command === 'sign') {
-        const csrPath = parsed_args.csrPath;
-        const caCertPath = parsed_args.caCertPath;
-        const signingKeyPath = parsed_args.signingKeyPath;
+        const csrPath = parsed_args.csr;
+        const caCertPath = parsed_args.caCert;
+        const signingKeyPath = parsed_args.caKey;
         const encoding = parsed_args.encoding;
         const subject = parsed_args.subject;
         const options = {

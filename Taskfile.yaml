@@ -50,7 +50,7 @@ tasks:
   test-sign:
     desc: "Quick command for easy testing: runs certificate signing command with Default profile"
     cmds:
-      - node ./dist/cli.js --profile=Default sign ../crypto-broker-deployment/deployments/k8s/kube-broker/files/certificates/end-entity.csr ../crypto-broker-deployment/deployments/k8s/kube-broker/files/certificates/ca_cert.pem ../crypto-broker-deployment/deployments/k8s/kube-broker/files/certificates/private_key.pem --subject="CN=MyCert,O=SAP,ST=BA,C=DE"
+      - node ./dist/cli.js --profile=Default sign --caCert ../crypto-broker-deployment/deployments/k8s/kube-broker/files/certificates/ca_cert.pem --csr ../crypto-broker-deployment/deployments/k8s/kube-broker/files/certificates/end-entity.csr  --caKey ../crypto-broker-deployment/deployments/k8s/kube-broker/files/certificates/private_key.pem --subject="CN=MyCert,O=SAP,ST=BA,C=DE"
 
   test:
     desc: "Runs the tests"
