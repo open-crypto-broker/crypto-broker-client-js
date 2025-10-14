@@ -32,6 +32,20 @@ The following rule governs code contributions:
 * Due to legal reasons, contributors will be asked to accept a Developer Certificate of Origin (DCO) when they create the first pull request to this project. This happens in an automated fashion during the submission process. SAP uses [the standard DCO text of the Linux Foundation](https://developercertificate.org/).
 * Contributions must follow our [guidelines on AI-generated code](https://github.com/open-crypto-broker//.github/blob/main/CONTRIBUTING_USING_GENAI.md) in case you are using such tools.
 
+## Commits
+
+We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). They ensure that the commit history remains clear and automated tools can run on top of.
+This convention complements SemVer, by describing the features, fixes, and breaking changes made in commit messages.
+
+For any commit made to the repository, a keyword must precede the commit. Common keywords are
+
+* **fix:** for bug fixes, and
+* **feat:** for new features,
+
+but other keywords are also possible. To introduce breaking changes, the ! symbol can be appended to the keyword - i.e. fix!:.
+
+For a full description of all the options and possibilities, the specification can be checked.
+
 ## Issues and Planning
 
 * We use GitHub issues to track bugs and enhancement requests.
