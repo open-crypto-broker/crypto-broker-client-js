@@ -14,6 +14,7 @@ function init_parser() {
         help: 'Command Selection',
         dest: 'command',
     });
+    sub_parsers.required = true;
     // main parser arguments
     parser.add_argument('--profile', {
         help: 'Profile Selection',
@@ -86,7 +87,7 @@ async function execute(cryptoLib) {
         console.log('Hashed response:\n', JSON.stringify(hashResponse, null, 2));
         logDuration('Data Hashing', start, end);
         // Certificate signing
-        // Usage: cli.js [--profile <profile>] [--loop <delay>] sign <csrPath> <caCertPath> <signingKeyPath> [--encoding={B64,PEM}] [--subject]
+        // Usage: cli.js [--profile <profile>] [--loop <delay>] sign --csr --caCert --caKey [--encoding={B64,PEM}] [--subject]
     }
     else if (command === 'sign') {
         const csrPath = parsed_args.csr;
@@ -127,20 +128,17 @@ async function main() {
     const cryptoLib = new CryptoBrokerClient();
     const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     // signal handling
-    let stop = false;
     process.on('SIGINT', () => {
-        stop = true;
-        console.log('Received SIGINT, stopping...');
+        console.log('Received SIGINT, exiting...');
+        process.exit(0);
     });
     process.on('SIGTERM', () => {
-        stop = true;
-        console.log('Received SIGTERM, stopping...');
+        console.log('Received SIGTERM, exiting...');
+        process.exit(0);
     });
     await execute(cryptoLib);
     while (parsed_args.delay) {
         await sleep(parsed_args.delay);
-        if (stop)
-            break;
         await execute(cryptoLib);
     }
 }
