@@ -20,6 +20,7 @@ function init_parser() {
     help: 'Command Selection',
     dest: 'command',
   });
+  sub_parsers.required = true;
 
   // main parser arguments
   parser.add_argument('--profile', {
@@ -148,20 +149,18 @@ async function main() {
   const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
   // signal handling
-  let stop = false;
   process.on('SIGINT', () => {
-    stop = true;
-    console.log('Received SIGINT, stopping...');
+    console.log('Received SIGINT, exiting...');
+    process.exit(0);
   });
   process.on('SIGTERM', () => {
-    stop = true;
-    console.log('Received SIGTERM, stopping...');
+    console.log('Received SIGTERM, exiting...');
+    process.exit(0);
   });
 
   await execute(cryptoLib);
   while (parsed_args.delay) {
     await sleep(parsed_args.delay);
-    if (stop) break;
     await execute(cryptoLib);
   }
 }
