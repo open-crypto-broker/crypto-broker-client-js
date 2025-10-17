@@ -14,3 +14,5 @@ coverage/
 .vscode/*
 # Packed files
 *.tgz
+# Ignore temporary test folder
+tmp-tests
