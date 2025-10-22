@@ -27,4 +27,4 @@ COPY --from=builder /app/package*.json ./
 RUN npm ci --omit=dev --ignore-scripts
 
 # Run the CLI
-ENTRYPOINT ["node", "dist/cli.js", "--loop", "1000", "hash", "Hello Cryptobroker!"]
+ENTRYPOINT ["node", "dist/cli.js"]
