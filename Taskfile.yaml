@@ -65,6 +65,7 @@ tasks:
   build:
     desc: "Builds the js files including declarations and CLI"
     cmds:
+      - npm install
       - npm run build
 
   build-docker:
