@@ -14,6 +14,12 @@ Optionally, you can also directly download the package `cryptobroker-client-x.x.
 npm install <path-to-cryptobroker-client-x.y.z.tgz>
 ```
 
+Alternatively, you can also reference this git repository:
+
+```bash
+npm install github:open-crypto-broker/crypto-broker-client-js
+```
+
 ### Library Usage
 
 To use the Crypto Broker Library, simply create a client instance and call the functions with the specified parameters.
@@ -96,9 +102,6 @@ To compile the binaries you can use `npm run build`, or simply use the Taskfile:
 task build
 ```
 
-For building the Docker image, you need to have Docker/Docker Desktop or any other alternative (e.g. Podman) installed.
-Further, the installation of docker-buildx is recommended. Note: `task tools` will install this.
-
 ### Testing
 
 The client uses `jest` as a testing framework. The only logic tested is the one of the client itself. For this, the gRPC server functions are mocked, and their responses hard-coded. The purpose of this testing is thus to ensure compliance project-wide and that the client follows the general [library's specification](https://github.com/open-crypto-broker/crypto-broker-documentation/blob/main/spec/0003-library.md). For a full end-to-end testing, please check the [deployment repository](https://github.com/open-crypto-broker/crypto-broker-deployment).
@@ -116,17 +119,11 @@ you can run all of these commands with:
 task ci
 ```
 
-You can do a local end-to-end testing of the application yourself with the provided CLI. To run the CLI, you first need to have the [Crypto Broker server](https://github.com/open-crypto-broker/crypto-broker-server/) running in your Unix localhost environment. Once done, you can run one of the following in another terminal:
+The same pipeline will run in GitHub Actions when submitting a Pull Request, so it is recommended to also clone and run the testing of the deployment repository.
 
-```bash
-task test-hash
-# or
-task test-sign
-```
+## Deployment
 
-For the sign command, you need to have the [deployment repository](https://github.com/open-crypto-broker/crypto-broker-deployment) in the same parent directory as this repository. Check the command definitions in the `package.json` file to run your own custom commands.
-
-More thorough testing is also provided in the deployment repository. The same pipeline will run in GitHub Actions when submitting a Pull Request, so it is recommended to also clone and run the testing of the deployment repository.
+For an example deployment and end-to-end tests you can use the [deployment repository](https://github.com/open-crypto-broker/crypto-broker-deployment).
 
 ## Support, Feedback, Contributing
 
