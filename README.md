@@ -109,7 +109,7 @@ The client uses `jest` as a testing framework. The only logic tested is the one 
 To start the tests you can use `npm run test`, or simply use the Taskfile:
 
 ```bash
-task test
+task unit-test
 ```
 
 If you want to additionally invoke the local pipeline for code formatting, testing and vulnerability checks,
