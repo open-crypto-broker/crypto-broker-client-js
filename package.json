@@ -1,7 +1,6 @@
 {
   "name": "cryptobroker-client",
   "version": "0.1.0",
-  "main": "./dist/cli.js",
   "type": "module",
   "exports": "./dist/lib/client.js",
   "types": "./dist/lib/client.d.ts",
@@ -26,13 +25,13 @@
     "agility"
   ],
   "author": "Arturo Guridi",
+  "contributors": ["Miyana Stange"],
   "license": "Apache-2.0",
   "description": "Client Javascript repository to interact with a deployed Crypto Broker Server",
   "dependencies": {
     "@bufbuild/protobuf": "^2.5.2",
     "@grpc/grpc-js": "1.14.1",
     "@peculiar/x509": "^1.14.0",
-    "argparse": "^2.0.1",
     "bufbuild": "^0.2.0",
     "tsconfig": "^7.0.0",
     "uuid": "^11.1.0"
