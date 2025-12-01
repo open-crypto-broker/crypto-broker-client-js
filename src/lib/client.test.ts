@@ -10,7 +10,7 @@ import {
 
 // Mock the protobuf client under the hood, returning the same values after doing a gRPC call functions
 jest.mock('./proto/messages.js', () => ({
-  CryptoBrokerClientImpl: jest.fn().mockImplementation(() => ({
+  CryptoGrpcClientImpl: jest.fn().mockImplementation(() => ({
     Hash: jest
       .fn<(input: HashRequest) => Promise<HashResponse>>()
       .mockImplementation(async (input) => ({

@@ -3,12 +3,17 @@ import { UnaryCallback } from '@grpc/grpc-js/build/src/client.js';
 import { v4 as uuidv4 } from 'uuid';
 import x509 from '@peculiar/x509';
 import {
-  CryptoBrokerClientImpl,
+  CryptoGrpcClientImpl,
   HashRequest,
   HashResponse,
   SignRequest,
   SignResponse,
 } from './proto/messages.js';
+import {
+  HealthClientImpl,
+  HealthCheckRequest,
+  HealthCheckResponse,
+} from './proto/third_party/grpc/health/v1/health.js';
 
 type CreateCryptoBrokerClientParams = {
   credentials?: grpc.ChannelCredentials;
@@ -55,7 +60,8 @@ type CertOptions = {
 };
 
 export class CryptoBrokerClient {
-  private client: CryptoBrokerClientImpl;
+  private client: CryptoGrpcClientImpl;
+  private healthClient: HealthClientImpl;
   private address: string;
   private conn_max_retries: number = 60;
   private conn_retry_delay_ms: number = 1000;
@@ -124,7 +130,11 @@ export class CryptoBrokerClient {
       });
     };
     const rpc = { request: sendRequest };
-    this.client = new CryptoBrokerClientImpl(rpc);
+    const hcRpc = {
+      request: sendRequest,
+    };
+    this.client = new CryptoGrpcClientImpl(rpc);
+    this.healthClient = new HealthClientImpl(hcRpc);
   }
 
   async hashData(payload: HashPayload): Promise<HashResponse> {
@@ -164,6 +174,14 @@ export class CryptoBrokerClient {
     return this.client
       .Sign(req)
       .then((res: SignResponse) => encoders[encoding](res));
+  }
+
+  async healthCheck(): Promise<HealthCheckResponse> {
+    const req: HealthCheckRequest = {
+      service: '',
+    };
+
+    return this.healthClient.Check(req).then((res: HealthCheckResponse) => res);
   }
 }
 
