@@ -7,12 +7,23 @@
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
 
-export const protobufPackage = 'protobuf';
+export const protobufPackage = 'CryptoBroker';
 
-/** Metadata shared across al methods */
+/** Metadata shared across all methods */
 export interface Metadata {
   id: string;
   createdAt: string;
+}
+
+/** Message for a Benchmark Request */
+export interface BenchmarkRequest {
+  metadata: Metadata | undefined;
+}
+
+/** Response for a Benchmark Request */
+export interface BenchmarkResponse {
+  benchmarkResults: string;
+  metadata: Metadata | undefined;
 }
 
 /** Message for a Hash Request */
@@ -29,7 +40,7 @@ export interface HashResponse {
   metadata: Metadata | undefined;
 }
 
-/** Message for a CSR (Certificate Sign Request) */
+/** Message for a CSR (Certificate Signing Request) */
 export interface SignRequest {
   profile: string;
   csr: string;
@@ -126,6 +137,170 @@ export const Metadata: MessageFns<Metadata> = {
     const message = createBaseMetadata();
     message.id = object.id ?? '';
     message.createdAt = object.createdAt ?? '';
+    return message;
+  },
+};
+
+function createBaseBenchmarkRequest(): BenchmarkRequest {
+  return { metadata: undefined };
+}
+
+export const BenchmarkRequest: MessageFns<BenchmarkRequest> = {
+  encode(
+    message: BenchmarkRequest,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.metadata !== undefined) {
+      Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): BenchmarkRequest {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseBenchmarkRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.metadata = Metadata.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): BenchmarkRequest {
+    return {
+      metadata: isSet(object.metadata)
+        ? Metadata.fromJSON(object.metadata)
+        : undefined,
+    };
+  },
+
+  toJSON(message: BenchmarkRequest): unknown {
+    const obj: any = {};
+    if (message.metadata !== undefined) {
+      obj.metadata = Metadata.toJSON(message.metadata);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<BenchmarkRequest>, I>>(
+    base?: I,
+  ): BenchmarkRequest {
+    return BenchmarkRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<BenchmarkRequest>, I>>(
+    object: I,
+  ): BenchmarkRequest {
+    const message = createBaseBenchmarkRequest();
+    message.metadata =
+      object.metadata !== undefined && object.metadata !== null
+        ? Metadata.fromPartial(object.metadata)
+        : undefined;
+    return message;
+  },
+};
+
+function createBaseBenchmarkResponse(): BenchmarkResponse {
+  return { benchmarkResults: '', metadata: undefined };
+}
+
+export const BenchmarkResponse: MessageFns<BenchmarkResponse> = {
+  encode(
+    message: BenchmarkResponse,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.benchmarkResults !== '') {
+      writer.uint32(10).string(message.benchmarkResults);
+    }
+    if (message.metadata !== undefined) {
+      Metadata.encode(message.metadata, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): BenchmarkResponse {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseBenchmarkResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.benchmarkResults = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.metadata = Metadata.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): BenchmarkResponse {
+    return {
+      benchmarkResults: isSet(object.benchmarkResults)
+        ? globalThis.String(object.benchmarkResults)
+        : '',
+      metadata: isSet(object.metadata)
+        ? Metadata.fromJSON(object.metadata)
+        : undefined,
+    };
+  },
+
+  toJSON(message: BenchmarkResponse): unknown {
+    const obj: any = {};
+    if (message.benchmarkResults !== '') {
+      obj.benchmarkResults = message.benchmarkResults;
+    }
+    if (message.metadata !== undefined) {
+      obj.metadata = Metadata.toJSON(message.metadata);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<BenchmarkResponse>, I>>(
+    base?: I,
+  ): BenchmarkResponse {
+    return BenchmarkResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<BenchmarkResponse>, I>>(
+    object: I,
+  ): BenchmarkResponse {
+    const message = createBaseBenchmarkResponse();
+    message.benchmarkResults = object.benchmarkResults ?? '';
+    message.metadata =
+      object.metadata !== undefined && object.metadata !== null
+        ? Metadata.fromPartial(object.metadata)
+        : undefined;
     return message;
   },
 };
@@ -657,21 +832,31 @@ export const SignResponse: MessageFns<SignResponse> = {
   },
 };
 
-export interface CryptoBroker {
+export interface CryptoGrpc {
+  Benchmark(request: BenchmarkRequest): Promise<BenchmarkResponse>;
   Hash(request: HashRequest): Promise<HashResponse>;
   Sign(request: SignRequest): Promise<SignResponse>;
 }
 
-export const CryptoBrokerServiceName = 'protobuf.CryptoBroker';
-export class CryptoBrokerClientImpl implements CryptoBroker {
+export const CryptoGrpcServiceName = 'CryptoBroker.CryptoGrpc';
+export class CryptoGrpcClientImpl implements CryptoGrpc {
   private readonly rpc: Rpc;
   private readonly service: string;
   constructor(rpc: Rpc, opts?: { service?: string }) {
-    this.service = opts?.service || CryptoBrokerServiceName;
+    this.service = opts?.service || CryptoGrpcServiceName;
     this.rpc = rpc;
+    this.Benchmark = this.Benchmark.bind(this);
     this.Hash = this.Hash.bind(this);
     this.Sign = this.Sign.bind(this);
   }
+  Benchmark(request: BenchmarkRequest): Promise<BenchmarkResponse> {
+    const data = BenchmarkRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, 'Benchmark', data);
+    return promise.then((data) =>
+      BenchmarkResponse.decode(new BinaryReader(data)),
+    );
+  }
+
   Hash(request: HashRequest): Promise<HashResponse> {
     const data = HashRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, 'Hash', data);

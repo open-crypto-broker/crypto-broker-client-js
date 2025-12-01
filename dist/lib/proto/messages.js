@@ -5,7 +5,7 @@
 // source: messages.proto
 /* eslint-disable */
 import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
-export const protobufPackage = 'protobuf';
+export const protobufPackage = 'CryptoBroker';
 function createBaseMetadata() {
     return { id: '', createdAt: '' };
 }
@@ -73,6 +73,139 @@ export const Metadata = {
         const message = createBaseMetadata();
         message.id = object.id ?? '';
         message.createdAt = object.createdAt ?? '';
+        return message;
+    },
+};
+function createBaseBenchmarkRequest() {
+    return { metadata: undefined };
+}
+export const BenchmarkRequest = {
+    encode(message, writer = new BinaryWriter()) {
+        if (message.metadata !== undefined) {
+            Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
+        }
+        return writer;
+    },
+    decode(input, length) {
+        const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+        const end = length === undefined ? reader.len : reader.pos + length;
+        const message = createBaseBenchmarkRequest();
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1: {
+                    if (tag !== 10) {
+                        break;
+                    }
+                    message.metadata = Metadata.decode(reader, reader.uint32());
+                    continue;
+                }
+            }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skip(tag & 7);
+        }
+        return message;
+    },
+    fromJSON(object) {
+        return {
+            metadata: isSet(object.metadata)
+                ? Metadata.fromJSON(object.metadata)
+                : undefined,
+        };
+    },
+    toJSON(message) {
+        const obj = {};
+        if (message.metadata !== undefined) {
+            obj.metadata = Metadata.toJSON(message.metadata);
+        }
+        return obj;
+    },
+    create(base) {
+        return BenchmarkRequest.fromPartial(base ?? {});
+    },
+    fromPartial(object) {
+        const message = createBaseBenchmarkRequest();
+        message.metadata =
+            object.metadata !== undefined && object.metadata !== null
+                ? Metadata.fromPartial(object.metadata)
+                : undefined;
+        return message;
+    },
+};
+function createBaseBenchmarkResponse() {
+    return { benchmarkResults: '', metadata: undefined };
+}
+export const BenchmarkResponse = {
+    encode(message, writer = new BinaryWriter()) {
+        if (message.benchmarkResults !== '') {
+            writer.uint32(10).string(message.benchmarkResults);
+        }
+        if (message.metadata !== undefined) {
+            Metadata.encode(message.metadata, writer.uint32(18).fork()).join();
+        }
+        return writer;
+    },
+    decode(input, length) {
+        const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+        const end = length === undefined ? reader.len : reader.pos + length;
+        const message = createBaseBenchmarkResponse();
+        while (reader.pos < end) {
+            const tag = reader.uint32();
+            switch (tag >>> 3) {
+                case 1: {
+                    if (tag !== 10) {
+                        break;
+                    }
+                    message.benchmarkResults = reader.string();
+                    continue;
+                }
+                case 2: {
+                    if (tag !== 18) {
+                        break;
+                    }
+                    message.metadata = Metadata.decode(reader, reader.uint32());
+                    continue;
+                }
+            }
+            if ((tag & 7) === 4 || tag === 0) {
+                break;
+            }
+            reader.skip(tag & 7);
+        }
+        return message;
+    },
+    fromJSON(object) {
+        return {
+            benchmarkResults: isSet(object.benchmarkResults)
+                ? globalThis.String(object.benchmarkResults)
+                : '',
+            metadata: isSet(object.metadata)
+                ? Metadata.fromJSON(object.metadata)
+                : undefined,
+        };
+    },
+    toJSON(message) {
+        const obj = {};
+        if (message.benchmarkResults !== '') {
+            obj.benchmarkResults = message.benchmarkResults;
+        }
+        if (message.metadata !== undefined) {
+            obj.metadata = Metadata.toJSON(message.metadata);
+        }
+        return obj;
+    },
+    create(base) {
+        return BenchmarkResponse.fromPartial(base ?? {});
+    },
+    fromPartial(object) {
+        const message = createBaseBenchmarkResponse();
+        message.benchmarkResults = object.benchmarkResults ?? '';
+        message.metadata =
+            object.metadata !== undefined && object.metadata !== null
+                ? Metadata.fromPartial(object.metadata)
+                : undefined;
         return message;
     },
 };
@@ -532,15 +665,21 @@ export const SignResponse = {
         return message;
     },
 };
-export const CryptoBrokerServiceName = 'protobuf.CryptoBroker';
-export class CryptoBrokerClientImpl {
+export const CryptoGrpcServiceName = 'CryptoBroker.CryptoGrpc';
+export class CryptoGrpcClientImpl {
     rpc;
     service;
     constructor(rpc, opts) {
-        this.service = opts?.service || CryptoBrokerServiceName;
+        this.service = opts?.service || CryptoGrpcServiceName;
         this.rpc = rpc;
+        this.Benchmark = this.Benchmark.bind(this);
         this.Hash = this.Hash.bind(this);
         this.Sign = this.Sign.bind(this);
+    }
+    Benchmark(request) {
+        const data = BenchmarkRequest.encode(request).finish();
+        const promise = this.rpc.request(this.service, 'Benchmark', data);
+        return promise.then((data) => BenchmarkResponse.decode(new BinaryReader(data)));
     }
     Hash(request) {
         const data = HashRequest.encode(request).finish();
