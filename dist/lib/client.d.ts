@@ -53,4 +53,4 @@ export declare const credentials: {
     createFromGoogleCredential: typeof grpc.CallCredentials.createFromGoogleCredential;
     createEmpty: typeof grpc.CallCredentials.createEmpty;
 };
-export {};
+export { HealthCheckResponse_ServingStatus } from './proto/third_party/grpc/health/v1/health.js';

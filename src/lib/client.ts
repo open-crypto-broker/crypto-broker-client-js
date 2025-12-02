@@ -186,3 +186,4 @@ export class CryptoBrokerClient {
 }
 
 export const credentials = grpc.credentials;
+export { HealthCheckResponse_ServingStatus } from './proto/third_party/grpc/health/v1/health.js';
