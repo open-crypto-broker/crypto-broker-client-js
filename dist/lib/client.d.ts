@@ -41,7 +41,7 @@ export declare class CryptoBrokerClient {
     constructor(opts?: CreateCryptoBrokerClientParams);
     hashData(payload: HashPayload): Promise<HashResponse>;
     signCertificate(payload: SignPayload, options?: CertOptions): Promise<SignResponse>;
-    healthCheck(): Promise<HealthCheckResponse>;
+    healthData(): Promise<HealthCheckResponse>;
 }
 export declare const credentials: {
     combineChannelCredentials: (channelCredentials: grpc.ChannelCredentials, ...callCredentials: grpc.CallCredentials[]) => grpc.ChannelCredentials;

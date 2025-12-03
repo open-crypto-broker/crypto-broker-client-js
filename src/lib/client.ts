@@ -176,7 +176,7 @@ export class CryptoBrokerClient {
       .then((res: SignResponse) => encoders[encoding](res));
   }
 
-  async healthCheck(): Promise<HealthCheckResponse> {
+  async healthData(): Promise<HealthCheckResponse> {
     const req: HealthCheckRequest = {
       service: '',
     };
