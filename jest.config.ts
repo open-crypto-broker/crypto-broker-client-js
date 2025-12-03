@@ -15,7 +15,7 @@ const config: Config = {
   // Maps js files to ts. This keeps the imports as ".js", but they get translated into ".ts" during testing
   moduleNameMapper: {
     '^src/(.*)\\.js$': '<rootDir>/src/$1.ts', 
-    '^\\./(client|proto/messages)\\.js$': '<rootDir>/src/lib/$1.ts', 
+    '^\\./(client|proto/messages|proto/third_party/grpc/health/v1/health)\\.js$': '<rootDir>/src/lib/$1.ts',
   },
 };
 

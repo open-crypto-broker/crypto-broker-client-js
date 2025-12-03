@@ -1,5 +1,6 @@
 import * as grpc from '@grpc/grpc-js';
 import { HashResponse, SignResponse } from './proto/messages.js';
+import { HealthCheckResponse } from './proto/third_party/grpc/health/v1/health.js';
 type CreateCryptoBrokerClientParams = {
     credentials?: grpc.ChannelCredentials;
     options?: grpc.ClientOptions;
@@ -33,12 +34,14 @@ type CertOptions = {
 };
 export declare class CryptoBrokerClient {
     private client;
+    private healthClient;
     private address;
     private conn_max_retries;
     private conn_retry_delay_ms;
     constructor(opts?: CreateCryptoBrokerClientParams);
     hashData(payload: HashPayload): Promise<HashResponse>;
     signCertificate(payload: SignPayload, options?: CertOptions): Promise<SignResponse>;
+    healthCheck(): Promise<HealthCheckResponse>;
 }
 export declare const credentials: {
     combineChannelCredentials: (channelCredentials: grpc.ChannelCredentials, ...callCredentials: grpc.CallCredentials[]) => grpc.ChannelCredentials;
@@ -50,4 +53,4 @@ export declare const credentials: {
     createFromGoogleCredential: typeof grpc.CallCredentials.createFromGoogleCredential;
     createEmpty: typeof grpc.CallCredentials.createEmpty;
 };
-export {};
+export { HealthCheckResponse_ServingStatus } from './proto/third_party/grpc/health/v1/health.js';

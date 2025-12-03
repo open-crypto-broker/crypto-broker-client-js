@@ -1,9 +1,18 @@
 import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
-export declare const protobufPackage = "protobuf";
-/** Metadata shared across al methods */
+export declare const protobufPackage = "CryptoBroker";
+/** Metadata shared across all methods */
 export interface Metadata {
     id: string;
     createdAt: string;
+}
+/** Message for a Benchmark Request */
+export interface BenchmarkRequest {
+    metadata: Metadata | undefined;
+}
+/** Response for a Benchmark Request */
+export interface BenchmarkResponse {
+    benchmarkResults: string;
+    metadata: Metadata | undefined;
 }
 /** Message for a Hash Request */
 export interface HashRequest {
@@ -17,7 +26,7 @@ export interface HashResponse {
     hashAlgorithm: string;
     metadata: Metadata | undefined;
 }
-/** Message for a CSR (Certificate Sign Request) */
+/** Message for a CSR (Certificate Signing Request) */
 export interface SignRequest {
     profile: string;
     csr: string;
@@ -35,21 +44,25 @@ export interface SignResponse {
     metadata: Metadata | undefined;
 }
 export declare const Metadata: MessageFns<Metadata>;
+export declare const BenchmarkRequest: MessageFns<BenchmarkRequest>;
+export declare const BenchmarkResponse: MessageFns<BenchmarkResponse>;
 export declare const HashRequest: MessageFns<HashRequest>;
 export declare const HashResponse: MessageFns<HashResponse>;
 export declare const SignRequest: MessageFns<SignRequest>;
 export declare const SignResponse: MessageFns<SignResponse>;
-export interface CryptoBroker {
+export interface CryptoGrpc {
+    Benchmark(request: BenchmarkRequest): Promise<BenchmarkResponse>;
     Hash(request: HashRequest): Promise<HashResponse>;
     Sign(request: SignRequest): Promise<SignResponse>;
 }
-export declare const CryptoBrokerServiceName = "protobuf.CryptoBroker";
-export declare class CryptoBrokerClientImpl implements CryptoBroker {
+export declare const CryptoGrpcServiceName = "CryptoBroker.CryptoGrpc";
+export declare class CryptoGrpcClientImpl implements CryptoGrpc {
     private readonly rpc;
     private readonly service;
     constructor(rpc: Rpc, opts?: {
         service?: string;
     });
+    Benchmark(request: BenchmarkRequest): Promise<BenchmarkResponse>;
     Hash(request: HashRequest): Promise<HashResponse>;
     Sign(request: SignRequest): Promise<SignResponse>;
 }

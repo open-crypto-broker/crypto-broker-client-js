@@ -1,7 +1,8 @@
 import * as grpc from '@grpc/grpc-js';
 import { v4 as uuidv4 } from 'uuid';
 import x509 from '@peculiar/x509';
-import { CryptoBrokerClientImpl, } from './proto/messages.js';
+import { CryptoGrpcClientImpl, } from './proto/messages.js';
+import { HealthClientImpl, } from './proto/third_party/grpc/health/v1/health.js';
 export var CertEncoding;
 (function (CertEncoding) {
     CertEncoding["B64"] = "B64";
@@ -17,6 +18,7 @@ const encoders = {
 };
 export class CryptoBrokerClient {
     client;
+    healthClient;
     address;
     conn_max_retries = 60;
     conn_retry_delay_ms = 1000;
@@ -61,7 +63,11 @@ export class CryptoBrokerClient {
             });
         };
         const rpc = { request: sendRequest };
-        this.client = new CryptoBrokerClientImpl(rpc);
+        const hcRpc = {
+            request: sendRequest,
+        };
+        this.client = new CryptoGrpcClientImpl(rpc);
+        this.healthClient = new HealthClientImpl(hcRpc);
     }
     async hashData(payload) {
         const req = {
@@ -97,6 +103,13 @@ export class CryptoBrokerClient {
             .Sign(req)
             .then((res) => encoders[encoding](res));
     }
+    async healthCheck() {
+        const req = {
+            service: '',
+        };
+        return this.healthClient.Check(req).then((res) => res);
+    }
 }
 export const credentials = grpc.credentials;
+export { HealthCheckResponse_ServingStatus } from './proto/third_party/grpc/health/v1/health.js';
 //# sourceMappingURL=client.js.map
