@@ -74,7 +74,7 @@ Further, it is also possible to check the status of the server:
 import { HealthCheckResponse_ServingStatus } from 'cryptobroker-client';
 
 const health_data = await cryptoLib.healthData();
-const serving_status = HealthCheckResponse_ServingStatus[health_resp.status];
+const serving_status = HealthCheckResponse_ServingStatus[health_data.status];
 console.log('Status: ', serving_status);
 ```
 
