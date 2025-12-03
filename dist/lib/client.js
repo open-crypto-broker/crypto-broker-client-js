@@ -103,7 +103,7 @@ export class CryptoBrokerClient {
             .Sign(req)
             .then((res) => encoders[encoding](res));
     }
-    async healthCheck() {
+    async healthData() {
         const req = {
             service: '',
         };

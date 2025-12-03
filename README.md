@@ -73,9 +73,9 @@ Further, it is also possible to check the status of the server:
 ```ts
 import { HealthCheckResponse_ServingStatus } from 'cryptobroker-client';
 
-const health_resp = await cryptoLib.healthCheck();
-const status_obj = HealthCheckResponse_ServingStatus[health_resp.status];
-console.log('Status: ', status_obj);
+const health_data = await cryptoLib.healthData();
+const serving_status = HealthCheckResponse_ServingStatus[health_data.status];
+console.log('Status: ', serving_status);
 ```
 
 Note, that the possible status values are described in the [specification](https://github.com/open-crypto-broker/crypto-broker-documentation).
