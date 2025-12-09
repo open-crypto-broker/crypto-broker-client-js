@@ -10,9 +10,10 @@ import {
   SignResponse,
 } from './proto/messages.js';
 import {
-  HealthClientImpl,
   HealthCheckRequest,
   HealthCheckResponse,
+  HealthCheckResponse_ServingStatus,
+  HealthClientImpl,
 } from './proto/third_party/grpc/health/v1/health.js';
 
 type CreateCryptoBrokerClientParams = {
@@ -122,7 +123,7 @@ export class CryptoBrokerClient {
                 );
               }
             });
-          }
+          } else reject(Error('retry limit reached'));
         };
 
         // retry until a connection was successful or the maximum retry amount was reached
@@ -180,8 +181,15 @@ export class CryptoBrokerClient {
     const req: HealthCheckRequest = {
       service: '',
     };
+    // mocking unknown status in the case the server is not reachable
+    const status_unknown: HealthCheckResponse = {
+      status: HealthCheckResponse_ServingStatus.UNKNOWN,
+    };
 
-    return this.healthClient.Check(req).then((res: HealthCheckResponse) => res);
+    return this.healthClient
+      .Check(req)
+      .then((res: HealthCheckResponse) => res)
+      .catch(() => status_unknown);
   }
 }
 
