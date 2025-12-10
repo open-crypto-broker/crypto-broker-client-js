@@ -47,8 +47,8 @@ const signResponse = await cryptoLib.signCertificate({
     caPrivateKey: caPrivateKey,
     caCert: caCert,
     // Optional values
-    validNotBeforeOffset: "0s",
-    validNotAfterOffset: "8740h",
+    validNotBefore: Math.floor(new Date().getTime() / 1000), // now
+    validNotAfter: Math.floor(new Date().getTime() / 1000 + 86400 * 30), // 30 days
     subject: "CN=MyCert,O=SAP,ST=BA,C=DE",
     crlDistributionPoint: "URL Distribution Point",
     metadata: {
@@ -68,7 +68,7 @@ const options = {
 const signResponse = await cryptoLib.signCertificate({...}, options);
 ```
 
-Further, it is also possible to check the status of the server:
+Further, it is also possible to check the health status of the server:
 
 ```ts
 import { HealthCheckResponse_ServingStatus } from 'cryptobroker-client';
