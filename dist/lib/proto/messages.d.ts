@@ -33,8 +33,8 @@ export interface SignRequest {
     caPrivateKey: string;
     caCert: string;
     metadata: Metadata | undefined;
-    validNotBeforeOffset?: string | undefined;
-    validNotAfterOffset?: string | undefined;
+    validNotBefore?: number | undefined;
+    validNotAfter?: number | undefined;
     subject?: string | undefined;
     crlDistributionPoints: string[];
 }
