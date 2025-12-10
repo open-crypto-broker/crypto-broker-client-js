@@ -93,8 +93,8 @@ export class CryptoBrokerClient {
                 id: payload.metadata?.id || uuidv4(),
                 createdAt: payload.metadata?.createdAt || new Date().toString(),
             },
-            validNotBeforeOffset: payload.validNotBeforeOffset,
-            validNotAfterOffset: payload.validNotAfterOffset,
+            validNotBefore: payload.validNotBefore,
+            validNotAfter: payload.validNotAfter,
             subject: payload.subject,
             crlDistributionPoints: payload.crlDistributionPoint || [],
         };

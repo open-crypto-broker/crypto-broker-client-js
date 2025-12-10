@@ -68,7 +68,7 @@ tasks:
   proto:
     desc: "Generates JS stubs from proto files"
     cmds:
-      - git submodule update --init --recursive --remote
+      - git submodule update --init --recursive
       - protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/lib/proto -I ./protobuf/ messages.proto
       - protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/lib/proto/third_party/grpc/health/v1/ -I ./protobuf/third_party/grpc/health/v1/ health.proto
 
