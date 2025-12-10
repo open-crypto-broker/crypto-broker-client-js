@@ -32,7 +32,7 @@
   "description": "Client Javascript repository to interact with a deployed Crypto Broker Server",
   "dependencies": {
     "@bufbuild/protobuf": "^2.5.2",
-    "@grpc/grpc-js": "1.14.1",
+    "@grpc/grpc-js": "1.14.2",
     "@peculiar/x509": "^1.14.0",
     "bufbuild": "^0.2.0",
     "rxjs": "^7.8.2",

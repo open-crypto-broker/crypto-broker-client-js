@@ -2,7 +2,7 @@ import * as grpc from '@grpc/grpc-js';
 import { v4 as uuidv4 } from 'uuid';
 import x509 from '@peculiar/x509';
 import { CryptoGrpcClientImpl, } from './proto/messages.js';
-import { HealthClientImpl, } from './proto/third_party/grpc/health/v1/health.js';
+import { HealthCheckResponse_ServingStatus, HealthClientImpl, } from './proto/third_party/grpc/health/v1/health.js';
 export var CertEncoding;
 (function (CertEncoding) {
     CertEncoding["B64"] = "B64";
@@ -57,6 +57,8 @@ export class CryptoBrokerClient {
                             }
                         });
                     }
+                    else
+                        reject(Error('retry limit reached'));
                 };
                 // retry until a connection was successful or the maximum retry amount was reached
                 sendRetryRequest();
@@ -107,7 +109,14 @@ export class CryptoBrokerClient {
         const req = {
             service: '',
         };
-        return this.healthClient.Check(req).then((res) => res);
+        // mocking unknown status in the case the server is not reachable
+        const status_unknown = {
+            status: HealthCheckResponse_ServingStatus.UNKNOWN,
+        };
+        return this.healthClient
+            .Check(req)
+            .then((res) => res)
+            .catch(() => status_unknown);
     }
 }
 export const credentials = grpc.credentials;
