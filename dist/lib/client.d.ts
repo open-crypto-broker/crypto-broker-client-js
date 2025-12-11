@@ -19,8 +19,8 @@ export interface SignPayload {
     csr: string;
     caPrivateKey: string;
     caCert: string;
-    validNotBeforeOffset?: string;
-    validNotAfterOffset?: string;
+    validNotBefore?: Long;
+    validNotAfter?: Long;
     metadata?: Metadata;
     subject?: string;
     crlDistributionPoint?: string[];
