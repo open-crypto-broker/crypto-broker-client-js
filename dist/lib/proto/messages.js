@@ -3,7 +3,10 @@
 //   protoc-gen-ts_proto  v2.8.3
 //   protoc               v6.33.1
 // source: messages.proto
+import { createRequire as _createRequire } from "module";
+const __require = _createRequire(import.meta.url);
 /* eslint-disable */
+const Long = __require("long");
 import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
 export const protobufPackage = 'CryptoBroker';
 function createBaseMetadata() {
@@ -422,10 +425,10 @@ export const SignRequest = {
             Metadata.encode(message.metadata, writer.uint32(42).fork()).join();
         }
         if (message.validNotBefore !== undefined) {
-            writer.uint32(48).uint64(message.validNotBefore);
+            writer.uint32(48).uint64(message.validNotBefore.toString());
         }
         if (message.validNotAfter !== undefined) {
-            writer.uint32(56).uint64(message.validNotAfter);
+            writer.uint32(56).uint64(message.validNotAfter.toString());
         }
         if (message.subject !== undefined) {
             writer.uint32(66).string(message.subject);
@@ -481,14 +484,14 @@ export const SignRequest = {
                     if (tag !== 48) {
                         break;
                     }
-                    message.validNotBefore = longToNumber(reader.uint64());
+                    message.validNotBefore = Long.fromString(reader.uint64().toString(), true);
                     continue;
                 }
                 case 7: {
                     if (tag !== 56) {
                         break;
                     }
-                    message.validNotAfter = longToNumber(reader.uint64());
+                    message.validNotAfter = Long.fromString(reader.uint64().toString(), true);
                     continue;
                 }
                 case 8: {
@@ -525,10 +528,10 @@ export const SignRequest = {
                 ? Metadata.fromJSON(object.metadata)
                 : undefined,
             validNotBefore: isSet(object.validNotBefore)
-                ? globalThis.Number(object.validNotBefore)
+                ? Long.fromValue(object.validNotBefore)
                 : undefined,
             validNotAfter: isSet(object.validNotAfter)
-                ? globalThis.Number(object.validNotAfter)
+                ? Long.fromValue(object.validNotAfter)
                 : undefined,
             subject: isSet(object.subject)
                 ? globalThis.String(object.subject)
@@ -556,10 +559,10 @@ export const SignRequest = {
             obj.metadata = Metadata.toJSON(message.metadata);
         }
         if (message.validNotBefore !== undefined) {
-            obj.validNotBefore = Math.round(message.validNotBefore);
+            obj.validNotBefore = (message.validNotBefore || Long.UZERO).toString();
         }
         if (message.validNotAfter !== undefined) {
-            obj.validNotAfter = Math.round(message.validNotAfter);
+            obj.validNotAfter = (message.validNotAfter || Long.UZERO).toString();
         }
         if (message.subject !== undefined) {
             obj.subject = message.subject;
@@ -582,8 +585,14 @@ export const SignRequest = {
             object.metadata !== undefined && object.metadata !== null
                 ? Metadata.fromPartial(object.metadata)
                 : undefined;
-        message.validNotBefore = object.validNotBefore ?? undefined;
-        message.validNotAfter = object.validNotAfter ?? undefined;
+        message.validNotBefore =
+            object.validNotBefore !== undefined && object.validNotBefore !== null
+                ? Long.fromValue(object.validNotBefore)
+                : undefined;
+        message.validNotAfter =
+            object.validNotAfter !== undefined && object.validNotAfter !== null
+                ? Long.fromValue(object.validNotAfter)
+                : undefined;
         message.subject = object.subject ?? undefined;
         message.crlDistributionPoints =
             object.crlDistributionPoints?.map((e) => e) || [];
@@ -716,16 +725,6 @@ function base64FromBytes(arr) {
         });
         return globalThis.btoa(bin.join(''));
     }
-}
-function longToNumber(int64) {
-    const num = globalThis.Number(int64.toString());
-    if (num > globalThis.Number.MAX_SAFE_INTEGER) {
-        throw new globalThis.Error('Value is larger than Number.MAX_SAFE_INTEGER');
-    }
-    if (num < globalThis.Number.MIN_SAFE_INTEGER) {
-        throw new globalThis.Error('Value is smaller than Number.MIN_SAFE_INTEGER');
-    }
-    return num;
 }
 function isSet(value) {
     return value !== null && value !== undefined;

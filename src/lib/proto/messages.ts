@@ -5,6 +5,7 @@
 // source: messages.proto
 
 /* eslint-disable */
+import Long = require('long');
 import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
 
 export const protobufPackage = 'CryptoBroker';
@@ -47,8 +48,8 @@ export interface SignRequest {
   caPrivateKey: string;
   caCert: string;
   metadata: Metadata | undefined;
-  validNotBefore?: number | undefined;
-  validNotAfter?: number | undefined;
+  validNotBefore?: Long | undefined;
+  validNotAfter?: Long | undefined;
   subject?: string | undefined;
   crlDistributionPoints: string[];
 }
@@ -554,10 +555,10 @@ export const SignRequest: MessageFns<SignRequest> = {
       Metadata.encode(message.metadata, writer.uint32(42).fork()).join();
     }
     if (message.validNotBefore !== undefined) {
-      writer.uint32(48).uint64(message.validNotBefore);
+      writer.uint32(48).uint64(message.validNotBefore.toString());
     }
     if (message.validNotAfter !== undefined) {
-      writer.uint32(56).uint64(message.validNotAfter);
+      writer.uint32(56).uint64(message.validNotAfter.toString());
     }
     if (message.subject !== undefined) {
       writer.uint32(66).string(message.subject);
@@ -621,7 +622,10 @@ export const SignRequest: MessageFns<SignRequest> = {
             break;
           }
 
-          message.validNotBefore = longToNumber(reader.uint64());
+          message.validNotBefore = Long.fromString(
+            reader.uint64().toString(),
+            true,
+          );
           continue;
         }
         case 7: {
@@ -629,7 +633,10 @@ export const SignRequest: MessageFns<SignRequest> = {
             break;
           }
 
-          message.validNotAfter = longToNumber(reader.uint64());
+          message.validNotAfter = Long.fromString(
+            reader.uint64().toString(),
+            true,
+          );
           continue;
         }
         case 8: {
@@ -669,10 +676,10 @@ export const SignRequest: MessageFns<SignRequest> = {
         ? Metadata.fromJSON(object.metadata)
         : undefined,
       validNotBefore: isSet(object.validNotBefore)
-        ? globalThis.Number(object.validNotBefore)
+        ? Long.fromValue(object.validNotBefore)
         : undefined,
       validNotAfter: isSet(object.validNotAfter)
-        ? globalThis.Number(object.validNotAfter)
+        ? Long.fromValue(object.validNotAfter)
         : undefined,
       subject: isSet(object.subject)
         ? globalThis.String(object.subject)
@@ -703,10 +710,10 @@ export const SignRequest: MessageFns<SignRequest> = {
       obj.metadata = Metadata.toJSON(message.metadata);
     }
     if (message.validNotBefore !== undefined) {
-      obj.validNotBefore = Math.round(message.validNotBefore);
+      obj.validNotBefore = (message.validNotBefore || Long.UZERO).toString();
     }
     if (message.validNotAfter !== undefined) {
-      obj.validNotAfter = Math.round(message.validNotAfter);
+      obj.validNotAfter = (message.validNotAfter || Long.UZERO).toString();
     }
     if (message.subject !== undefined) {
       obj.subject = message.subject;
@@ -732,8 +739,14 @@ export const SignRequest: MessageFns<SignRequest> = {
       object.metadata !== undefined && object.metadata !== null
         ? Metadata.fromPartial(object.metadata)
         : undefined;
-    message.validNotBefore = object.validNotBefore ?? undefined;
-    message.validNotAfter = object.validNotAfter ?? undefined;
+    message.validNotBefore =
+      object.validNotBefore !== undefined && object.validNotBefore !== null
+        ? Long.fromValue(object.validNotBefore)
+        : undefined;
+    message.validNotAfter =
+      object.validNotAfter !== undefined && object.validNotAfter !== null
+        ? Long.fromValue(object.validNotAfter)
+        : undefined;
     message.subject = object.subject ?? undefined;
     message.crlDistributionPoints =
       object.crlDistributionPoints?.map((e) => e) || [];
@@ -914,13 +927,15 @@ type Builtin =
 
 export type DeepPartial<T> = T extends Builtin
   ? T
-  : T extends globalThis.Array<infer U>
-    ? globalThis.Array<DeepPartial<U>>
-    : T extends ReadonlyArray<infer U>
-      ? ReadonlyArray<DeepPartial<U>>
-      : T extends {}
-        ? { [K in keyof T]?: DeepPartial<T[K]> }
-        : Partial<T>;
+  : T extends Long
+    ? string | number | Long
+    : T extends globalThis.Array<infer U>
+      ? globalThis.Array<DeepPartial<U>>
+      : T extends ReadonlyArray<infer U>
+        ? ReadonlyArray<DeepPartial<U>>
+        : T extends {}
+          ? { [K in keyof T]?: DeepPartial<T[K]> }
+          : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin
@@ -928,17 +943,6 @@ export type Exact<P, I extends P> = P extends Builtin
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & {
       [K in Exclude<keyof I, KeysOfUnion<P>>]: never;
     };
-
-function longToNumber(int64: { toString(): string }): number {
-  const num = globalThis.Number(int64.toString());
-  if (num > globalThis.Number.MAX_SAFE_INTEGER) {
-    throw new globalThis.Error('Value is larger than Number.MAX_SAFE_INTEGER');
-  }
-  if (num < globalThis.Number.MIN_SAFE_INTEGER) {
-    throw new globalThis.Error('Value is smaller than Number.MIN_SAFE_INTEGER');
-  }
-  return num;
-}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

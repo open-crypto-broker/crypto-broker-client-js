@@ -1,3 +1,4 @@
+import Long = require('long');
 import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
 export declare const protobufPackage = "CryptoBroker";
 /** Metadata shared across all methods */
@@ -33,8 +34,8 @@ export interface SignRequest {
     caPrivateKey: string;
     caCert: string;
     metadata: Metadata | undefined;
-    validNotBefore?: number | undefined;
-    validNotAfter?: number | undefined;
+    validNotBefore?: Long | undefined;
+    validNotAfter?: Long | undefined;
     subject?: string | undefined;
     crlDistributionPoints: string[];
 }
@@ -70,7 +71,7 @@ interface Rpc {
     request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
 }
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-export type DeepPartial<T> = T extends Builtin ? T : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : T extends {} ? {
+export type DeepPartial<T> = T extends Builtin ? T : T extends Long ? string | number | Long : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : T extends {} ? {
     [K in keyof T]?: DeepPartial<T[K]>;
 } : Partial<T>;
 type KeysOfUnion<T> = T extends T ? keyof T : never;
