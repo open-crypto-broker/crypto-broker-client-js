@@ -27,6 +27,7 @@ To use the Crypto Broker Library, simply create a client instance and call the f
 ```ts
 import { CertEncoding, CryptoBrokerClient } from "cryptobroker-client";
 import { v4 as uuidv4 } from 'uuid';
+import Long from 'long';
 
 const cryptoLib = new CryptoBrokerClient();
 
@@ -47,8 +48,8 @@ const signResponse = await cryptoLib.signCertificate({
     caPrivateKey: caPrivateKey,
     caCert: caCert,
     // Optional values
-    validNotBefore: Math.floor(new Date().getTime() / 1000), // now
-    validNotAfter: Math.floor(new Date().getTime() / 1000 + 86400 * 30), // 30 days
+    validNotBefore: Long.fromNumber(Math.floor(new Date().getTime() / 1000)), // now
+    validNotAfter: Long.fromNumber(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
     subject: "CN=MyCert,O=SAP,ST=BA,C=DE",
     crlDistributionPoint: "URL Distribution Point",
     metadata: {
