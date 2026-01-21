@@ -1,6 +1,6 @@
 {
   "name": "cryptobroker-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "exports": "./dist/lib/client.js",
   "types": "./dist/lib/client.d.ts",
@@ -32,7 +32,7 @@
   "description": "Client Javascript repository to interact with a deployed Crypto Broker Server",
   "dependencies": {
     "@bufbuild/protobuf": "^2.5.2",
-    "@grpc/grpc-js": "1.14.2",
+    "@grpc/grpc-js": "1.14.3",
     "@peculiar/x509": "^1.14.0",
     "bufbuild": "^0.2.0",
     "rxjs": "^7.8.2",
@@ -51,7 +51,7 @@
     "husky": "^9.1.7",
     "jest": "^30.2.0",
     "prettier": "^3.5.3",
-    "ts-jest": "^29.4.0",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "ts-proto": "^2.7.0",
     "tsx": "^4.19.4",

@@ -36,9 +36,9 @@ export declare class CryptoBrokerClient {
     private client;
     private healthClient;
     private address;
-    private conn_max_retries;
-    private conn_retry_delay_ms;
+    private conn;
     constructor(opts?: CreateCryptoBrokerClientParams);
+    ready(): Promise<void>;
     hashData(payload: HashPayload): Promise<HashResponse>;
     signCertificate(payload: SignPayload, options?: CertOptions): Promise<SignResponse>;
     healthData(): Promise<HealthCheckResponse>;

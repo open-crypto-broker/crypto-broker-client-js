@@ -20,11 +20,31 @@ export class CryptoBrokerClient {
     client;
     healthClient;
     address;
-    conn_max_retries = 60;
-    conn_retry_delay_ms = 1000;
+    conn;
     constructor(opts = {}) {
+        // setup of connection parameters
         this.address = 'unix:/tmp/cryptobroker.sock';
-        const conn = new grpc.Client(this.address, opts.credentials || grpc.credentials.createInsecure(), opts.options || {});
+        const client_options = opts.options || {};
+        // set retry policy via service config, note this will also overwrite others
+        client_options['grpc.service_config'] = JSON.stringify({
+            methodConfig: [
+                {
+                    name: [{}],
+                    retryPolicy: {
+                        maxAttempts: 5,
+                        initialBackoff: '1s',
+                        maxBackoff: '10s',
+                        backoffMultiplier: 2.0,
+                        retryableStatusCodes: [
+                            'UNAVAILABLE',
+                            'RESOURCE_EXHAUSTED',
+                            'ABORTED',
+                        ],
+                    },
+                },
+            ],
+        });
+        this.conn = new grpc.Client(this.address, opts.credentials || grpc.credentials.createInsecure(), client_options);
         const sendRequest = (service, method, data) => {
             // Conventionally in gRPC, the request path looks like
             //   "package.names.ServiceName/MethodName",
@@ -42,26 +62,8 @@ export class CryptoBrokerClient {
                 function passThrough(argument) {
                     return argument;
                 }
-                const sendRetryRequest = (tries = 1) => {
-                    const now = new Date();
-                    const deadline = now.setMilliseconds(now.getMilliseconds() + this.conn_retry_delay_ms);
-                    if (tries <= this.conn_max_retries) {
-                        conn.waitForReady(deadline, async (err) => {
-                            if (err) {
-                                console.log(`Could not establish connection. Retrying... (${tries}/${this.conn_max_retries})`);
-                                sendRetryRequest(tries + 1);
-                            }
-                            else {
-                                // Using passThrough as the deserialize functions
-                                conn.makeUnaryRequest(path, (d) => Buffer.from(d), passThrough, data, resultCallback);
-                            }
-                        });
-                    }
-                    else
-                        reject(Error('retry limit reached'));
-                };
-                // retry until a connection was successful or the maximum retry amount was reached
-                sendRetryRequest();
+                // Using passThrough as the deserialize functions
+                this.conn.makeUnaryRequest(path, (d) => Buffer.from(d), passThrough, data, resultCallback);
             });
         };
         const rpc = { request: sendRequest };
@@ -70,6 +72,23 @@ export class CryptoBrokerClient {
         };
         this.client = new CryptoGrpcClientImpl(rpc);
         this.healthClient = new HealthClientImpl(hcRpc);
+    }
+    async ready() {
+        const conn_max_retries = 60;
+        const conn_retry_delay_ms = 1000;
+        for (let attempt = 1; attempt <= conn_max_retries; attempt++) {
+            const deadline = Date.now() + conn_retry_delay_ms;
+            try {
+                await new Promise((resolve, reject) => {
+                    this.conn.waitForReady(deadline, (err) => err ? reject(err) : resolve());
+                });
+                return; // when ready
+            }
+            catch {
+                console.log(`Could not establish connection. Retrying... (${attempt}/${conn_max_retries})`);
+            }
+        }
+        throw new Error('retry limit reached');
     }
     async hashData(payload) {
         const req = {
