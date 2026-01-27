@@ -1,5 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
-import { HashResponse, SignResponse } from './proto/messages.js';
+import { BenchmarkResponse, HashResponse, SignResponse } from './proto/messages.js';
 import { HealthCheckResponse } from './proto/third_party/grpc/health/v1/health.js';
 type CreateCryptoBrokerClientParams = {
     credentials?: grpc.ChannelCredentials;
@@ -8,6 +8,9 @@ type CreateCryptoBrokerClientParams = {
 export interface Metadata {
     id?: string;
     createdAt?: string;
+}
+export interface BenchmarkPayload {
+    metadata?: Metadata;
 }
 export interface HashPayload {
     profile: string;
@@ -23,7 +26,7 @@ export interface SignPayload {
     validNotAfter?: Long;
     metadata?: Metadata;
     subject?: string;
-    crlDistributionPoint?: string[];
+    crlDistributionPoints?: string[];
 }
 export declare enum CertEncoding {
     B64 = "B64",
@@ -39,6 +42,7 @@ export declare class CryptoBrokerClient {
     private conn;
     constructor(opts?: CreateCryptoBrokerClientParams);
     ready(): Promise<void>;
+    benchmarkData(payload: BenchmarkPayload): Promise<BenchmarkResponse>;
     hashData(payload: HashPayload): Promise<HashResponse>;
     signCertificate(payload: SignPayload, options?: CertOptions): Promise<SignResponse>;
     healthData(): Promise<HealthCheckResponse>;

@@ -90,6 +90,15 @@ export class CryptoBrokerClient {
         }
         throw new Error('retry limit reached');
     }
+    async benchmarkData(payload) {
+        const req = {
+            metadata: {
+                id: payload.metadata?.id || uuidv4(),
+                createdAt: payload.metadata?.createdAt || new Date().toString(),
+            },
+        };
+        return this.client.Benchmark(req).then((res) => res);
+    }
     async hashData(payload) {
         const req = {
             profile: payload.profile,
@@ -115,7 +124,7 @@ export class CryptoBrokerClient {
             validNotBefore: payload.validNotBefore,
             validNotAfter: payload.validNotAfter,
             subject: payload.subject,
-            crlDistributionPoints: payload.crlDistributionPoint || [],
+            crlDistributionPoints: payload.crlDistributionPoints || [],
         };
         // Apply options
         const encoding = (options && options.encoding) || CertEncoding.PEM;
