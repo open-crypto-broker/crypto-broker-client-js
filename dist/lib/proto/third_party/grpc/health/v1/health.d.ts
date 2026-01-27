@@ -1,4 +1,4 @@
-import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
+import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 export declare const protobufPackage = "grpc.health.v1";
 export interface HealthCheckRequest {
     service: string;
@@ -49,6 +49,20 @@ export interface Health {
      * server unhealthy if they do not receive a timely response.
      */
     Check(request: HealthCheckRequest): Promise<HealthCheckResponse>;
+    /**
+     * List provides a non-atomic snapshot of the health of all the available
+     * services.
+     *
+     * The server may respond with a RESOURCE_EXHAUSTED error if too many services
+     * exist.
+     *
+     * Clients should set a deadline when calling List, and can declare the server
+     * unhealthy if they do not receive a timely response.
+     *
+     * Clients should keep in mind that the list of health services exposed by an
+     * application can change over the lifetime of the process.
+     */
+    List(request: HealthListRequest): Promise<HealthListResponse>;
 }
 export declare const HealthServiceName = "grpc.health.v1.Health";
 export declare class HealthClientImpl implements Health {
@@ -58,6 +72,7 @@ export declare class HealthClientImpl implements Health {
         service?: string;
     });
     Check(request: HealthCheckRequest): Promise<HealthCheckResponse>;
+    List(request: HealthListRequest): Promise<HealthListResponse>;
 }
 interface Rpc {
     request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;

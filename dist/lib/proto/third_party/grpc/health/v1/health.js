@@ -4,8 +4,8 @@
 //   protoc               v6.33.1
 // source: health.proto
 /* eslint-disable */
-import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
-export const protobufPackage = 'grpc.health.v1';
+import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+export const protobufPackage = "grpc.health.v1";
 export var HealthCheckResponse_ServingStatus;
 (function (HealthCheckResponse_ServingStatus) {
     HealthCheckResponse_ServingStatus[HealthCheckResponse_ServingStatus["UNKNOWN"] = 0] = "UNKNOWN";
@@ -18,19 +18,19 @@ export var HealthCheckResponse_ServingStatus;
 export function healthCheckResponse_ServingStatusFromJSON(object) {
     switch (object) {
         case 0:
-        case 'UNKNOWN':
+        case "UNKNOWN":
             return HealthCheckResponse_ServingStatus.UNKNOWN;
         case 1:
-        case 'SERVING':
+        case "SERVING":
             return HealthCheckResponse_ServingStatus.SERVING;
         case 2:
-        case 'NOT_SERVING':
+        case "NOT_SERVING":
             return HealthCheckResponse_ServingStatus.NOT_SERVING;
         case 3:
-        case 'SERVICE_UNKNOWN':
+        case "SERVICE_UNKNOWN":
             return HealthCheckResponse_ServingStatus.SERVICE_UNKNOWN;
         case -1:
-        case 'UNRECOGNIZED':
+        case "UNRECOGNIZED":
         default:
             return HealthCheckResponse_ServingStatus.UNRECOGNIZED;
     }
@@ -38,24 +38,24 @@ export function healthCheckResponse_ServingStatusFromJSON(object) {
 export function healthCheckResponse_ServingStatusToJSON(object) {
     switch (object) {
         case HealthCheckResponse_ServingStatus.UNKNOWN:
-            return 'UNKNOWN';
+            return "UNKNOWN";
         case HealthCheckResponse_ServingStatus.SERVING:
-            return 'SERVING';
+            return "SERVING";
         case HealthCheckResponse_ServingStatus.NOT_SERVING:
-            return 'NOT_SERVING';
+            return "NOT_SERVING";
         case HealthCheckResponse_ServingStatus.SERVICE_UNKNOWN:
-            return 'SERVICE_UNKNOWN';
+            return "SERVICE_UNKNOWN";
         case HealthCheckResponse_ServingStatus.UNRECOGNIZED:
         default:
-            return 'UNRECOGNIZED';
+            return "UNRECOGNIZED";
     }
 }
 function createBaseHealthCheckRequest() {
-    return { service: '' };
+    return { service: "" };
 }
 export const HealthCheckRequest = {
     encode(message, writer = new BinaryWriter()) {
-        if (message.service !== '') {
+        if (message.service !== "") {
             writer.uint32(10).string(message.service);
         }
         return writer;
@@ -83,13 +83,11 @@ export const HealthCheckRequest = {
         return message;
     },
     fromJSON(object) {
-        return {
-            service: isSet(object.service) ? globalThis.String(object.service) : '',
-        };
+        return { service: isSet(object.service) ? globalThis.String(object.service) : "" };
     },
     toJSON(message) {
         const obj = {};
-        if (message.service !== '') {
+        if (message.service !== "") {
             obj.service = message.service;
         }
         return obj;
@@ -99,7 +97,7 @@ export const HealthCheckRequest = {
     },
     fromPartial(object) {
         const message = createBaseHealthCheckRequest();
-        message.service = object.service ?? '';
+        message.service = object.service ?? "";
         return message;
     },
 };
@@ -136,11 +134,7 @@ export const HealthCheckResponse = {
         return message;
     },
     fromJSON(object) {
-        return {
-            status: isSet(object.status)
-                ? healthCheckResponse_ServingStatusFromJSON(object.status)
-                : 0,
-        };
+        return { status: isSet(object.status) ? healthCheckResponse_ServingStatusFromJSON(object.status) : 0 };
     },
     toJSON(message) {
         const obj = {};
@@ -268,11 +262,11 @@ export const HealthListResponse = {
     },
 };
 function createBaseHealthListResponse_StatusesEntry() {
-    return { key: '', value: undefined };
+    return { key: "", value: undefined };
 }
 export const HealthListResponse_StatusesEntry = {
     encode(message, writer = new BinaryWriter()) {
-        if (message.key !== '') {
+        if (message.key !== "") {
             writer.uint32(10).string(message.key);
         }
         if (message.value !== undefined) {
@@ -311,15 +305,13 @@ export const HealthListResponse_StatusesEntry = {
     },
     fromJSON(object) {
         return {
-            key: isSet(object.key) ? globalThis.String(object.key) : '',
-            value: isSet(object.value)
-                ? HealthCheckResponse.fromJSON(object.value)
-                : undefined,
+            key: isSet(object.key) ? globalThis.String(object.key) : "",
+            value: isSet(object.value) ? HealthCheckResponse.fromJSON(object.value) : undefined,
         };
     },
     toJSON(message) {
         const obj = {};
-        if (message.key !== '') {
+        if (message.key !== "") {
             obj.key = message.key;
         }
         if (message.value !== undefined) {
@@ -332,15 +324,14 @@ export const HealthListResponse_StatusesEntry = {
     },
     fromPartial(object) {
         const message = createBaseHealthListResponse_StatusesEntry();
-        message.key = object.key ?? '';
-        message.value =
-            object.value !== undefined && object.value !== null
-                ? HealthCheckResponse.fromPartial(object.value)
-                : undefined;
+        message.key = object.key ?? "";
+        message.value = (object.value !== undefined && object.value !== null)
+            ? HealthCheckResponse.fromPartial(object.value)
+            : undefined;
         return message;
     },
 };
-export const HealthServiceName = 'grpc.health.v1.Health';
+export const HealthServiceName = "grpc.health.v1.Health";
 export class HealthClientImpl {
     rpc;
     service;
@@ -348,15 +339,21 @@ export class HealthClientImpl {
         this.service = opts?.service || HealthServiceName;
         this.rpc = rpc;
         this.Check = this.Check.bind(this);
+        this.List = this.List.bind(this);
     }
     Check(request) {
         const data = HealthCheckRequest.encode(request).finish();
-        const promise = this.rpc.request(this.service, 'Check', data);
+        const promise = this.rpc.request(this.service, "Check", data);
         return promise.then((data) => HealthCheckResponse.decode(new BinaryReader(data)));
+    }
+    List(request) {
+        const data = HealthListRequest.encode(request).finish();
+        const promise = this.rpc.request(this.service, "List", data);
+        return promise.then((data) => HealthListResponse.decode(new BinaryReader(data)));
     }
 }
 function isObject(value) {
-    return typeof value === 'object' && value !== null;
+    return typeof value === "object" && value !== null;
 }
 function isSet(value) {
     return value !== null && value !== undefined;

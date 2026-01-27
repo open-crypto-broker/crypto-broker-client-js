@@ -506,6 +506,20 @@ export interface Health {
    * server unhealthy if they do not receive a timely response.
    */
   Check(request: HealthCheckRequest): Promise<HealthCheckResponse>;
+  /**
+   * List provides a non-atomic snapshot of the health of all the available
+   * services.
+   *
+   * The server may respond with a RESOURCE_EXHAUSTED error if too many services
+   * exist.
+   *
+   * Clients should set a deadline when calling List, and can declare the server
+   * unhealthy if they do not receive a timely response.
+   *
+   * Clients should keep in mind that the list of health services exposed by an
+   * application can change over the lifetime of the process.
+   */
+  List(request: HealthListRequest): Promise<HealthListResponse>;
 }
 
 export const HealthServiceName = 'grpc.health.v1.Health';
@@ -516,12 +530,21 @@ export class HealthClientImpl implements Health {
     this.service = opts?.service || HealthServiceName;
     this.rpc = rpc;
     this.Check = this.Check.bind(this);
+    this.List = this.List.bind(this);
   }
   Check(request: HealthCheckRequest): Promise<HealthCheckResponse> {
     const data = HealthCheckRequest.encode(request).finish();
     const promise = this.rpc.request(this.service, 'Check', data);
     return promise.then((data) =>
       HealthCheckResponse.decode(new BinaryReader(data)),
+    );
+  }
+
+  List(request: HealthListRequest): Promise<HealthListResponse> {
+    const data = HealthListRequest.encode(request).finish();
+    const promise = this.rpc.request(this.service, 'List', data);
+    return promise.then((data) =>
+      HealthListResponse.decode(new BinaryReader(data)),
     );
   }
 }
