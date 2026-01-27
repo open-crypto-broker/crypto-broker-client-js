@@ -2,7 +2,7 @@
 
 ## Usage
 
-The Crypto Broker Client is a Node.js library written in Typescript that allows users to interact with a Crypto Broker Server running on the same machine. The library is a lightweight wrapper around the communication protocol (gRPC) and the basic structures used to call the server from a JS client.
+The Crypto Broker Client is a Node.js library written in TypeScript that allows users to interact with a Crypto Broker Server running on the same machine. The library is a lightweight wrapper around the communication protocol (gRPC) and the basic structures used to call the server from a JS client.
 
 ### Installation
 
@@ -30,6 +30,9 @@ import { v4 as uuidv4 } from 'uuid';
 import Long from 'long';
 
 const cryptoLib = new CryptoBrokerClient();
+
+// this function can be used to check the connectivity prior operations;
+// if there is no connectivity, it will retry to initialize a connection
 await cryptoLib.ready();
 
 const hashResponse = await cryptoLib.hashData({
@@ -52,7 +55,10 @@ const signResponse = await cryptoLib.signCertificate({
     validNotBefore: Long.fromNumber(Math.floor(new Date().getTime() / 1000)), // now
     validNotAfter: Long.fromNumber(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
     subject: "CN=MyCert,O=SAP,ST=BA,C=DE",
-    crlDistributionPoint: "URL Distribution Point",
+    crlDistributionPoints: [
+    'http://example.com/crls/list1.crl',
+    'http://example.com/crls/list2.crl',
+    ],
     metadata: {
         id: uuidv4(),
         createdAt: new Date().toString(),
