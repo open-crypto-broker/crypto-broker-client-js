@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import x509 from '@peculiar/x509';
 import {
   CryptoGrpcClientImpl,
+  BenchmarkRequest,
+  BenchmarkResponse,
   HashRequest,
   HashResponse,
   SignRequest,
@@ -25,6 +27,10 @@ export interface Metadata {
   createdAt?: string;
 }
 
+export interface BenchmarkPayload {
+  metadata?: Metadata;
+}
+
 export interface HashPayload {
   profile: string;
   input: Uint8Array;
@@ -40,7 +46,7 @@ export interface SignPayload {
   validNotAfter?: Long;
   metadata?: Metadata;
   subject?: string;
-  crlDistributionPoint?: string[];
+  crlDistributionPoints?: string[];
 }
 
 export enum CertEncoding {
@@ -166,6 +172,16 @@ export class CryptoBrokerClient {
     throw new Error('retry limit reached');
   }
 
+  async benchmarkData(payload: BenchmarkPayload): Promise<BenchmarkResponse> {
+    const req: BenchmarkRequest = {
+      metadata: {
+        id: payload.metadata?.id || uuidv4(),
+        createdAt: payload.metadata?.createdAt || new Date().toString(),
+      },
+    };
+    return this.client.Benchmark(req).then((res: BenchmarkResponse) => res);
+  }
+
   async hashData(payload: HashPayload): Promise<HashResponse> {
     const req: HashRequest = {
       profile: payload.profile,
@@ -195,7 +211,7 @@ export class CryptoBrokerClient {
       validNotBefore: payload.validNotBefore,
       validNotAfter: payload.validNotAfter,
       subject: payload.subject,
-      crlDistributionPoints: payload.crlDistributionPoint || [],
+      crlDistributionPoints: payload.crlDistributionPoints || [],
     };
     // Apply options
     const encoding = (options && options.encoding) || CertEncoding.PEM;

@@ -1,4 +1,4 @@
-import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
+import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
 export declare const protobufPackage = "grpc.health.v1";
 export interface HealthCheckRequest {
     service: string;
