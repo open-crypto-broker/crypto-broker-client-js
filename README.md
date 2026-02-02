@@ -14,10 +14,11 @@ Optionally, you can also directly download the package `cryptobroker-client-x.x.
 npm install <path-to-cryptobroker-client-x.y.z.tgz>
 ```
 
-Alternatively, you can also reference this git repository:
+Alternatively, you can also reference this git repository (and provide a dedicated version or branch tag if needed):
 
 ```bash
-npm install github:open-crypto-broker/crypto-broker-client-js
+npm install github:open-crypto-broker/crypto-broker-client-js#v0.1.0 # or
+npm install https://github.com/open-crypto-broker/crypto-broker-client-js#v0.1.0
 ```
 
 ### Library Usage
@@ -56,8 +57,8 @@ const signResponse = await cryptoLib.signCertificate({
     validNotAfter: Long.fromNumber(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
     subject: "CN=MyCert,O=SAP,ST=BA,C=DE",
     crlDistributionPoints: [
-    'http://example.com/crls/list1.crl',
-    'http://example.com/crls/list2.crl',
+        'http://example.com/crls/list1.crl',
+        'http://example.com/crls/list2.crl',
     ],
     metadata: {
         id: uuidv4(),
