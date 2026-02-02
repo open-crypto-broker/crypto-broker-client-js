@@ -7,23 +7,23 @@ import { createRequire as _createRequire } from "module";
 const __require = _createRequire(import.meta.url);
 /* eslint-disable */
 const Long = __require("long");
-import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
-export const protobufPackage = "CryptoBroker";
+import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
+export const protobufPackage = 'CryptoBroker';
 function createBaseTraceContext() {
-    return { traceId: "", spanId: "", traceFlags: "", traceState: "" };
+    return { traceId: '', spanId: '', traceFlags: '', traceState: '' };
 }
 export const TraceContext = {
     encode(message, writer = new BinaryWriter()) {
-        if (message.traceId !== "") {
+        if (message.traceId !== '') {
             writer.uint32(10).string(message.traceId);
         }
-        if (message.spanId !== "") {
+        if (message.spanId !== '') {
             writer.uint32(18).string(message.spanId);
         }
-        if (message.traceFlags !== "") {
+        if (message.traceFlags !== '') {
             writer.uint32(26).string(message.traceFlags);
         }
-        if (message.traceState !== "") {
+        if (message.traceState !== '') {
             writer.uint32(34).string(message.traceState);
         }
         return writer;
@@ -73,24 +73,28 @@ export const TraceContext = {
     },
     fromJSON(object) {
         return {
-            traceId: isSet(object.traceId) ? globalThis.String(object.traceId) : "",
-            spanId: isSet(object.spanId) ? globalThis.String(object.spanId) : "",
-            traceFlags: isSet(object.traceFlags) ? globalThis.String(object.traceFlags) : "",
-            traceState: isSet(object.traceState) ? globalThis.String(object.traceState) : "",
+            traceId: isSet(object.traceId) ? globalThis.String(object.traceId) : '',
+            spanId: isSet(object.spanId) ? globalThis.String(object.spanId) : '',
+            traceFlags: isSet(object.traceFlags)
+                ? globalThis.String(object.traceFlags)
+                : '',
+            traceState: isSet(object.traceState)
+                ? globalThis.String(object.traceState)
+                : '',
         };
     },
     toJSON(message) {
         const obj = {};
-        if (message.traceId !== "") {
+        if (message.traceId !== '') {
             obj.traceId = message.traceId;
         }
-        if (message.spanId !== "") {
+        if (message.spanId !== '') {
             obj.spanId = message.spanId;
         }
-        if (message.traceFlags !== "") {
+        if (message.traceFlags !== '') {
             obj.traceFlags = message.traceFlags;
         }
-        if (message.traceState !== "") {
+        if (message.traceState !== '') {
             obj.traceState = message.traceState;
         }
         return obj;
@@ -100,22 +104,22 @@ export const TraceContext = {
     },
     fromPartial(object) {
         const message = createBaseTraceContext();
-        message.traceId = object.traceId ?? "";
-        message.spanId = object.spanId ?? "";
-        message.traceFlags = object.traceFlags ?? "";
-        message.traceState = object.traceState ?? "";
+        message.traceId = object.traceId ?? '';
+        message.spanId = object.spanId ?? '';
+        message.traceFlags = object.traceFlags ?? '';
+        message.traceState = object.traceState ?? '';
         return message;
     },
 };
 function createBaseMetadata() {
-    return { id: "", createdAt: "", traceContext: undefined };
+    return { id: '', createdAt: '', traceContext: undefined };
 }
 export const Metadata = {
     encode(message, writer = new BinaryWriter()) {
-        if (message.id !== "") {
+        if (message.id !== '') {
             writer.uint32(10).string(message.id);
         }
-        if (message.createdAt !== "") {
+        if (message.createdAt !== '') {
             writer.uint32(18).string(message.createdAt);
         }
         if (message.traceContext !== undefined) {
@@ -161,17 +165,21 @@ export const Metadata = {
     },
     fromJSON(object) {
         return {
-            id: isSet(object.id) ? globalThis.String(object.id) : "",
-            createdAt: isSet(object.createdAt) ? globalThis.String(object.createdAt) : "",
-            traceContext: isSet(object.traceContext) ? TraceContext.fromJSON(object.traceContext) : undefined,
+            id: isSet(object.id) ? globalThis.String(object.id) : '',
+            createdAt: isSet(object.createdAt)
+                ? globalThis.String(object.createdAt)
+                : '',
+            traceContext: isSet(object.traceContext)
+                ? TraceContext.fromJSON(object.traceContext)
+                : undefined,
         };
     },
     toJSON(message) {
         const obj = {};
-        if (message.id !== "") {
+        if (message.id !== '') {
             obj.id = message.id;
         }
-        if (message.createdAt !== "") {
+        if (message.createdAt !== '') {
             obj.createdAt = message.createdAt;
         }
         if (message.traceContext !== undefined) {
@@ -184,11 +192,12 @@ export const Metadata = {
     },
     fromPartial(object) {
         const message = createBaseMetadata();
-        message.id = object.id ?? "";
-        message.createdAt = object.createdAt ?? "";
-        message.traceContext = (object.traceContext !== undefined && object.traceContext !== null)
-            ? TraceContext.fromPartial(object.traceContext)
-            : undefined;
+        message.id = object.id ?? '';
+        message.createdAt = object.createdAt ?? '';
+        message.traceContext =
+            object.traceContext !== undefined && object.traceContext !== null
+                ? TraceContext.fromPartial(object.traceContext)
+                : undefined;
         return message;
     },
 };
@@ -225,7 +234,11 @@ export const BenchmarkRequest = {
         return message;
     },
     fromJSON(object) {
-        return { metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined };
+        return {
+            metadata: isSet(object.metadata)
+                ? Metadata.fromJSON(object.metadata)
+                : undefined,
+        };
     },
     toJSON(message) {
         const obj = {};
@@ -239,18 +252,19 @@ export const BenchmarkRequest = {
     },
     fromPartial(object) {
         const message = createBaseBenchmarkRequest();
-        message.metadata = (object.metadata !== undefined && object.metadata !== null)
-            ? Metadata.fromPartial(object.metadata)
-            : undefined;
+        message.metadata =
+            object.metadata !== undefined && object.metadata !== null
+                ? Metadata.fromPartial(object.metadata)
+                : undefined;
         return message;
     },
 };
 function createBaseBenchmarkResponse() {
-    return { benchmarkResults: "", metadata: undefined };
+    return { benchmarkResults: '', metadata: undefined };
 }
 export const BenchmarkResponse = {
     encode(message, writer = new BinaryWriter()) {
-        if (message.benchmarkResults !== "") {
+        if (message.benchmarkResults !== '') {
             writer.uint32(10).string(message.benchmarkResults);
         }
         if (message.metadata !== undefined) {
@@ -289,13 +303,17 @@ export const BenchmarkResponse = {
     },
     fromJSON(object) {
         return {
-            benchmarkResults: isSet(object.benchmarkResults) ? globalThis.String(object.benchmarkResults) : "",
-            metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+            benchmarkResults: isSet(object.benchmarkResults)
+                ? globalThis.String(object.benchmarkResults)
+                : '',
+            metadata: isSet(object.metadata)
+                ? Metadata.fromJSON(object.metadata)
+                : undefined,
         };
     },
     toJSON(message) {
         const obj = {};
-        if (message.benchmarkResults !== "") {
+        if (message.benchmarkResults !== '') {
             obj.benchmarkResults = message.benchmarkResults;
         }
         if (message.metadata !== undefined) {
@@ -308,19 +326,20 @@ export const BenchmarkResponse = {
     },
     fromPartial(object) {
         const message = createBaseBenchmarkResponse();
-        message.benchmarkResults = object.benchmarkResults ?? "";
-        message.metadata = (object.metadata !== undefined && object.metadata !== null)
-            ? Metadata.fromPartial(object.metadata)
-            : undefined;
+        message.benchmarkResults = object.benchmarkResults ?? '';
+        message.metadata =
+            object.metadata !== undefined && object.metadata !== null
+                ? Metadata.fromPartial(object.metadata)
+                : undefined;
         return message;
     },
 };
 function createBaseHashRequest() {
-    return { profile: "", input: new Uint8Array(0), metadata: undefined };
+    return { profile: '', input: new Uint8Array(0), metadata: undefined };
 }
 export const HashRequest = {
     encode(message, writer = new BinaryWriter()) {
-        if (message.profile !== "") {
+        if (message.profile !== '') {
             writer.uint32(10).string(message.profile);
         }
         if (message.input.length !== 0) {
@@ -369,14 +388,18 @@ export const HashRequest = {
     },
     fromJSON(object) {
         return {
-            profile: isSet(object.profile) ? globalThis.String(object.profile) : "",
-            input: isSet(object.input) ? bytesFromBase64(object.input) : new Uint8Array(0),
-            metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+            profile: isSet(object.profile) ? globalThis.String(object.profile) : '',
+            input: isSet(object.input)
+                ? bytesFromBase64(object.input)
+                : new Uint8Array(0),
+            metadata: isSet(object.metadata)
+                ? Metadata.fromJSON(object.metadata)
+                : undefined,
         };
     },
     toJSON(message) {
         const obj = {};
-        if (message.profile !== "") {
+        if (message.profile !== '') {
             obj.profile = message.profile;
         }
         if (message.input.length !== 0) {
@@ -392,23 +415,24 @@ export const HashRequest = {
     },
     fromPartial(object) {
         const message = createBaseHashRequest();
-        message.profile = object.profile ?? "";
+        message.profile = object.profile ?? '';
         message.input = object.input ?? new Uint8Array(0);
-        message.metadata = (object.metadata !== undefined && object.metadata !== null)
-            ? Metadata.fromPartial(object.metadata)
-            : undefined;
+        message.metadata =
+            object.metadata !== undefined && object.metadata !== null
+                ? Metadata.fromPartial(object.metadata)
+                : undefined;
         return message;
     },
 };
 function createBaseHashResponse() {
-    return { hashValue: "", hashAlgorithm: "", metadata: undefined };
+    return { hashValue: '', hashAlgorithm: '', metadata: undefined };
 }
 export const HashResponse = {
     encode(message, writer = new BinaryWriter()) {
-        if (message.hashValue !== "") {
+        if (message.hashValue !== '') {
             writer.uint32(10).string(message.hashValue);
         }
-        if (message.hashAlgorithm !== "") {
+        if (message.hashAlgorithm !== '') {
             writer.uint32(18).string(message.hashAlgorithm);
         }
         if (message.metadata !== undefined) {
@@ -454,17 +478,23 @@ export const HashResponse = {
     },
     fromJSON(object) {
         return {
-            hashValue: isSet(object.hashValue) ? globalThis.String(object.hashValue) : "",
-            hashAlgorithm: isSet(object.hashAlgorithm) ? globalThis.String(object.hashAlgorithm) : "",
-            metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+            hashValue: isSet(object.hashValue)
+                ? globalThis.String(object.hashValue)
+                : '',
+            hashAlgorithm: isSet(object.hashAlgorithm)
+                ? globalThis.String(object.hashAlgorithm)
+                : '',
+            metadata: isSet(object.metadata)
+                ? Metadata.fromJSON(object.metadata)
+                : undefined,
         };
     },
     toJSON(message) {
         const obj = {};
-        if (message.hashValue !== "") {
+        if (message.hashValue !== '') {
             obj.hashValue = message.hashValue;
         }
-        if (message.hashAlgorithm !== "") {
+        if (message.hashAlgorithm !== '') {
             obj.hashAlgorithm = message.hashAlgorithm;
         }
         if (message.metadata !== undefined) {
@@ -477,20 +507,21 @@ export const HashResponse = {
     },
     fromPartial(object) {
         const message = createBaseHashResponse();
-        message.hashValue = object.hashValue ?? "";
-        message.hashAlgorithm = object.hashAlgorithm ?? "";
-        message.metadata = (object.metadata !== undefined && object.metadata !== null)
-            ? Metadata.fromPartial(object.metadata)
-            : undefined;
+        message.hashValue = object.hashValue ?? '';
+        message.hashAlgorithm = object.hashAlgorithm ?? '';
+        message.metadata =
+            object.metadata !== undefined && object.metadata !== null
+                ? Metadata.fromPartial(object.metadata)
+                : undefined;
         return message;
     },
 };
 function createBaseSignRequest() {
     return {
-        profile: "",
-        csr: "",
-        caPrivateKey: "",
-        caCert: "",
+        profile: '',
+        csr: '',
+        caPrivateKey: '',
+        caCert: '',
         metadata: undefined,
         validNotBefore: undefined,
         validNotAfter: undefined,
@@ -500,16 +531,16 @@ function createBaseSignRequest() {
 }
 export const SignRequest = {
     encode(message, writer = new BinaryWriter()) {
-        if (message.profile !== "") {
+        if (message.profile !== '') {
             writer.uint32(10).string(message.profile);
         }
-        if (message.csr !== "") {
+        if (message.csr !== '') {
             writer.uint32(18).string(message.csr);
         }
-        if (message.caPrivateKey !== "") {
+        if (message.caPrivateKey !== '') {
             writer.uint32(26).string(message.caPrivateKey);
         }
-        if (message.caCert !== "") {
+        if (message.caCert !== '') {
             writer.uint32(34).string(message.caCert);
         }
         if (message.metadata !== undefined) {
@@ -609,14 +640,24 @@ export const SignRequest = {
     },
     fromJSON(object) {
         return {
-            profile: isSet(object.profile) ? globalThis.String(object.profile) : "",
-            csr: isSet(object.csr) ? globalThis.String(object.csr) : "",
-            caPrivateKey: isSet(object.caPrivateKey) ? globalThis.String(object.caPrivateKey) : "",
-            caCert: isSet(object.caCert) ? globalThis.String(object.caCert) : "",
-            metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
-            validNotBefore: isSet(object.validNotBefore) ? Long.fromValue(object.validNotBefore) : undefined,
-            validNotAfter: isSet(object.validNotAfter) ? Long.fromValue(object.validNotAfter) : undefined,
-            subject: isSet(object.subject) ? globalThis.String(object.subject) : undefined,
+            profile: isSet(object.profile) ? globalThis.String(object.profile) : '',
+            csr: isSet(object.csr) ? globalThis.String(object.csr) : '',
+            caPrivateKey: isSet(object.caPrivateKey)
+                ? globalThis.String(object.caPrivateKey)
+                : '',
+            caCert: isSet(object.caCert) ? globalThis.String(object.caCert) : '',
+            metadata: isSet(object.metadata)
+                ? Metadata.fromJSON(object.metadata)
+                : undefined,
+            validNotBefore: isSet(object.validNotBefore)
+                ? Long.fromValue(object.validNotBefore)
+                : undefined,
+            validNotAfter: isSet(object.validNotAfter)
+                ? Long.fromValue(object.validNotAfter)
+                : undefined,
+            subject: isSet(object.subject)
+                ? globalThis.String(object.subject)
+                : undefined,
             crlDistributionPoints: globalThis.Array.isArray(object?.crlDistributionPoints)
                 ? object.crlDistributionPoints.map((e) => globalThis.String(e))
                 : [],
@@ -624,16 +665,16 @@ export const SignRequest = {
     },
     toJSON(message) {
         const obj = {};
-        if (message.profile !== "") {
+        if (message.profile !== '') {
             obj.profile = message.profile;
         }
-        if (message.csr !== "") {
+        if (message.csr !== '') {
             obj.csr = message.csr;
         }
-        if (message.caPrivateKey !== "") {
+        if (message.caPrivateKey !== '') {
             obj.caPrivateKey = message.caPrivateKey;
         }
-        if (message.caCert !== "") {
+        if (message.caCert !== '') {
             obj.caCert = message.caCert;
         }
         if (message.metadata !== undefined) {
@@ -658,30 +699,34 @@ export const SignRequest = {
     },
     fromPartial(object) {
         const message = createBaseSignRequest();
-        message.profile = object.profile ?? "";
-        message.csr = object.csr ?? "";
-        message.caPrivateKey = object.caPrivateKey ?? "";
-        message.caCert = object.caCert ?? "";
-        message.metadata = (object.metadata !== undefined && object.metadata !== null)
-            ? Metadata.fromPartial(object.metadata)
-            : undefined;
-        message.validNotBefore = (object.validNotBefore !== undefined && object.validNotBefore !== null)
-            ? Long.fromValue(object.validNotBefore)
-            : undefined;
-        message.validNotAfter = (object.validNotAfter !== undefined && object.validNotAfter !== null)
-            ? Long.fromValue(object.validNotAfter)
-            : undefined;
+        message.profile = object.profile ?? '';
+        message.csr = object.csr ?? '';
+        message.caPrivateKey = object.caPrivateKey ?? '';
+        message.caCert = object.caCert ?? '';
+        message.metadata =
+            object.metadata !== undefined && object.metadata !== null
+                ? Metadata.fromPartial(object.metadata)
+                : undefined;
+        message.validNotBefore =
+            object.validNotBefore !== undefined && object.validNotBefore !== null
+                ? Long.fromValue(object.validNotBefore)
+                : undefined;
+        message.validNotAfter =
+            object.validNotAfter !== undefined && object.validNotAfter !== null
+                ? Long.fromValue(object.validNotAfter)
+                : undefined;
         message.subject = object.subject ?? undefined;
-        message.crlDistributionPoints = object.crlDistributionPoints?.map((e) => e) || [];
+        message.crlDistributionPoints =
+            object.crlDistributionPoints?.map((e) => e) || [];
         return message;
     },
 };
 function createBaseSignResponse() {
-    return { signedCertificate: "", metadata: undefined };
+    return { signedCertificate: '', metadata: undefined };
 }
 export const SignResponse = {
     encode(message, writer = new BinaryWriter()) {
-        if (message.signedCertificate !== "") {
+        if (message.signedCertificate !== '') {
             writer.uint32(10).string(message.signedCertificate);
         }
         if (message.metadata !== undefined) {
@@ -720,13 +765,17 @@ export const SignResponse = {
     },
     fromJSON(object) {
         return {
-            signedCertificate: isSet(object.signedCertificate) ? globalThis.String(object.signedCertificate) : "",
-            metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+            signedCertificate: isSet(object.signedCertificate)
+                ? globalThis.String(object.signedCertificate)
+                : '',
+            metadata: isSet(object.metadata)
+                ? Metadata.fromJSON(object.metadata)
+                : undefined,
         };
     },
     toJSON(message) {
         const obj = {};
-        if (message.signedCertificate !== "") {
+        if (message.signedCertificate !== '') {
             obj.signedCertificate = message.signedCertificate;
         }
         if (message.metadata !== undefined) {
@@ -739,10 +788,11 @@ export const SignResponse = {
     },
     fromPartial(object) {
         const message = createBaseSignResponse();
-        message.signedCertificate = object.signedCertificate ?? "";
-        message.metadata = (object.metadata !== undefined && object.metadata !== null)
-            ? Metadata.fromPartial(object.metadata)
-            : undefined;
+        message.signedCertificate = object.signedCertificate ?? '';
+        message.metadata =
+            object.metadata !== undefined && object.metadata !== null
+                ? Metadata.fromPartial(object.metadata)
+                : undefined;
         return message;
     },
 };
@@ -779,7 +829,11 @@ export const FakeEndpointRequest = {
         return message;
     },
     fromJSON(object) {
-        return { metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined };
+        return {
+            metadata: isSet(object.metadata)
+                ? Metadata.fromJSON(object.metadata)
+                : undefined,
+        };
     },
     toJSON(message) {
         const obj = {};
@@ -793,18 +847,19 @@ export const FakeEndpointRequest = {
     },
     fromPartial(object) {
         const message = createBaseFakeEndpointRequest();
-        message.metadata = (object.metadata !== undefined && object.metadata !== null)
-            ? Metadata.fromPartial(object.metadata)
-            : undefined;
+        message.metadata =
+            object.metadata !== undefined && object.metadata !== null
+                ? Metadata.fromPartial(object.metadata)
+                : undefined;
         return message;
     },
 };
 function createBaseFakeEndpointResponse() {
-    return { message: "", metadata: undefined };
+    return { message: '', metadata: undefined };
 }
 export const FakeEndpointResponse = {
     encode(message, writer = new BinaryWriter()) {
-        if (message.message !== "") {
+        if (message.message !== '') {
             writer.uint32(10).string(message.message);
         }
         if (message.metadata !== undefined) {
@@ -843,13 +898,15 @@ export const FakeEndpointResponse = {
     },
     fromJSON(object) {
         return {
-            message: isSet(object.message) ? globalThis.String(object.message) : "",
-            metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+            message: isSet(object.message) ? globalThis.String(object.message) : '',
+            metadata: isSet(object.metadata)
+                ? Metadata.fromJSON(object.metadata)
+                : undefined,
         };
     },
     toJSON(message) {
         const obj = {};
-        if (message.message !== "") {
+        if (message.message !== '') {
             obj.message = message.message;
         }
         if (message.metadata !== undefined) {
@@ -862,14 +919,15 @@ export const FakeEndpointResponse = {
     },
     fromPartial(object) {
         const message = createBaseFakeEndpointResponse();
-        message.message = object.message ?? "";
-        message.metadata = (object.metadata !== undefined && object.metadata !== null)
-            ? Metadata.fromPartial(object.metadata)
-            : undefined;
+        message.message = object.message ?? '';
+        message.metadata =
+            object.metadata !== undefined && object.metadata !== null
+                ? Metadata.fromPartial(object.metadata)
+                : undefined;
         return message;
     },
 };
-export const CryptoGrpcServiceName = "CryptoBroker.CryptoGrpc";
+export const CryptoGrpcServiceName = 'CryptoBroker.CryptoGrpc';
 export class CryptoGrpcClientImpl {
     rpc;
     service;
@@ -883,28 +941,28 @@ export class CryptoGrpcClientImpl {
     }
     Benchmark(request) {
         const data = BenchmarkRequest.encode(request).finish();
-        const promise = this.rpc.request(this.service, "Benchmark", data);
+        const promise = this.rpc.request(this.service, 'Benchmark', data);
         return promise.then((data) => BenchmarkResponse.decode(new BinaryReader(data)));
     }
     Hash(request) {
         const data = HashRequest.encode(request).finish();
-        const promise = this.rpc.request(this.service, "Hash", data);
+        const promise = this.rpc.request(this.service, 'Hash', data);
         return promise.then((data) => HashResponse.decode(new BinaryReader(data)));
     }
     Sign(request) {
         const data = SignRequest.encode(request).finish();
-        const promise = this.rpc.request(this.service, "Sign", data);
+        const promise = this.rpc.request(this.service, 'Sign', data);
         return promise.then((data) => SignResponse.decode(new BinaryReader(data)));
     }
     FakeEndpoint(request) {
         const data = FakeEndpointRequest.encode(request).finish();
-        const promise = this.rpc.request(this.service, "FakeEndpoint", data);
+        const promise = this.rpc.request(this.service, 'FakeEndpoint', data);
         return promise.then((data) => FakeEndpointResponse.decode(new BinaryReader(data)));
     }
 }
 function bytesFromBase64(b64) {
     if (globalThis.Buffer) {
-        return Uint8Array.from(globalThis.Buffer.from(b64, "base64"));
+        return Uint8Array.from(globalThis.Buffer.from(b64, 'base64'));
     }
     else {
         const bin = globalThis.atob(b64);
@@ -917,14 +975,14 @@ function bytesFromBase64(b64) {
 }
 function base64FromBytes(arr) {
     if (globalThis.Buffer) {
-        return globalThis.Buffer.from(arr).toString("base64");
+        return globalThis.Buffer.from(arr).toString('base64');
     }
     else {
         const bin = [];
         arr.forEach((byte) => {
             bin.push(globalThis.String.fromCharCode(byte));
         });
-        return globalThis.btoa(bin.join(""));
+        return globalThis.btoa(bin.join(''));
     }
 }
 function isSet(value) {

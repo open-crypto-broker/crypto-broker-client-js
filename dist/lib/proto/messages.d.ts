@@ -1,5 +1,5 @@
-import Long = require("long");
-import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import Long = require('long');
+import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
 export declare const protobufPackage = "CryptoBroker";
 /** Trace context for manual propagation */
 export interface TraceContext {
