@@ -5,9 +5,16 @@ type CreateCryptoBrokerClientParams = {
     credentials?: grpc.ChannelCredentials;
     options?: grpc.ClientOptions;
 };
+export interface TraceContext {
+    traceId: string;
+    spanId: string;
+    traceFlags: string;
+    traceState: string;
+}
 export interface Metadata {
     id?: string;
     createdAt?: string;
+    traceContext?: TraceContext;
 }
 export interface BenchmarkPayload {
     metadata?: Metadata;

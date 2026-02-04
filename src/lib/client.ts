@@ -22,9 +22,18 @@ type CreateCryptoBrokerClientParams = {
   credentials?: grpc.ChannelCredentials;
   options?: grpc.ClientOptions;
 };
+
+export interface TraceContext {
+  traceId: string;
+  spanId: string;
+  traceFlags: string;
+  traceState: string;
+}
+
 export interface Metadata {
   id?: string;
   createdAt?: string;
+  traceContext?: TraceContext;
 }
 
 export interface BenchmarkPayload {
@@ -177,6 +186,9 @@ export class CryptoBrokerClient {
       metadata: {
         id: payload.metadata?.id || uuidv4(),
         createdAt: payload.metadata?.createdAt || new Date().toString(),
+        ...(payload.metadata?.traceContext !== undefined && {
+          traceContext: payload.metadata?.traceContext,
+        }),
       },
     };
     return this.client.Benchmark(req).then((res: BenchmarkResponse) => res);
@@ -189,6 +201,9 @@ export class CryptoBrokerClient {
       metadata: {
         id: payload.metadata?.id || uuidv4(),
         createdAt: payload.metadata?.createdAt || new Date().toString(),
+        ...(payload.metadata?.traceContext !== undefined && {
+          traceContext: payload.metadata?.traceContext,
+        }),
       },
     };
     return this.client.Hash(req).then((res: HashResponse) => res);
@@ -207,6 +222,9 @@ export class CryptoBrokerClient {
       metadata: {
         id: payload.metadata?.id || uuidv4(),
         createdAt: payload.metadata?.createdAt || new Date().toString(),
+        ...(payload.metadata?.traceContext !== undefined && {
+          traceContext: payload.metadata?.traceContext,
+        }),
       },
       validNotBefore: payload.validNotBefore,
       validNotAfter: payload.validNotAfter,

@@ -1,10 +1,18 @@
 import Long = require('long');
 import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
 export declare const protobufPackage = "CryptoBroker";
+/** Trace context for manual propagation */
+export interface TraceContext {
+    traceId: string;
+    spanId: string;
+    traceFlags: string;
+    traceState: string;
+}
 /** Metadata shared across all methods */
 export interface Metadata {
     id: string;
     createdAt: string;
+    traceContext?: TraceContext | undefined;
 }
 /** Message for a Benchmark Request */
 export interface BenchmarkRequest {
@@ -44,6 +52,16 @@ export interface SignResponse {
     signedCertificate: string;
     metadata: Metadata | undefined;
 }
+/** Message for a Fake Endpoint Request */
+export interface FakeEndpointRequest {
+    metadata: Metadata | undefined;
+}
+/** Response to a Fake Endpoint Request */
+export interface FakeEndpointResponse {
+    message: string;
+    metadata: Metadata | undefined;
+}
+export declare const TraceContext: MessageFns<TraceContext>;
 export declare const Metadata: MessageFns<Metadata>;
 export declare const BenchmarkRequest: MessageFns<BenchmarkRequest>;
 export declare const BenchmarkResponse: MessageFns<BenchmarkResponse>;
@@ -51,10 +69,13 @@ export declare const HashRequest: MessageFns<HashRequest>;
 export declare const HashResponse: MessageFns<HashResponse>;
 export declare const SignRequest: MessageFns<SignRequest>;
 export declare const SignResponse: MessageFns<SignResponse>;
+export declare const FakeEndpointRequest: MessageFns<FakeEndpointRequest>;
+export declare const FakeEndpointResponse: MessageFns<FakeEndpointResponse>;
 export interface CryptoGrpc {
     Benchmark(request: BenchmarkRequest): Promise<BenchmarkResponse>;
     Hash(request: HashRequest): Promise<HashResponse>;
     Sign(request: SignRequest): Promise<SignResponse>;
+    FakeEndpoint(request: FakeEndpointRequest): Promise<FakeEndpointResponse>;
 }
 export declare const CryptoGrpcServiceName = "CryptoBroker.CryptoGrpc";
 export declare class CryptoGrpcClientImpl implements CryptoGrpc {
@@ -66,6 +87,7 @@ export declare class CryptoGrpcClientImpl implements CryptoGrpc {
     Benchmark(request: BenchmarkRequest): Promise<BenchmarkResponse>;
     Hash(request: HashRequest): Promise<HashResponse>;
     Sign(request: SignRequest): Promise<SignResponse>;
+    FakeEndpoint(request: FakeEndpointRequest): Promise<FakeEndpointResponse>;
 }
 interface Rpc {
     request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;

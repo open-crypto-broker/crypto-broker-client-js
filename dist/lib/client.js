@@ -95,6 +95,9 @@ export class CryptoBrokerClient {
             metadata: {
                 id: payload.metadata?.id || uuidv4(),
                 createdAt: payload.metadata?.createdAt || new Date().toString(),
+                ...(payload.metadata?.traceContext !== undefined && {
+                    traceContext: payload.metadata?.traceContext,
+                }),
             },
         };
         return this.client.Benchmark(req).then((res) => res);
@@ -106,6 +109,9 @@ export class CryptoBrokerClient {
             metadata: {
                 id: payload.metadata?.id || uuidv4(),
                 createdAt: payload.metadata?.createdAt || new Date().toString(),
+                ...(payload.metadata?.traceContext !== undefined && {
+                    traceContext: payload.metadata?.traceContext,
+                }),
             },
         };
         return this.client.Hash(req).then((res) => res);
@@ -120,6 +126,9 @@ export class CryptoBrokerClient {
             metadata: {
                 id: payload.metadata?.id || uuidv4(),
                 createdAt: payload.metadata?.createdAt || new Date().toString(),
+                ...(payload.metadata?.traceContext !== undefined && {
+                    traceContext: payload.metadata?.traceContext,
+                }),
             },
             validNotBefore: payload.validNotBefore,
             validNotAfter: payload.validNotAfter,
