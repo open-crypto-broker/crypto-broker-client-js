@@ -26,8 +26,8 @@ jobs:
 
       - name: Configure git author
         run: |
-            git config --global user.name "${{ github.actor }}"
-            git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
 
       - name: Set version
         run: npm version ${{ github.event.inputs.version }}
@@ -36,8 +36,9 @@ jobs:
         run: npm ci
 
       - name: Publish package (github)
-        run: npm pkg set name=@open-crypto-broker/cryptobroker-client
-        run: npm publish --access public
+        run: |
+          npm pkg set name=@open-crypto-broker/cryptobroker-client
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
