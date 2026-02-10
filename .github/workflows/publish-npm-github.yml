@@ -1,0 +1,44 @@
+name: Publish Package to GitHub Packages
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New version (e.g. 1.3.0)'
+        required: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@open-crypto-broker'
+
+      - name: Configure git author
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+
+      - name: Set version
+        run: npm version ${{ github.event.inputs.version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish package (github)
+        run: |
+          npm pkg set name=@open-crypto-broker/cryptobroker-client
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

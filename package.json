@@ -5,7 +5,10 @@
   "exports": "./dist/lib/client.js",
   "types": "./dist/lib/client.d.ts",
   "files": [
-    "./dist"
+    "./dist",
+    "package.json",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc --declaration",
@@ -30,6 +33,10 @@
   ],
   "license": "Apache-2.0",
   "description": "Client Javascript repository to interact with a deployed Crypto Broker Server",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/open-crypto-broker/crypto-broker-client-js"
+  },
   "dependencies": {
     "@bufbuild/protobuf": "^2.5.2",
     "@grpc/grpc-js": "1.14.3",
