@@ -5,7 +5,10 @@
   "exports": "./dist/lib/client.js",
   "types": "./dist/lib/client.d.ts",
   "files": [
-    "./dist"
+    "./dist",
+    "packages.json",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc --declaration",
