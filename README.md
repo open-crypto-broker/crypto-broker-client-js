@@ -6,12 +6,21 @@ The Crypto Broker Client is a Node.js library written in TypeScript that allows 
 
 ### Installation
 
-`TODO`: Change this once the package is published to npm.js
+To install the npm package from the GitHub package registry, you need to add a .npmrc file to your project first.
 
-Optionally, you can also directly download the package `cryptobroker-client-x.x.x.tgz` from the Releases (`TODO`: Insert releases link here) folder into your development environment. Then, from the node.js project you want to install it, simply install it with:
+The following scope directive has to be added:
 
-```bash
-npm install <path-to-cryptobroker-client-x.y.z.tgz>
+```
+@open-crypto-broker:registry=https://npm.pkg.github.com
+```
+
+For further information see [Installing a package](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#installing-a-package).
+
+The following command can then be used to install the package to your project:
+
+```
+npm install @open-crypto-broker/cryptobroker-client # or for a specific version:
+npm install @open-crypto-broker/cryptobroker-client@0.2.0
 ```
 
 Alternatively, you can also reference this git repository (and provide a dedicated version or branch tag if needed):
