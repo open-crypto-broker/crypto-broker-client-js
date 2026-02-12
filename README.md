@@ -10,7 +10,7 @@ To install the npm package from the GitHub package registry, you need to add a .
 
 The following scope directive has to be added:
 
-```
+```bash
 @open-crypto-broker:registry=https://npm.pkg.github.com
 ```
 
@@ -18,7 +18,7 @@ For further information see [Installing a package](https://docs.github.com/en/pa
 
 The following command can then be used to install the package to your project:
 
-```
+```bash
 npm install @open-crypto-broker/cryptobroker-client # or for a specific version:
 npm install @open-crypto-broker/cryptobroker-client@0.2.0
 ```
