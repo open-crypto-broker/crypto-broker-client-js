@@ -3,7 +3,6 @@ import { createDefaultEsmPreset } from 'ts-jest'
 
 const config: Config = {
   ...createDefaultEsmPreset(),
-  preset: 'ts-jest',
   testEnvironment: 'node',
   moduleFileExtensions: ['ts', 'js'],
   extensionsToTreatAsEsm: ['.ts'],
