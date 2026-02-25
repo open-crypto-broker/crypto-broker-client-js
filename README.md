@@ -35,7 +35,7 @@ npm install https://github.com/open-crypto-broker/crypto-broker-client-js#v0.1.0
 To use the Crypto Broker Library, simply create a client instance and call the functions with the specified parameters.
 
 ```ts
-import { CertEncoding, CryptoBrokerClient } from "cryptobroker-client";
+import { CertEncoding, CryptoBrokerClient } from "@open-crypto-broker/cryptobroker-client";
 import { v4 as uuidv4 } from 'uuid';
 import Long from 'long';
 
