@@ -1,4 +1,5 @@
 import * as grpc from '@grpc/grpc-js';
+import { serviceConfig } from './conf/service_config.js';
 import { v4 as uuidv4 } from 'uuid';
 import x509 from '@peculiar/x509';
 import { CryptoGrpcClientImpl, } from './proto/messages.js';
@@ -26,24 +27,7 @@ export class CryptoBrokerClient {
         this.address = 'unix:/tmp/cryptobroker.sock';
         const client_options = opts.options || {};
         // set retry policy via service config, note this will also overwrite others
-        client_options['grpc.service_config'] = JSON.stringify({
-            methodConfig: [
-                {
-                    name: [{}],
-                    retryPolicy: {
-                        maxAttempts: 5,
-                        initialBackoff: '1s',
-                        maxBackoff: '10s',
-                        backoffMultiplier: 2.0,
-                        retryableStatusCodes: [
-                            'UNAVAILABLE',
-                            'RESOURCE_EXHAUSTED',
-                            'ABORTED',
-                        ],
-                    },
-                },
-            ],
-        });
+        client_options['grpc.service_config'] = JSON.stringify(serviceConfig);
         this.conn = new grpc.Client(this.address, opts.credentials || grpc.credentials.createInsecure(), client_options);
         const sendRequest = (service, method, data) => {
             // Conventionally in gRPC, the request path looks like

@@ -1,5 +1,6 @@
 import * as grpc from '@grpc/grpc-js';
 import { UnaryCallback } from '@grpc/grpc-js/build/src/client.js';
+import { serviceConfig } from './conf/service_config.js';
 import { v4 as uuidv4 } from 'uuid';
 import x509 from '@peculiar/x509';
 import {
@@ -87,24 +88,7 @@ export class CryptoBrokerClient {
     const client_options = opts.options || {};
 
     // set retry policy via service config, note this will also overwrite others
-    client_options['grpc.service_config'] = JSON.stringify({
-      methodConfig: [
-        {
-          name: [{}],
-          retryPolicy: {
-            maxAttempts: 5,
-            initialBackoff: '1s',
-            maxBackoff: '10s',
-            backoffMultiplier: 2.0,
-            retryableStatusCodes: [
-              'UNAVAILABLE',
-              'RESOURCE_EXHAUSTED',
-              'ABORTED',
-            ],
-          },
-        },
-      ],
-    });
+    client_options['grpc.service_config'] = JSON.stringify(serviceConfig);
 
     this.conn = new grpc.Client(
       this.address,
