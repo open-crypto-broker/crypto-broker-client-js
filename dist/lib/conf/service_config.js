@@ -1,0 +1,15 @@
+export const serviceConfig = {
+    methodConfig: [
+        {
+            name: [{}],
+            retryPolicy: {
+                maxAttempts: 5,
+                initialBackoff: '0.5s',
+                maxBackoff: '5s',
+                backoffMultiplier: 2.0,
+                retryableStatusCodes: ['UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'ABORTED'],
+            },
+        },
+    ],
+};
+//# sourceMappingURL=service_config.js.map
