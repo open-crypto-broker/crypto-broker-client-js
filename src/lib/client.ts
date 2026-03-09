@@ -84,7 +84,7 @@ export class CryptoBrokerClient {
 
   constructor(opts: CreateCryptoBrokerClientParams = {}) {
     // setup of connection parameters
-    this.address = 'unix:/tmp/cryptobroker.sock';
+    this.address = 'unix:/tmp/open-crypto-broker/crypto-broker-server.sock';
     const client_options = opts.options || {};
 
     // set retry policy via service config, note this will also overwrite others

@@ -31,7 +31,7 @@ describe('CryptoBrokerClient', () => {
         client = new CryptoBrokerClient();
     });
     it('should use the clients specified unix socket', async () => {
-        expect(client['address']).toBe('unix:/tmp/cryptobroker.sock');
+        expect(client['address']).toBe('unix:/tmp/open-crypto-broker/crypto-broker-server.sock');
     });
     it('should return mocked hash response', async () => {
         const payload = {
