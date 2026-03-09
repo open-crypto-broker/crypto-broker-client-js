@@ -1,0 +1,44 @@
+name: Publish Package to GitHub Packages
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. preminor, minor, premajor, major)'
+        default: 'preminor'
+        required: true
+        type: choice
+        options:
+          - preminor
+          - minor
+          - premajor
+          - major
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Configure git author
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+
+      - name: Update npm version in package.json and push to repository
+        run: |
+          npm version ${{ github.event.inputs.version }} -m "chore: bump version to %s"
+
+      - name: Push version bump
+        run: |
+          git push --follow-tags
