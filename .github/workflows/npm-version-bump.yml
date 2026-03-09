@@ -3,15 +3,17 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version (e.g. preminor, minor, premajor, major)'
-        default: 'preminor'
+        # Note: use prerelease to increase the counter, release to finalize version
+        description: 'Version (pre(patch/minor/major), prerelease, release)'
+        default: 'prerelease'
         required: true
         type: choice
         options:
+          - prerelease
+          - release
+          - prepatch
           - preminor
-          - minor
           - premajor
-          - major
 
 permissions:
   contents: write
