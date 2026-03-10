@@ -1,4 +1,4 @@
-name: Publish Package to GitHub Packages
+name: NPM Version Bump
 on:
   workflow_dispatch:
     inputs:
@@ -9,11 +9,11 @@ on:
         required: true
         type: choice
         options:
-          - prerelease
-          - release
           - prepatch
           - preminor
           - premajor
+          - prerelease
+          - release
 
 permissions:
   contents: write
@@ -22,25 +22,7 @@ jobs:
   bump-version:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - name: Run version bump
+        uses: open-crypto-broker/.github/actions/npm-version-bump@main
         with:
-          fetch-depth: 0
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Configure git author
-        run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-
-      - name: Update npm version in package.json and push to repository
-        run: |
-          npm version ${{ github.event.inputs.version }} --preid=rc -m "chore: bump version to %s"
-
-      - name: Push version bump
-        run: |
-          git push --follow-tags
+          version: ${{ inputs.version }}
