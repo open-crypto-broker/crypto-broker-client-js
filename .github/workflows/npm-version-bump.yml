@@ -39,7 +39,7 @@ jobs:
 
       - name: Update npm version in package.json and push to repository
         run: |
-          npm version ${{ github.event.inputs.version }} -m "chore: bump version to %s"
+          npm version ${{ github.event.inputs.version }} --preid=rc -m "chore: bump version to %s"
 
       - name: Push version bump
         run: |
