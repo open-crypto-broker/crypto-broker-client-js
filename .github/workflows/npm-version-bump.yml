@@ -1,0 +1,28 @@
+name: NPM Version Bump
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        # Note: use prerelease to increase the counter, release to finalize version
+        description: 'Version (pre(patch/minor/major), prerelease, release)'
+        default: 'prerelease'
+        required: true
+        type: choice
+        options:
+          - prepatch
+          - preminor
+          - premajor
+          - prerelease
+          - release
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run version bump
+        uses: open-crypto-broker/.github/actions/npm-version-bump@main
+        with:
+          version: ${{ inputs.version }}
