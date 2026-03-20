@@ -22,7 +22,11 @@ npm install https://github.com/open-crypto-broker/crypto-broker-client-js#v0.2.0
 
 ### Library Usage
 
-To use the Crypto Broker Library, simply create a client instance and call the functions with the specified parameters.
+To use the Crypto Broker Library, simply create a client instance and call the functions with the specified parameters. Code examples for both TypeScript and CommonJS can be found below:
+
+<details>
+
+<summary>TypeScript Example</summary>
 
 ```ts
 import { CertEncoding, CryptoBrokerClient } from "@open-crypto-broker/cryptobroker-client";
@@ -66,6 +70,33 @@ const signResponse = await cryptoLib.signCertificate({
 });
 console.log("Certificate signed by CryptoBroker in PEM format\n", signResponse.signedCertificate)
 ```
+
+</details>
+
+<details>
+
+<summary>CommonJS Example</summary>
+
+```js
+const client = require("@open-crypto-broker/cryptobroker-client");
+const long = require('long');
+const { v4: uuidv4 } = require('uuid');
+
+const cryptoLib = new client.CryptoBrokerClient();
+
+cryptoLib.ready()
+  .then(() => cryptoLib.hashData({
+    profile: "Default",
+    input: Buffer.from("Hello world"),
+    metadata: {
+      id: uuidv4(),
+      createdAt: new Date().toString(),
+    }
+  })
+    .then((hashResponse) => console.log(`Response: ${JSON.stringify(hashResponse, 0, 2)}`)));
+```
+
+</details>
 
 If desired, options for the certificate encoding output can be specified as follows:
 
