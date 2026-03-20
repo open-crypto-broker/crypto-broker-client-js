@@ -1,0 +1,24 @@
+name: Nightly Security Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+
+  workflow_dispatch:
+    inputs:
+      scan_file:
+        description: "Run SBOM scan"
+        type: boolean
+        default: true
+
+      file_to_scan:
+        description: "File to scan"
+        type: string
+        default: "package.json"
+
+jobs:
+  scan:
+    uses: open-crypto-broker/.github/.github/workflows/security-scan.yaml@main
+    with:
+      scan_file: ${{ inputs.scan_file || true }}
+      file_to_scan: ${{ inputs.file_to_scan || 'package.json' }}
