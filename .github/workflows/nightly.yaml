@@ -6,19 +6,19 @@ on:
 
   workflow_dispatch:
     inputs:
-      scan_file:
-        description: "Run SBOM scan"
+      scan_directory:
+        description: "Run SBOM scan on directory"
         type: boolean
         default: true
 
-      file_to_scan:
-        description: "File to scan"
+      directory_to_scan:
+        description: "Directory to scan"
         type: string
-        default: "package.json"
+        default: "."
 
 jobs:
   scan:
     uses: open-crypto-broker/.github/.github/workflows/security-scan.yaml@main
     with:
-      scan_file: ${{ inputs.scan_file || true }}
-      file_to_scan: ${{ inputs.file_to_scan || 'package.json' }}
+      scan_directory: ${{ inputs.scan_directory || true }}
+      directory_to_scan: ${{ inputs.directory_to_scan || '.' }}
