@@ -33,7 +33,7 @@ import { CertEncoding, CryptoBrokerClient } from "@open-crypto-broker/cryptobrok
 import { v4 as uuidv4 } from 'uuid';
 import Long from 'long';
 
-const cryptoLib = new CryptoBrokerClient();
+const cryptoLib = await CryptoBrokerClient.NewLibrary();
 
 // this function can be used to check the connectivity prior operations;
 // if there is no connectivity, it will retry to initialize a connection
@@ -82,10 +82,8 @@ const client = require("@open-crypto-broker/cryptobroker-client");
 const long = require('long');
 const { v4: uuidv4 } = require('uuid');
 
-const cryptoLib = new client.CryptoBrokerClient();
-
-cryptoLib.ready()
-  .then(() => cryptoLib.hashData({
+client.CryptoBrokerClient.NewLibrary()
+  .then((cryptoLib) => cryptoLib.hashData({
     profile: "Default",
     input: Buffer.from("Hello world"),
     metadata: {
