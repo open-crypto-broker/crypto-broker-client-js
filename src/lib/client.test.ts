@@ -38,8 +38,8 @@ jest.mock('./proto/messages.js', () => ({
 describe('CryptoBrokerClient', () => {
   let client: CryptoBrokerClient;
 
-  beforeEach(async () => {
-    client = await CryptoBrokerClient.NewLibrary();
+  beforeEach(() => {
+    client = new CryptoBrokerClient();
   });
 
   it('should use the clients specified unix socket', async () => {
