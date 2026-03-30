@@ -35,10 +35,6 @@ import Long from 'long';
 
 const cryptoLib = await CryptoBrokerClient.NewLibrary();
 
-// this function can be used to check the connectivity prior operations;
-// if there is no connectivity, it will retry to initialize a connection
-await cryptoLib.ready();
-
 const hashResponse = await cryptoLib.hashData({
     profile: profile,
     input: Buffer.from(data),
