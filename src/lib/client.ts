@@ -20,7 +20,6 @@ import {
 } from './proto/third_party/grpc/health/v1/health.js';
 
 type CreateCryptoBrokerClientParams = {
-  credentials?: grpc.ChannelCredentials;
   options?: grpc.ClientOptions;
 };
 
@@ -92,7 +91,7 @@ export class CryptoBrokerClient {
 
     this.conn = new grpc.Client(
       this.address,
-      opts.credentials || grpc.credentials.createInsecure(),
+      grpc.credentials.createInsecure(),
       client_options,
     );
 
@@ -141,7 +140,11 @@ export class CryptoBrokerClient {
     this.healthClient = new HealthClientImpl(hcRpc);
   }
 
-  async ready(): Promise<void> {
+  static async NewLibrary(
+    opts?: CreateCryptoBrokerClientParams,
+  ): Promise<CryptoBrokerClient> {
+    const instance = new CryptoBrokerClient(opts);
+
     const conn_max_retries: number = 60;
     const conn_retry_delay_ms: number = 1000;
 
@@ -150,11 +153,11 @@ export class CryptoBrokerClient {
 
       try {
         await new Promise<void>((resolve, reject) => {
-          this.conn.waitForReady(deadline, (err) =>
+          instance.conn.waitForReady(deadline, (err) =>
             err ? reject(err) : resolve(),
           );
         });
-        return; // when ready
+        return instance; // when ready
       } catch {
         console.log(
           `Could not establish connection. Retrying... (${attempt}/${conn_max_retries})`,
@@ -238,6 +241,3 @@ export class CryptoBrokerClient {
       .catch(() => status_unknown);
   }
 }
-
-export const credentials = grpc.credentials;
-export { HealthCheckResponse_ServingStatus } from './proto/third_party/grpc/health/v1/health.js';
