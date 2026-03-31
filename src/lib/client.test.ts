@@ -66,9 +66,10 @@ describe('CryptoBrokerClient', () => {
   });
 
   it('hash should autofill the metadata values', async () => {
-    const payload = {
+    const payload: HashRequest = {
       profile: 'Default',
       input: Buffer.from('Testing Data'),
+      metadata: undefined,
     };
     const response: HashResponse = await client.hashData(payload);
 
@@ -90,16 +91,14 @@ describe('CryptoBrokerClient', () => {
   });
 
   it('should return mocked sign response', async () => {
-    const payload = {
+    const payload: SignRequest = {
       profile: 'Default',
       csr: 'mocked-csr',
       caPrivateKey: 'mocked-key',
       caCert: 'mocked-cert',
       metadata: { id: 'mocked-id', createdAt: 'mocked-date' },
-      validNotBeforeOffset: '0',
-      validNotAfterOffset: '1',
       subject: 'CN=Test',
-      crlDistributionPoint: ['http://example.com/crl'],
+      crlDistributionPoints: ['http://example.com/crl'],
     };
     const options = {
       encoding: CertEncoding.B64,
@@ -125,7 +124,7 @@ describe('CryptoBrokerClient', () => {
       validNotBeforeOffset: '0',
       validNotAfterOffset: '1',
       subject: 'CN=Test',
-      crlDistributionPoint: ['http://example.com/crl'],
+      crlDistributionPoints: ['http://example.com/crl'],
     };
     const options = {
       encoding: CertEncoding.B64,
@@ -160,7 +159,7 @@ describe('CryptoBrokerClient', () => {
       validNotBeforeOffset: '0',
       validNotAfterOffset: '1',
       subject: 'CN=Test',
-      crlDistributionPoint: ['http://example.com/crl'],
+      crlDistributionPoints: ['http://example.com/crl'],
     };
     const response: SignResponse = await client.signCertificate(payload);
 
