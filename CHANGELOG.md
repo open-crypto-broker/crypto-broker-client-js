@@ -3,6 +3,64 @@
 The list of commits in this changelog is automatically generated in the release process.
 The commits follow the Conventional Commit specification.
 
+## [0.2.0] - 2026-03-31
+
+### 🚀 Features
+
+- Added npmjs publish workflow (#48)
+- Add nightly security scan (#44)
+- Using tsdown to support CommonJS (#43)
+
+### 🚜 Refactor
+
+- Client harmonization (#46)
+- Adjust npm version (#45)
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to v0.2.0
+- Bump version to v0.2.0-rc.0
+- Update actions to latest versions for Node 24 support (#47)
+
+## [0.1.1-rc.0] - 2026-03-11
+
+### 🚀 Features
+
+- Version bump (#39)
+- Added npm action to publish to github packages (#33)
+- Otel tracing (#31)
+- Server benchmark (#30)
+- Added gRPC retry policy via service config (#29)
+- [**breaking**] Validity timestamps (#27)
+- Added default unknown health status when server is not reachable (#26)
+- Implementation of status requests (#24)
+
+### 🐛 Bug Fixes
+
+- Moved checkout to workflow (#42)
+- Npm version bump (#41)
+- Added app token to workflow (#40)
+- Renamed health status method name (#25)
+
+### 🚜 Refactor
+
+- Changed socket path (#38)
+- Adjust Task setup (#28)
+
+### 📚 Documentation
+
+- Added installation instructions for the npm package (#34)
+
+### ⚡ Performance
+
+- Updated retry config (#37)
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 0.1.1-rc.0
+- Updates (#36)
+- Protobuf ref updated (#32)
+
 ## [0.1.0] - 2025-12-02
 
 ### 🚀 Features
