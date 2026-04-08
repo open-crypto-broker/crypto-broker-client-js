@@ -1,6 +1,6 @@
 {
   "name": "@open-crypto-broker/cryptobroker-client",
-  "version": "0.2.1-rc.0",
+  "version": "0.2.1",
   "type": "module",
   "exports": {
     ".": {
