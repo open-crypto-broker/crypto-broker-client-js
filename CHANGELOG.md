@@ -3,6 +3,17 @@
 The list of commits in this changelog is automatically generated in the release process.
 The commits follow the Conventional Commit specification.
 
+## [0.2.1] - 2026-04-08
+
+### 🐛 Bug Fixes
+
+- Added id-token permission (#49)
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to v0.2.1-rc.0
+- Update dependency (#50)
+
 ## [0.2.0] - 2026-03-31
 
 ### 🚀 Features
