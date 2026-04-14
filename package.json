@@ -38,6 +38,9 @@
   "bugs": {
     "url": "https://github.com/open-crypto-broker/crypto-broker-client-js.git"
   },
+  "engines": {
+    "node": ">=24"
+  },
   "license": "Apache-2.0",
   "description": "Client Javascript repository to interact with a deployed Crypto Broker Server",
   "repository": {
