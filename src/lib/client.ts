@@ -4,9 +4,9 @@ import { serviceConfig } from './conf/service_config.js';
 import { v4 as uuidv4 } from 'uuid';
 import x509 from '@peculiar/x509';
 import {
-  CryptoGrpcClientImpl,
   BenchmarkRequest,
   BenchmarkResponse,
+  CryptoGrpcClientImpl,
   HashRequest,
   HashResponse,
   SignRequest,
@@ -15,7 +15,6 @@ import {
 import {
   HealthCheckRequest,
   HealthCheckResponse,
-  HealthCheckResponse_ServingStatus,
   HealthClientImpl,
 } from './proto/third_party/grpc/health/v1/health.js';
 
@@ -159,7 +158,7 @@ export class CryptoBrokerClient {
         });
         return instance; // when ready
       } catch {
-        console.log(
+        console.error(
           `Could not establish connection. Retrying... (${attempt}/${conn_max_retries})`,
         );
       }
@@ -230,9 +229,9 @@ export class CryptoBrokerClient {
     const req: HealthCheckRequest = {
       service: '',
     };
-    // mocking unknown status in the case the server is not reachable
+    // setting the UNKNOWN service status in the case the server is not reachable
     const status_unknown: HealthCheckResponse = {
-      status: HealthCheckResponse_ServingStatus.UNKNOWN,
+      status: 0,
     };
 
     return this.healthClient
