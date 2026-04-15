@@ -5,10 +5,10 @@
 // source: messages.proto
 
 /* eslint-disable */
-import Long = require("long");
-import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import Long = require('long');
+import { BinaryReader, BinaryWriter } from '@bufbuild/protobuf/wire';
 
-export const protobufPackage = "CryptoBroker";
+export const protobufPackage = 'CryptoBroker';
 
 /** Trace context for manual propagation */
 export interface TraceContext {
@@ -82,31 +82,41 @@ export interface FakeEndpointResponse {
 }
 
 function createBaseTraceContext(): TraceContext {
-  return { traceId: "", spanId: "", traceFlags: "", traceState: "", correlationId: "" };
+  return {
+    traceId: '',
+    spanId: '',
+    traceFlags: '',
+    traceState: '',
+    correlationId: '',
+  };
 }
 
 export const TraceContext: MessageFns<TraceContext> = {
-  encode(message: TraceContext, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.traceId !== "") {
+  encode(
+    message: TraceContext,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.traceId !== '') {
       writer.uint32(10).string(message.traceId);
     }
-    if (message.spanId !== "") {
+    if (message.spanId !== '') {
       writer.uint32(18).string(message.spanId);
     }
-    if (message.traceFlags !== "") {
+    if (message.traceFlags !== '') {
       writer.uint32(26).string(message.traceFlags);
     }
-    if (message.traceState !== "") {
+    if (message.traceState !== '') {
       writer.uint32(34).string(message.traceState);
     }
-    if (message.correlationId !== "") {
+    if (message.correlationId !== '') {
       writer.uint32(42).string(message.correlationId);
     }
     return writer;
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): TraceContext {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseTraceContext();
     while (reader.pos < end) {
@@ -163,68 +173,85 @@ export const TraceContext: MessageFns<TraceContext> = {
 
   fromJSON(object: any): TraceContext {
     return {
-      traceId: isSet(object.traceId) ? globalThis.String(object.traceId) : "",
-      spanId: isSet(object.spanId) ? globalThis.String(object.spanId) : "",
-      traceFlags: isSet(object.traceFlags) ? globalThis.String(object.traceFlags) : "",
-      traceState: isSet(object.traceState) ? globalThis.String(object.traceState) : "",
-      correlationId: isSet(object.correlationId) ? globalThis.String(object.correlationId) : "",
+      traceId: isSet(object.traceId) ? globalThis.String(object.traceId) : '',
+      spanId: isSet(object.spanId) ? globalThis.String(object.spanId) : '',
+      traceFlags: isSet(object.traceFlags)
+        ? globalThis.String(object.traceFlags)
+        : '',
+      traceState: isSet(object.traceState)
+        ? globalThis.String(object.traceState)
+        : '',
+      correlationId: isSet(object.correlationId)
+        ? globalThis.String(object.correlationId)
+        : '',
     };
   },
 
   toJSON(message: TraceContext): unknown {
     const obj: any = {};
-    if (message.traceId !== "") {
+    if (message.traceId !== '') {
       obj.traceId = message.traceId;
     }
-    if (message.spanId !== "") {
+    if (message.spanId !== '') {
       obj.spanId = message.spanId;
     }
-    if (message.traceFlags !== "") {
+    if (message.traceFlags !== '') {
       obj.traceFlags = message.traceFlags;
     }
-    if (message.traceState !== "") {
+    if (message.traceState !== '') {
       obj.traceState = message.traceState;
     }
-    if (message.correlationId !== "") {
+    if (message.correlationId !== '') {
       obj.correlationId = message.correlationId;
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<TraceContext>, I>>(base?: I): TraceContext {
+  create<I extends Exact<DeepPartial<TraceContext>, I>>(
+    base?: I,
+  ): TraceContext {
     return TraceContext.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<TraceContext>, I>>(object: I): TraceContext {
+  fromPartial<I extends Exact<DeepPartial<TraceContext>, I>>(
+    object: I,
+  ): TraceContext {
     const message = createBaseTraceContext();
-    message.traceId = object.traceId ?? "";
-    message.spanId = object.spanId ?? "";
-    message.traceFlags = object.traceFlags ?? "";
-    message.traceState = object.traceState ?? "";
-    message.correlationId = object.correlationId ?? "";
+    message.traceId = object.traceId ?? '';
+    message.spanId = object.spanId ?? '';
+    message.traceFlags = object.traceFlags ?? '';
+    message.traceState = object.traceState ?? '';
+    message.correlationId = object.correlationId ?? '';
     return message;
   },
 };
 
 function createBaseMetadata(): Metadata {
-  return { id: "", createdAt: "", traceContext: undefined };
+  return { id: '', createdAt: '', traceContext: undefined };
 }
 
 export const Metadata: MessageFns<Metadata> = {
-  encode(message: Metadata, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.id !== "") {
+  encode(
+    message: Metadata,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.id !== '') {
       writer.uint32(10).string(message.id);
     }
-    if (message.createdAt !== "") {
+    if (message.createdAt !== '') {
       writer.uint32(18).string(message.createdAt);
     }
     if (message.traceContext !== undefined) {
-      TraceContext.encode(message.traceContext, writer.uint32(26).fork()).join();
+      TraceContext.encode(
+        message.traceContext,
+        writer.uint32(26).fork(),
+      ).join();
     }
     return writer;
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): Metadata {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMetadata();
     while (reader.pos < end) {
@@ -265,18 +292,22 @@ export const Metadata: MessageFns<Metadata> = {
 
   fromJSON(object: any): Metadata {
     return {
-      id: isSet(object.id) ? globalThis.String(object.id) : "",
-      createdAt: isSet(object.createdAt) ? globalThis.String(object.createdAt) : "",
-      traceContext: isSet(object.traceContext) ? TraceContext.fromJSON(object.traceContext) : undefined,
+      id: isSet(object.id) ? globalThis.String(object.id) : '',
+      createdAt: isSet(object.createdAt)
+        ? globalThis.String(object.createdAt)
+        : '',
+      traceContext: isSet(object.traceContext)
+        ? TraceContext.fromJSON(object.traceContext)
+        : undefined,
     };
   },
 
   toJSON(message: Metadata): unknown {
     const obj: any = {};
-    if (message.id !== "") {
+    if (message.id !== '') {
       obj.id = message.id;
     }
-    if (message.createdAt !== "") {
+    if (message.createdAt !== '') {
       obj.createdAt = message.createdAt;
     }
     if (message.traceContext !== undefined) {
@@ -290,11 +321,12 @@ export const Metadata: MessageFns<Metadata> = {
   },
   fromPartial<I extends Exact<DeepPartial<Metadata>, I>>(object: I): Metadata {
     const message = createBaseMetadata();
-    message.id = object.id ?? "";
-    message.createdAt = object.createdAt ?? "";
-    message.traceContext = (object.traceContext !== undefined && object.traceContext !== null)
-      ? TraceContext.fromPartial(object.traceContext)
-      : undefined;
+    message.id = object.id ?? '';
+    message.createdAt = object.createdAt ?? '';
+    message.traceContext =
+      object.traceContext !== undefined && object.traceContext !== null
+        ? TraceContext.fromPartial(object.traceContext)
+        : undefined;
     return message;
   },
 };
@@ -304,7 +336,10 @@ function createBaseBenchmarkRequest(): BenchmarkRequest {
 }
 
 export const BenchmarkRequest: MessageFns<BenchmarkRequest> = {
-  encode(message: BenchmarkRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: BenchmarkRequest,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.metadata !== undefined) {
       Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
     }
@@ -312,7 +347,8 @@ export const BenchmarkRequest: MessageFns<BenchmarkRequest> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): BenchmarkRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseBenchmarkRequest();
     while (reader.pos < end) {
@@ -336,7 +372,11 @@ export const BenchmarkRequest: MessageFns<BenchmarkRequest> = {
   },
 
   fromJSON(object: any): BenchmarkRequest {
-    return { metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined };
+    return {
+      metadata: isSet(object.metadata)
+        ? Metadata.fromJSON(object.metadata)
+        : undefined,
+    };
   },
 
   toJSON(message: BenchmarkRequest): unknown {
@@ -347,25 +387,33 @@ export const BenchmarkRequest: MessageFns<BenchmarkRequest> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<BenchmarkRequest>, I>>(base?: I): BenchmarkRequest {
+  create<I extends Exact<DeepPartial<BenchmarkRequest>, I>>(
+    base?: I,
+  ): BenchmarkRequest {
     return BenchmarkRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<BenchmarkRequest>, I>>(object: I): BenchmarkRequest {
+  fromPartial<I extends Exact<DeepPartial<BenchmarkRequest>, I>>(
+    object: I,
+  ): BenchmarkRequest {
     const message = createBaseBenchmarkRequest();
-    message.metadata = (object.metadata !== undefined && object.metadata !== null)
-      ? Metadata.fromPartial(object.metadata)
-      : undefined;
+    message.metadata =
+      object.metadata !== undefined && object.metadata !== null
+        ? Metadata.fromPartial(object.metadata)
+        : undefined;
     return message;
   },
 };
 
 function createBaseBenchmarkResponse(): BenchmarkResponse {
-  return { benchmarkResults: "", metadata: undefined };
+  return { benchmarkResults: '', metadata: undefined };
 }
 
 export const BenchmarkResponse: MessageFns<BenchmarkResponse> = {
-  encode(message: BenchmarkResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.benchmarkResults !== "") {
+  encode(
+    message: BenchmarkResponse,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.benchmarkResults !== '') {
       writer.uint32(10).string(message.benchmarkResults);
     }
     if (message.metadata !== undefined) {
@@ -375,7 +423,8 @@ export const BenchmarkResponse: MessageFns<BenchmarkResponse> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): BenchmarkResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseBenchmarkResponse();
     while (reader.pos < end) {
@@ -408,14 +457,18 @@ export const BenchmarkResponse: MessageFns<BenchmarkResponse> = {
 
   fromJSON(object: any): BenchmarkResponse {
     return {
-      benchmarkResults: isSet(object.benchmarkResults) ? globalThis.String(object.benchmarkResults) : "",
-      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+      benchmarkResults: isSet(object.benchmarkResults)
+        ? globalThis.String(object.benchmarkResults)
+        : '',
+      metadata: isSet(object.metadata)
+        ? Metadata.fromJSON(object.metadata)
+        : undefined,
     };
   },
 
   toJSON(message: BenchmarkResponse): unknown {
     const obj: any = {};
-    if (message.benchmarkResults !== "") {
+    if (message.benchmarkResults !== '') {
       obj.benchmarkResults = message.benchmarkResults;
     }
     if (message.metadata !== undefined) {
@@ -424,26 +477,34 @@ export const BenchmarkResponse: MessageFns<BenchmarkResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<BenchmarkResponse>, I>>(base?: I): BenchmarkResponse {
+  create<I extends Exact<DeepPartial<BenchmarkResponse>, I>>(
+    base?: I,
+  ): BenchmarkResponse {
     return BenchmarkResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<BenchmarkResponse>, I>>(object: I): BenchmarkResponse {
+  fromPartial<I extends Exact<DeepPartial<BenchmarkResponse>, I>>(
+    object: I,
+  ): BenchmarkResponse {
     const message = createBaseBenchmarkResponse();
-    message.benchmarkResults = object.benchmarkResults ?? "";
-    message.metadata = (object.metadata !== undefined && object.metadata !== null)
-      ? Metadata.fromPartial(object.metadata)
-      : undefined;
+    message.benchmarkResults = object.benchmarkResults ?? '';
+    message.metadata =
+      object.metadata !== undefined && object.metadata !== null
+        ? Metadata.fromPartial(object.metadata)
+        : undefined;
     return message;
   },
 };
 
 function createBaseHashRequest(): HashRequest {
-  return { profile: "", input: new Uint8Array(0), metadata: undefined };
+  return { profile: '', input: new Uint8Array(0), metadata: undefined };
 }
 
 export const HashRequest: MessageFns<HashRequest> = {
-  encode(message: HashRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.profile !== "") {
+  encode(
+    message: HashRequest,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.profile !== '') {
       writer.uint32(10).string(message.profile);
     }
     if (message.input.length !== 0) {
@@ -456,7 +517,8 @@ export const HashRequest: MessageFns<HashRequest> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): HashRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseHashRequest();
     while (reader.pos < end) {
@@ -497,15 +559,19 @@ export const HashRequest: MessageFns<HashRequest> = {
 
   fromJSON(object: any): HashRequest {
     return {
-      profile: isSet(object.profile) ? globalThis.String(object.profile) : "",
-      input: isSet(object.input) ? bytesFromBase64(object.input) : new Uint8Array(0),
-      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+      profile: isSet(object.profile) ? globalThis.String(object.profile) : '',
+      input: isSet(object.input)
+        ? bytesFromBase64(object.input)
+        : new Uint8Array(0),
+      metadata: isSet(object.metadata)
+        ? Metadata.fromJSON(object.metadata)
+        : undefined,
     };
   },
 
   toJSON(message: HashRequest): unknown {
     const obj: any = {};
-    if (message.profile !== "") {
+    if (message.profile !== '') {
       obj.profile = message.profile;
     }
     if (message.input.length !== 0) {
@@ -520,27 +586,33 @@ export const HashRequest: MessageFns<HashRequest> = {
   create<I extends Exact<DeepPartial<HashRequest>, I>>(base?: I): HashRequest {
     return HashRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<HashRequest>, I>>(object: I): HashRequest {
+  fromPartial<I extends Exact<DeepPartial<HashRequest>, I>>(
+    object: I,
+  ): HashRequest {
     const message = createBaseHashRequest();
-    message.profile = object.profile ?? "";
+    message.profile = object.profile ?? '';
     message.input = object.input ?? new Uint8Array(0);
-    message.metadata = (object.metadata !== undefined && object.metadata !== null)
-      ? Metadata.fromPartial(object.metadata)
-      : undefined;
+    message.metadata =
+      object.metadata !== undefined && object.metadata !== null
+        ? Metadata.fromPartial(object.metadata)
+        : undefined;
     return message;
   },
 };
 
 function createBaseHashResponse(): HashResponse {
-  return { hashValue: "", hashAlgorithm: "", metadata: undefined };
+  return { hashValue: '', hashAlgorithm: '', metadata: undefined };
 }
 
 export const HashResponse: MessageFns<HashResponse> = {
-  encode(message: HashResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.hashValue !== "") {
+  encode(
+    message: HashResponse,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.hashValue !== '') {
       writer.uint32(10).string(message.hashValue);
     }
-    if (message.hashAlgorithm !== "") {
+    if (message.hashAlgorithm !== '') {
       writer.uint32(18).string(message.hashAlgorithm);
     }
     if (message.metadata !== undefined) {
@@ -550,7 +622,8 @@ export const HashResponse: MessageFns<HashResponse> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): HashResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseHashResponse();
     while (reader.pos < end) {
@@ -591,18 +664,24 @@ export const HashResponse: MessageFns<HashResponse> = {
 
   fromJSON(object: any): HashResponse {
     return {
-      hashValue: isSet(object.hashValue) ? globalThis.String(object.hashValue) : "",
-      hashAlgorithm: isSet(object.hashAlgorithm) ? globalThis.String(object.hashAlgorithm) : "",
-      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+      hashValue: isSet(object.hashValue)
+        ? globalThis.String(object.hashValue)
+        : '',
+      hashAlgorithm: isSet(object.hashAlgorithm)
+        ? globalThis.String(object.hashAlgorithm)
+        : '',
+      metadata: isSet(object.metadata)
+        ? Metadata.fromJSON(object.metadata)
+        : undefined,
     };
   },
 
   toJSON(message: HashResponse): unknown {
     const obj: any = {};
-    if (message.hashValue !== "") {
+    if (message.hashValue !== '') {
       obj.hashValue = message.hashValue;
     }
-    if (message.hashAlgorithm !== "") {
+    if (message.hashAlgorithm !== '') {
       obj.hashAlgorithm = message.hashAlgorithm;
     }
     if (message.metadata !== undefined) {
@@ -611,26 +690,31 @@ export const HashResponse: MessageFns<HashResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<HashResponse>, I>>(base?: I): HashResponse {
+  create<I extends Exact<DeepPartial<HashResponse>, I>>(
+    base?: I,
+  ): HashResponse {
     return HashResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<HashResponse>, I>>(object: I): HashResponse {
+  fromPartial<I extends Exact<DeepPartial<HashResponse>, I>>(
+    object: I,
+  ): HashResponse {
     const message = createBaseHashResponse();
-    message.hashValue = object.hashValue ?? "";
-    message.hashAlgorithm = object.hashAlgorithm ?? "";
-    message.metadata = (object.metadata !== undefined && object.metadata !== null)
-      ? Metadata.fromPartial(object.metadata)
-      : undefined;
+    message.hashValue = object.hashValue ?? '';
+    message.hashAlgorithm = object.hashAlgorithm ?? '';
+    message.metadata =
+      object.metadata !== undefined && object.metadata !== null
+        ? Metadata.fromPartial(object.metadata)
+        : undefined;
     return message;
   },
 };
 
 function createBaseSignRequest(): SignRequest {
   return {
-    profile: "",
-    csr: "",
-    caPrivateKey: "",
-    caCert: "",
+    profile: '',
+    csr: '',
+    caPrivateKey: '',
+    caCert: '',
     metadata: undefined,
     validNotBefore: undefined,
     validNotAfter: undefined,
@@ -640,17 +724,20 @@ function createBaseSignRequest(): SignRequest {
 }
 
 export const SignRequest: MessageFns<SignRequest> = {
-  encode(message: SignRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.profile !== "") {
+  encode(
+    message: SignRequest,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.profile !== '') {
       writer.uint32(10).string(message.profile);
     }
-    if (message.csr !== "") {
+    if (message.csr !== '') {
       writer.uint32(18).string(message.csr);
     }
-    if (message.caPrivateKey !== "") {
+    if (message.caPrivateKey !== '') {
       writer.uint32(26).string(message.caPrivateKey);
     }
-    if (message.caCert !== "") {
+    if (message.caCert !== '') {
       writer.uint32(34).string(message.caCert);
     }
     if (message.metadata !== undefined) {
@@ -672,7 +759,8 @@ export const SignRequest: MessageFns<SignRequest> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): SignRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSignRequest();
     while (reader.pos < end) {
@@ -723,7 +811,10 @@ export const SignRequest: MessageFns<SignRequest> = {
             break;
           }
 
-          message.validNotBefore = Long.fromString(reader.uint64().toString(), true);
+          message.validNotBefore = Long.fromString(
+            reader.uint64().toString(),
+            true,
+          );
           continue;
         }
         case 7: {
@@ -731,7 +822,10 @@ export const SignRequest: MessageFns<SignRequest> = {
             break;
           }
 
-          message.validNotAfter = Long.fromString(reader.uint64().toString(), true);
+          message.validNotAfter = Long.fromString(
+            reader.uint64().toString(),
+            true,
+          );
           continue;
         }
         case 8: {
@@ -761,15 +855,27 @@ export const SignRequest: MessageFns<SignRequest> = {
 
   fromJSON(object: any): SignRequest {
     return {
-      profile: isSet(object.profile) ? globalThis.String(object.profile) : "",
-      csr: isSet(object.csr) ? globalThis.String(object.csr) : "",
-      caPrivateKey: isSet(object.caPrivateKey) ? globalThis.String(object.caPrivateKey) : "",
-      caCert: isSet(object.caCert) ? globalThis.String(object.caCert) : "",
-      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
-      validNotBefore: isSet(object.validNotBefore) ? Long.fromValue(object.validNotBefore) : undefined,
-      validNotAfter: isSet(object.validNotAfter) ? Long.fromValue(object.validNotAfter) : undefined,
-      subject: isSet(object.subject) ? globalThis.String(object.subject) : undefined,
-      crlDistributionPoints: globalThis.Array.isArray(object?.crlDistributionPoints)
+      profile: isSet(object.profile) ? globalThis.String(object.profile) : '',
+      csr: isSet(object.csr) ? globalThis.String(object.csr) : '',
+      caPrivateKey: isSet(object.caPrivateKey)
+        ? globalThis.String(object.caPrivateKey)
+        : '',
+      caCert: isSet(object.caCert) ? globalThis.String(object.caCert) : '',
+      metadata: isSet(object.metadata)
+        ? Metadata.fromJSON(object.metadata)
+        : undefined,
+      validNotBefore: isSet(object.validNotBefore)
+        ? Long.fromValue(object.validNotBefore)
+        : undefined,
+      validNotAfter: isSet(object.validNotAfter)
+        ? Long.fromValue(object.validNotAfter)
+        : undefined,
+      subject: isSet(object.subject)
+        ? globalThis.String(object.subject)
+        : undefined,
+      crlDistributionPoints: globalThis.Array.isArray(
+        object?.crlDistributionPoints,
+      )
         ? object.crlDistributionPoints.map((e: any) => globalThis.String(e))
         : [],
     };
@@ -777,16 +883,16 @@ export const SignRequest: MessageFns<SignRequest> = {
 
   toJSON(message: SignRequest): unknown {
     const obj: any = {};
-    if (message.profile !== "") {
+    if (message.profile !== '') {
       obj.profile = message.profile;
     }
-    if (message.csr !== "") {
+    if (message.csr !== '') {
       obj.csr = message.csr;
     }
-    if (message.caPrivateKey !== "") {
+    if (message.caPrivateKey !== '') {
       obj.caPrivateKey = message.caPrivateKey;
     }
-    if (message.caCert !== "") {
+    if (message.caCert !== '') {
       obj.caCert = message.caCert;
     }
     if (message.metadata !== undefined) {
@@ -810,34 +916,43 @@ export const SignRequest: MessageFns<SignRequest> = {
   create<I extends Exact<DeepPartial<SignRequest>, I>>(base?: I): SignRequest {
     return SignRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<SignRequest>, I>>(object: I): SignRequest {
+  fromPartial<I extends Exact<DeepPartial<SignRequest>, I>>(
+    object: I,
+  ): SignRequest {
     const message = createBaseSignRequest();
-    message.profile = object.profile ?? "";
-    message.csr = object.csr ?? "";
-    message.caPrivateKey = object.caPrivateKey ?? "";
-    message.caCert = object.caCert ?? "";
-    message.metadata = (object.metadata !== undefined && object.metadata !== null)
-      ? Metadata.fromPartial(object.metadata)
-      : undefined;
-    message.validNotBefore = (object.validNotBefore !== undefined && object.validNotBefore !== null)
-      ? Long.fromValue(object.validNotBefore)
-      : undefined;
-    message.validNotAfter = (object.validNotAfter !== undefined && object.validNotAfter !== null)
-      ? Long.fromValue(object.validNotAfter)
-      : undefined;
+    message.profile = object.profile ?? '';
+    message.csr = object.csr ?? '';
+    message.caPrivateKey = object.caPrivateKey ?? '';
+    message.caCert = object.caCert ?? '';
+    message.metadata =
+      object.metadata !== undefined && object.metadata !== null
+        ? Metadata.fromPartial(object.metadata)
+        : undefined;
+    message.validNotBefore =
+      object.validNotBefore !== undefined && object.validNotBefore !== null
+        ? Long.fromValue(object.validNotBefore)
+        : undefined;
+    message.validNotAfter =
+      object.validNotAfter !== undefined && object.validNotAfter !== null
+        ? Long.fromValue(object.validNotAfter)
+        : undefined;
     message.subject = object.subject ?? undefined;
-    message.crlDistributionPoints = object.crlDistributionPoints?.map((e) => e) || [];
+    message.crlDistributionPoints =
+      object.crlDistributionPoints?.map((e) => e) || [];
     return message;
   },
 };
 
 function createBaseSignResponse(): SignResponse {
-  return { signedCertificate: "", metadata: undefined };
+  return { signedCertificate: '', metadata: undefined };
 }
 
 export const SignResponse: MessageFns<SignResponse> = {
-  encode(message: SignResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.signedCertificate !== "") {
+  encode(
+    message: SignResponse,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.signedCertificate !== '') {
       writer.uint32(10).string(message.signedCertificate);
     }
     if (message.metadata !== undefined) {
@@ -847,7 +962,8 @@ export const SignResponse: MessageFns<SignResponse> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): SignResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSignResponse();
     while (reader.pos < end) {
@@ -880,14 +996,18 @@ export const SignResponse: MessageFns<SignResponse> = {
 
   fromJSON(object: any): SignResponse {
     return {
-      signedCertificate: isSet(object.signedCertificate) ? globalThis.String(object.signedCertificate) : "",
-      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+      signedCertificate: isSet(object.signedCertificate)
+        ? globalThis.String(object.signedCertificate)
+        : '',
+      metadata: isSet(object.metadata)
+        ? Metadata.fromJSON(object.metadata)
+        : undefined,
     };
   },
 
   toJSON(message: SignResponse): unknown {
     const obj: any = {};
-    if (message.signedCertificate !== "") {
+    if (message.signedCertificate !== '') {
       obj.signedCertificate = message.signedCertificate;
     }
     if (message.metadata !== undefined) {
@@ -896,15 +1016,20 @@ export const SignResponse: MessageFns<SignResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<SignResponse>, I>>(base?: I): SignResponse {
+  create<I extends Exact<DeepPartial<SignResponse>, I>>(
+    base?: I,
+  ): SignResponse {
     return SignResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<SignResponse>, I>>(object: I): SignResponse {
+  fromPartial<I extends Exact<DeepPartial<SignResponse>, I>>(
+    object: I,
+  ): SignResponse {
     const message = createBaseSignResponse();
-    message.signedCertificate = object.signedCertificate ?? "";
-    message.metadata = (object.metadata !== undefined && object.metadata !== null)
-      ? Metadata.fromPartial(object.metadata)
-      : undefined;
+    message.signedCertificate = object.signedCertificate ?? '';
+    message.metadata =
+      object.metadata !== undefined && object.metadata !== null
+        ? Metadata.fromPartial(object.metadata)
+        : undefined;
     return message;
   },
 };
@@ -914,15 +1039,22 @@ function createBaseFakeEndpointRequest(): FakeEndpointRequest {
 }
 
 export const FakeEndpointRequest: MessageFns<FakeEndpointRequest> = {
-  encode(message: FakeEndpointRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: FakeEndpointRequest,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.metadata !== undefined) {
       Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
     }
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): FakeEndpointRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): FakeEndpointRequest {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseFakeEndpointRequest();
     while (reader.pos < end) {
@@ -946,7 +1078,11 @@ export const FakeEndpointRequest: MessageFns<FakeEndpointRequest> = {
   },
 
   fromJSON(object: any): FakeEndpointRequest {
-    return { metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined };
+    return {
+      metadata: isSet(object.metadata)
+        ? Metadata.fromJSON(object.metadata)
+        : undefined,
+    };
   },
 
   toJSON(message: FakeEndpointRequest): unknown {
@@ -957,25 +1093,33 @@ export const FakeEndpointRequest: MessageFns<FakeEndpointRequest> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<FakeEndpointRequest>, I>>(base?: I): FakeEndpointRequest {
+  create<I extends Exact<DeepPartial<FakeEndpointRequest>, I>>(
+    base?: I,
+  ): FakeEndpointRequest {
     return FakeEndpointRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<FakeEndpointRequest>, I>>(object: I): FakeEndpointRequest {
+  fromPartial<I extends Exact<DeepPartial<FakeEndpointRequest>, I>>(
+    object: I,
+  ): FakeEndpointRequest {
     const message = createBaseFakeEndpointRequest();
-    message.metadata = (object.metadata !== undefined && object.metadata !== null)
-      ? Metadata.fromPartial(object.metadata)
-      : undefined;
+    message.metadata =
+      object.metadata !== undefined && object.metadata !== null
+        ? Metadata.fromPartial(object.metadata)
+        : undefined;
     return message;
   },
 };
 
 function createBaseFakeEndpointResponse(): FakeEndpointResponse {
-  return { message: "", metadata: undefined };
+  return { message: '', metadata: undefined };
 }
 
 export const FakeEndpointResponse: MessageFns<FakeEndpointResponse> = {
-  encode(message: FakeEndpointResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.message !== "") {
+  encode(
+    message: FakeEndpointResponse,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.message !== '') {
       writer.uint32(10).string(message.message);
     }
     if (message.metadata !== undefined) {
@@ -984,8 +1128,12 @@ export const FakeEndpointResponse: MessageFns<FakeEndpointResponse> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): FakeEndpointResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): FakeEndpointResponse {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseFakeEndpointResponse();
     while (reader.pos < end) {
@@ -1018,14 +1166,16 @@ export const FakeEndpointResponse: MessageFns<FakeEndpointResponse> = {
 
   fromJSON(object: any): FakeEndpointResponse {
     return {
-      message: isSet(object.message) ? globalThis.String(object.message) : "",
-      metadata: isSet(object.metadata) ? Metadata.fromJSON(object.metadata) : undefined,
+      message: isSet(object.message) ? globalThis.String(object.message) : '',
+      metadata: isSet(object.metadata)
+        ? Metadata.fromJSON(object.metadata)
+        : undefined,
     };
   },
 
   toJSON(message: FakeEndpointResponse): unknown {
     const obj: any = {};
-    if (message.message !== "") {
+    if (message.message !== '') {
       obj.message = message.message;
     }
     if (message.metadata !== undefined) {
@@ -1034,15 +1184,20 @@ export const FakeEndpointResponse: MessageFns<FakeEndpointResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<FakeEndpointResponse>, I>>(base?: I): FakeEndpointResponse {
+  create<I extends Exact<DeepPartial<FakeEndpointResponse>, I>>(
+    base?: I,
+  ): FakeEndpointResponse {
     return FakeEndpointResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<FakeEndpointResponse>, I>>(object: I): FakeEndpointResponse {
+  fromPartial<I extends Exact<DeepPartial<FakeEndpointResponse>, I>>(
+    object: I,
+  ): FakeEndpointResponse {
     const message = createBaseFakeEndpointResponse();
-    message.message = object.message ?? "";
-    message.metadata = (object.metadata !== undefined && object.metadata !== null)
-      ? Metadata.fromPartial(object.metadata)
-      : undefined;
+    message.message = object.message ?? '';
+    message.metadata =
+      object.metadata !== undefined && object.metadata !== null
+        ? Metadata.fromPartial(object.metadata)
+        : undefined;
     return message;
   },
 };
@@ -1054,7 +1209,7 @@ export interface CryptoGrpc {
   FakeEndpoint(request: FakeEndpointRequest): Promise<FakeEndpointResponse>;
 }
 
-export const CryptoGrpcServiceName = "CryptoBroker.CryptoGrpc";
+export const CryptoGrpcServiceName = 'CryptoBroker.CryptoGrpc';
 export class CryptoGrpcClientImpl implements CryptoGrpc {
   private readonly rpc: Rpc;
   private readonly service: string;
@@ -1068,36 +1223,44 @@ export class CryptoGrpcClientImpl implements CryptoGrpc {
   }
   Benchmark(request: BenchmarkRequest): Promise<BenchmarkResponse> {
     const data = BenchmarkRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "Benchmark", data);
-    return promise.then((data) => BenchmarkResponse.decode(new BinaryReader(data)));
+    const promise = this.rpc.request(this.service, 'Benchmark', data);
+    return promise.then((data) =>
+      BenchmarkResponse.decode(new BinaryReader(data)),
+    );
   }
 
   Hash(request: HashRequest): Promise<HashResponse> {
     const data = HashRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "Hash", data);
+    const promise = this.rpc.request(this.service, 'Hash', data);
     return promise.then((data) => HashResponse.decode(new BinaryReader(data)));
   }
 
   Sign(request: SignRequest): Promise<SignResponse> {
     const data = SignRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "Sign", data);
+    const promise = this.rpc.request(this.service, 'Sign', data);
     return promise.then((data) => SignResponse.decode(new BinaryReader(data)));
   }
 
   FakeEndpoint(request: FakeEndpointRequest): Promise<FakeEndpointResponse> {
     const data = FakeEndpointRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "FakeEndpoint", data);
-    return promise.then((data) => FakeEndpointResponse.decode(new BinaryReader(data)));
+    const promise = this.rpc.request(this.service, 'FakeEndpoint', data);
+    return promise.then((data) =>
+      FakeEndpointResponse.decode(new BinaryReader(data)),
+    );
   }
 }
 
 interface Rpc {
-  request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
+  request(
+    service: string,
+    method: string,
+    data: Uint8Array,
+  ): Promise<Uint8Array>;
 }
 
 function bytesFromBase64(b64: string): Uint8Array {
   if ((globalThis as any).Buffer) {
-    return Uint8Array.from((globalThis as any).Buffer.from(b64, "base64"));
+    return Uint8Array.from((globalThis as any).Buffer.from(b64, 'base64'));
   } else {
     const bin = globalThis.atob(b64);
     const arr = new Uint8Array(bin.length);
@@ -1110,27 +1273,43 @@ function bytesFromBase64(b64: string): Uint8Array {
 
 function base64FromBytes(arr: Uint8Array): string {
   if ((globalThis as any).Buffer) {
-    return (globalThis as any).Buffer.from(arr).toString("base64");
+    return (globalThis as any).Buffer.from(arr).toString('base64');
   } else {
     const bin: string[] = [];
     arr.forEach((byte) => {
       bin.push(globalThis.String.fromCharCode(byte));
     });
-    return globalThis.btoa(bin.join(""));
+    return globalThis.btoa(bin.join(''));
   }
 }
 
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+type Builtin =
+  | Date
+  | Function
+  | Uint8Array
+  | string
+  | number
+  | boolean
+  | undefined;
 
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Long ? string | number | Long : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
+export type DeepPartial<T> = T extends Builtin
+  ? T
+  : T extends Long
+    ? string | number | Long
+    : T extends globalThis.Array<infer U>
+      ? globalThis.Array<DeepPartial<U>>
+      : T extends ReadonlyArray<infer U>
+        ? ReadonlyArray<DeepPartial<U>>
+        : T extends {}
+          ? { [K in keyof T]?: DeepPartial<T[K]> }
+          : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+export type Exact<P, I extends P> = P extends Builtin
+  ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & {
+      [K in Exclude<keyof I, KeysOfUnion<P>>]: never;
+    };
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;
