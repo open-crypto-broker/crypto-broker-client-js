@@ -2277,7 +2277,8 @@ function createBaseTraceContext() {
 		traceId: "",
 		spanId: "",
 		traceFlags: "",
-		traceState: ""
+		traceState: "",
+		correlationId: ""
 	};
 }
 const TraceContext = {
@@ -2286,6 +2287,7 @@ const TraceContext = {
 		if (message.spanId !== "") writer.uint32(18).string(message.spanId);
 		if (message.traceFlags !== "") writer.uint32(26).string(message.traceFlags);
 		if (message.traceState !== "") writer.uint32(34).string(message.traceState);
+		if (message.correlationId !== "") writer.uint32(42).string(message.correlationId);
 		return writer;
 	},
 	decode(input, length) {
@@ -2311,6 +2313,10 @@ const TraceContext = {
 					if (tag !== 34) break;
 					message.traceState = reader.string();
 					continue;
+				case 5:
+					if (tag !== 42) break;
+					message.correlationId = reader.string();
+					continue;
 			}
 			if ((tag & 7) === 4 || tag === 0) break;
 			reader.skip(tag & 7);
@@ -2322,7 +2328,8 @@ const TraceContext = {
 			traceId: isSet$1(object.traceId) ? globalThis.String(object.traceId) : "",
 			spanId: isSet$1(object.spanId) ? globalThis.String(object.spanId) : "",
 			traceFlags: isSet$1(object.traceFlags) ? globalThis.String(object.traceFlags) : "",
-			traceState: isSet$1(object.traceState) ? globalThis.String(object.traceState) : ""
+			traceState: isSet$1(object.traceState) ? globalThis.String(object.traceState) : "",
+			correlationId: isSet$1(object.correlationId) ? globalThis.String(object.correlationId) : ""
 		};
 	},
 	toJSON(message) {
@@ -2331,6 +2338,7 @@ const TraceContext = {
 		if (message.spanId !== "") obj.spanId = message.spanId;
 		if (message.traceFlags !== "") obj.traceFlags = message.traceFlags;
 		if (message.traceState !== "") obj.traceState = message.traceState;
+		if (message.correlationId !== "") obj.correlationId = message.correlationId;
 		return obj;
 	},
 	create(base) {
@@ -2342,6 +2350,7 @@ const TraceContext = {
 		message.spanId = object.spanId ?? "";
 		message.traceFlags = object.traceFlags ?? "";
 		message.traceState = object.traceState ?? "";
+		message.correlationId = object.correlationId ?? "";
 		return message;
 	}
 };

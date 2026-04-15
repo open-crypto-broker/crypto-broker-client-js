@@ -629,6 +629,7 @@ interface TraceContext$1 {
   spanId: string;
   traceFlags: string;
   traceState: string;
+  correlationId: string;
 }
 /** Metadata shared across all methods */
 interface Metadata$1 {
@@ -705,6 +706,7 @@ interface TraceContext {
   spanId: string;
   traceFlags: string;
   traceState: string;
+  correlationId: string;
 }
 interface Metadata {
   id?: string;
