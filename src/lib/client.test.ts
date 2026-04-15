@@ -2,11 +2,18 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { CertEncoding, CryptoBrokerClient } from './client.js';
 import { validate } from 'uuid';
 import {
+  BenchmarkRequest,
+  BenchmarkResponse,
   HashRequest,
   HashResponse,
   SignRequest,
   SignResponse,
 } from './proto/messages.js';
+import {
+  HealthCheckRequest,
+  HealthCheckResponse,
+} from './proto/third_party/grpc/health/v1/health.js';
+import * as grpc from '@grpc/grpc-js';
 
 // Mock the protobuf client under the hood, returning the same values after doing a gRPC call functions
 jest.mock('./proto/messages.js', () => ({
@@ -32,6 +39,34 @@ jest.mock('./proto/messages.js', () => ({
           createdAt: input.metadata?.createdAt || 'empty',
         },
       })),
+    Benchmark: jest
+      .fn<(input: BenchmarkRequest) => Promise<BenchmarkResponse>>()
+      .mockImplementation(async (input) => ({
+        benchmarkResults: JSON.stringify({
+          results: [
+            {
+              name: 'some_mocked_algorithm_test_name',
+              avgTime: 42,
+            },
+          ],
+        }),
+        metadata: {
+          id: input.metadata?.id || 'empty',
+          createdAt: input.metadata?.createdAt || 'empty',
+        },
+      })),
+  })),
+}));
+jest.mock('./proto/third_party/grpc/health/v1/health.js', () => ({
+  HealthClientImpl: jest.fn().mockImplementation(() => ({
+    Check: jest
+      .fn<(input: HealthCheckRequest) => Promise<HealthCheckResponse>>()
+      .mockImplementationOnce(async () => ({
+        status: 1, // on the first call we're serving
+      }))
+      .mockImplementationOnce(async () => {
+        throw new Error('mocked failure');
+      }),
   })),
 }));
 
@@ -42,7 +77,36 @@ describe('CryptoBrokerClient', () => {
     client = new CryptoBrokerClient();
   });
 
-  it('should use the clients specified unix socket', async () => {
+  it('should use a retry mechanism with NewLibrary', async () => {
+    jest.useFakeTimers();
+
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const waitForReadyMock = jest
+      .spyOn(grpc.Client.prototype, 'waitForReady')
+      .mockImplementationOnce((_d, cb) => cb(new Error('mocked failure')))
+      .mockImplementationOnce((_d, cb) => cb())
+      .mockImplementation((_d, cb) => cb(new Error('mocked failure')));
+
+    // at first the connection fails, a retry is run, then the connection and channel readiness succeed
+    const retryInstance = await CryptoBrokerClient.NewLibrary();
+    expect(waitForReadyMock).toHaveBeenCalledTimes(2);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+    expect(retryInstance).toBeInstanceOf(CryptoBrokerClient);
+
+    // when the retry limit is reached, NewLibrary will throw an error
+    waitForReadyMock.mockClear();
+    consoleErrorSpy.mockClear();
+    await expect(CryptoBrokerClient.NewLibrary()).rejects.toThrow(
+      'retry limit reached',
+    );
+    expect(waitForReadyMock).toHaveBeenCalledTimes(60);
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(60);
+  });
+
+  it('should use the clients specified Unix socket', async () => {
     expect(client['address']).toBe(
       'unix:/tmp/open-crypto-broker/crypto-broker-server.sock',
     );
@@ -191,5 +255,40 @@ describe('CryptoBrokerClient', () => {
     expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
       'Invalid Date',
     );
+  });
+
+  it('should return the mocked health response', async () => {
+    const servingResponse: HealthCheckResponse = await client.healthData();
+
+    // Test that the response shows the serving status with SERVING
+    expect(servingResponse.status).toBeDefined();
+    expect(servingResponse.status).toEqual(1);
+
+    const unknownResponse: HealthCheckResponse = await client.healthData();
+
+    // Test that the response shows the serving status with UNKNOWN
+    expect(unknownResponse.status).toBeDefined();
+    expect(unknownResponse.status).toEqual(0);
+  });
+
+  it('benchmark should autofill the metadata', async () => {
+    const response: BenchmarkResponse = await client.benchmarkData({});
+
+    // assert that the metadata was correctly autofilled
+    expect(response.metadata).toBeDefined();
+    expect(response.metadata?.id).not.toEqual('empty');
+    expect(validate(response.metadata?.id)).toBeTruthy();
+    expect(response.metadata?.createdAt).not.toEqual('empty');
+    expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
+      'Invalid Date',
+    );
+  });
+
+  it('should return the mocked benchmark data response', async () => {
+    const response: BenchmarkResponse = await client.benchmarkData({});
+
+    // Test that the response is valid and has json-parsable results
+    expect(response.benchmarkResults).toBeDefined();
+    expect(JSON.parse(response.benchmarkResults)).toHaveProperty('results');
   });
 });

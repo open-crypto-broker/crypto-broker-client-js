@@ -3300,7 +3300,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 				});
 				return instance;
 			} catch {
-				console.log(`Could not establish connection. Retrying... (${attempt}/${conn_max_retries})`);
+				console.error(`Could not establish connection. Retrying... (${attempt}/${conn_max_retries})`);
 			}
 		}
 		throw new Error("retry limit reached");
@@ -3346,7 +3346,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 	async healthData() {
 		const req = { service: "" };
-		const status_unknown = { status: HealthCheckResponse_ServingStatus.UNKNOWN };
+		const status_unknown = { status: 0 };
 		return this.healthClient.Check(req).then((res) => res).catch(() => status_unknown);
 	}
 };
