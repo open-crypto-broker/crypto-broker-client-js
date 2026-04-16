@@ -27,6 +27,7 @@ export interface TraceContext {
   spanId: string;
   traceFlags: string;
   traceState: string;
+  correlationId: string;
 }
 
 export interface Metadata {
