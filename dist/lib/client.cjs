@@ -6,7 +6,7 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJSMin = (cb, mod) => () => (mod || cb((mod = { exports: {} }).exports, mod), mod.exports);
+var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
 var __copyProps = (to, from, except, desc) => {
 	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
 		key = keys[i];
@@ -23,10 +23,10 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 }) : target, mod));
 //#endregion
 let _grpc_grpc_js = require("@grpc/grpc-js");
-_grpc_grpc_js = __toESM(_grpc_grpc_js);
+_grpc_grpc_js = __toESM(_grpc_grpc_js, 1);
 let uuid = require("uuid");
 let _peculiar_x509 = require("@peculiar/x509");
-_peculiar_x509 = __toESM(_peculiar_x509);
+_peculiar_x509 = __toESM(_peculiar_x509, 1);
 //#region src/lib/conf/service_config.ts
 const serviceConfig = { methodConfig: [{
 	name: [{}],
@@ -2988,35 +2988,25 @@ function isSet$1(value) {
 }
 //#endregion
 //#region src/lib/proto/third_party/grpc/health/v1/health.ts
-let HealthCheckResponse_ServingStatus = /* @__PURE__ */ function(HealthCheckResponse_ServingStatus) {
-	HealthCheckResponse_ServingStatus[HealthCheckResponse_ServingStatus["UNKNOWN"] = 0] = "UNKNOWN";
-	HealthCheckResponse_ServingStatus[HealthCheckResponse_ServingStatus["SERVING"] = 1] = "SERVING";
-	HealthCheckResponse_ServingStatus[HealthCheckResponse_ServingStatus["NOT_SERVING"] = 2] = "NOT_SERVING";
-	/** SERVICE_UNKNOWN - Used only by the Watch method. */
-	HealthCheckResponse_ServingStatus[HealthCheckResponse_ServingStatus["SERVICE_UNKNOWN"] = 3] = "SERVICE_UNKNOWN";
-	HealthCheckResponse_ServingStatus[HealthCheckResponse_ServingStatus["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
-	return HealthCheckResponse_ServingStatus;
-}({});
 function healthCheckResponse_ServingStatusFromJSON(object) {
 	switch (object) {
 		case 0:
-		case "UNKNOWN": return HealthCheckResponse_ServingStatus.UNKNOWN;
+		case "UNKNOWN": return 0;
 		case 1:
-		case "SERVING": return HealthCheckResponse_ServingStatus.SERVING;
+		case "SERVING": return 1;
 		case 2:
-		case "NOT_SERVING": return HealthCheckResponse_ServingStatus.NOT_SERVING;
+		case "NOT_SERVING": return 2;
 		case 3:
-		case "SERVICE_UNKNOWN": return HealthCheckResponse_ServingStatus.SERVICE_UNKNOWN;
-		default: return HealthCheckResponse_ServingStatus.UNRECOGNIZED;
+		case "SERVICE_UNKNOWN": return 3;
+		default: return -1;
 	}
 }
 function healthCheckResponse_ServingStatusToJSON(object) {
 	switch (object) {
-		case HealthCheckResponse_ServingStatus.UNKNOWN: return "UNKNOWN";
-		case HealthCheckResponse_ServingStatus.SERVING: return "SERVING";
-		case HealthCheckResponse_ServingStatus.NOT_SERVING: return "NOT_SERVING";
-		case HealthCheckResponse_ServingStatus.SERVICE_UNKNOWN: return "SERVICE_UNKNOWN";
-		case HealthCheckResponse_ServingStatus.UNRECOGNIZED:
+		case 0: return "UNKNOWN";
+		case 1: return "SERVING";
+		case 2: return "NOT_SERVING";
+		case 3: return "SERVICE_UNKNOWN";
 		default: return "UNRECOGNIZED";
 	}
 }
@@ -3286,8 +3276,8 @@ let CertEncoding = /* @__PURE__ */ function(CertEncoding) {
 	return CertEncoding;
 }({});
 const encoders = {
-	[CertEncoding.B64]: (input) => input,
-	[CertEncoding.PEM]: (input) => {
+	["B64"]: (input) => input,
+	["PEM"]: (input) => {
 		input.signedCertificate = new _peculiar_x509.default.X509Certificate(input.signedCertificate).toString();
 		return input;
 	}
@@ -3373,7 +3363,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 			subject: payload.subject,
 			crlDistributionPoints: payload.crlDistributionPoints || []
 		};
-		const encoding = options && options.encoding || CertEncoding.PEM;
+		const encoding = options && options.encoding || "PEM";
 		return this.client.Sign(req).then((res) => encoders[encoding](res));
 	}
 	async healthData() {
