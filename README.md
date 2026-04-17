@@ -104,11 +104,17 @@ const signResponse = await cryptoLib.signCertificate({...}, options);
 Further, it is also possible to check the health status of the server:
 
 ```ts
-import { HealthCheckResponse_ServingStatus } from 'cryptobroker-client';
+enum ServingStatus {
+  UNKNOWN = 0,
+  SERVING = 1,
+  NOT_SERVING = 2,
+  /** SERVICE_UNKNOWN - Used only by the Watch method. */
+  SERVICE_UNKNOWN = 3,
+  UNRECOGNIZED = -1,
+}
 
-const health_data = await cryptoLib.healthData();
-const serving_status = HealthCheckResponse_ServingStatus[health_data.status];
-console.log('Status: ', serving_status);
+const healthResponse = await cryptoLib.healthData();
+console.log(`Status: ${ServingStatus[healthResponse.status]}`);
 ```
 
 Note, that the possible status values are described in the [specification](https://github.com/open-crypto-broker/crypto-broker-documentation).
