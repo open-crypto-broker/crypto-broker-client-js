@@ -3,6 +3,31 @@
 The list of commits in this changelog is automatically generated in the release process.
 The commits follow the Conventional Commit specification.
 
+## [0.2.2] - 2026-04-20
+
+### 🚀 Features
+
+- CorrelationId (#54)
+- Add workflow lint (#52)
+- Use hash tagged actions, fix lint issues (#51)
+
+### 🐛 Bug Fixes
+
+- Remove persistent false setting (#58)
+- Refactor workflow lint action (#55)
+- Adjust permissions for nightly workflow (#56)
+
+### 🧪 Testing
+
+- Added tests for better coverage (#53)
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to v0.2.2
+- Bump version to v0.2.2-rc.0
+- Tsconfig node update (#57)
+- Bump version to v0.2.1
+
 ## [0.2.1] - 2026-04-08
 
 ### 🐛 Bug Fixes
