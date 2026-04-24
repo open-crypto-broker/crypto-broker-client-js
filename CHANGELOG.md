@@ -3,6 +3,14 @@
 The list of commits in this changelog is automatically generated in the release process.
 The commits follow the Conventional Commit specification.
 
+## [0.2.3] - 2026-04-24
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to v0.2.3
+- Bump version to v0.2.3-rc.0
+- Updated uuid dependency (#59)
+
 ## [0.2.2] - 2026-04-20
 
 ### 🚀 Features
