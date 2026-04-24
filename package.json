@@ -50,7 +50,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.3",
     "@peculiar/x509": "^1.14.3",
-    "uuid": "^11.1.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
