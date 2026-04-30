@@ -4583,8 +4583,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 };
 const VERSION = "0.2.3";
-const GIT_COMMIT = "ce0b4d4fa0b03a528f4584c757630cc584b8d769";
 //#endregion
-export { CertEncoding, CryptoBrokerClient, GIT_COMMIT, VERSION };
+export { CertEncoding, CryptoBrokerClient, VERSION };
 
 //# sourceMappingURL=client.mjs.map

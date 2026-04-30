@@ -244,4 +244,3 @@ export class CryptoBrokerClient {
 }
 
 export const VERSION = __VERSION__;
-export const GIT_COMMIT = __GIT_COMMIT__;
