@@ -1,7 +1,8 @@
+import 'reflect-metadata';
 import * as grpc from '@grpc/grpc-js';
 import { UnaryCallback } from '@grpc/grpc-js/build/src/client.js';
 import { serviceConfig } from './conf/service_config.js';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import x509 from '@peculiar/x509';
 import {
   BenchmarkRequest,
@@ -171,7 +172,7 @@ export class CryptoBrokerClient {
   async benchmarkData(payload: BenchmarkPayload): Promise<BenchmarkResponse> {
     const req: BenchmarkRequest = {
       metadata: {
-        id: payload.metadata?.id || uuidv4(),
+        id: payload.metadata?.id || randomUUID(),
         createdAt: payload.metadata?.createdAt || new Date().toString(),
         ...(payload.metadata?.traceContext !== undefined && {
           traceContext: payload.metadata?.traceContext,
@@ -186,7 +187,7 @@ export class CryptoBrokerClient {
       profile: payload.profile,
       input: payload.input,
       metadata: {
-        id: payload.metadata?.id || uuidv4(),
+        id: payload.metadata?.id || randomUUID(),
         createdAt: payload.metadata?.createdAt || new Date().toString(),
         ...(payload.metadata?.traceContext !== undefined && {
           traceContext: payload.metadata?.traceContext,
@@ -207,7 +208,7 @@ export class CryptoBrokerClient {
       caPrivateKey: payload.caPrivateKey,
       caCert: payload.caCert,
       metadata: {
-        id: payload.metadata?.id || uuidv4(),
+        id: payload.metadata?.id || randomUUID(),
         createdAt: payload.metadata?.createdAt || new Date().toString(),
         ...(payload.metadata?.traceContext !== undefined && {
           traceContext: payload.metadata?.traceContext,
@@ -241,3 +242,5 @@ export class CryptoBrokerClient {
       .catch(() => status_unknown);
   }
 }
+
+export const VERSION = __VERSION__;

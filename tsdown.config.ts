@@ -1,4 +1,9 @@
 import { defineConfig } from 'tsdown';
+import { execSync } from 'node:child_process';
+
+const pkgVersion = execSync("npm pkg get version | tr -d '\"'")
+  .toString()
+  .trim();
 
 export default defineConfig({
   entry: ['src/client.ts'],
@@ -9,5 +14,8 @@ export default defineConfig({
   outDir: 'dist/lib',
   deps: {
     onlyBundle: false,
+  },
+  define: {
+    __VERSION__: JSON.stringify(pkgVersion),
   },
 });

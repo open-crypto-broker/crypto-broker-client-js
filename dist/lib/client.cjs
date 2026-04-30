@@ -22,9 +22,10 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 	enumerable: true
 }) : target, mod));
 //#endregion
+require("reflect-metadata");
 let _grpc_grpc_js = require("@grpc/grpc-js");
 _grpc_grpc_js = __toESM(_grpc_grpc_js, 1);
-let uuid = require("uuid");
+let crypto = require("crypto");
 let _peculiar_x509 = require("@peculiar/x509");
 _peculiar_x509 = __toESM(_peculiar_x509, 1);
 //#region src/lib/conf/service_config.ts
@@ -367,11 +368,16 @@ function getTextEncoding() {
 	if (globalThis[symbol] == void 0) {
 		const te = new globalThis.TextEncoder();
 		const td = new globalThis.TextDecoder();
+		let tdStrict;
 		globalThis[symbol] = {
 			encodeUtf8(text) {
 				return te.encode(text);
 			},
-			decodeUtf8(bytes) {
+			decodeUtf8(bytes, strict) {
+				if (strict) {
+					if (tdStrict === void 0) tdStrict = new globalThis.TextDecoder("utf-8", { fatal: true });
+					return tdStrict.decode(bytes);
+				}
 				return td.decode(bytes);
 			},
 			checkUtf8(text) {
@@ -528,7 +534,7 @@ var BinaryWriter = class {
 		return this;
 	}
 	/**
-	* Write a `bool` value, a variant.
+	* Write a `bool` value, a varint.
 	*/
 	bool(value) {
 		this.buf.push(value ? 1 : 0);
@@ -594,7 +600,7 @@ var BinaryWriter = class {
 		return this;
 	}
 	/**
-	* Write a `fixed64` value, a signed, fixed-length 64-bit integer.
+	* Write a `sfixed64` value, a signed, fixed-length 64-bit integer.
 	*/
 	sfixed64(value) {
 		let chunk = new Uint8Array(8), view = new DataView(chunk.buffer), tc = protoInt64.enc(value);
@@ -650,11 +656,17 @@ var BinaryReader = class {
 		this.view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
 	}
 	/**
-	* Reads a tag - field number and wire type.
+	* Reads a tag - field number and wire type. Tags are uint32 varints; values
+	* that do not fit in uint32 are rejected.
 	*/
 	tag() {
-		let tag = this.uint32(), fieldNo = tag >>> 3, wireType = tag & 7;
-		if (fieldNo <= 0 || wireType < 0 || wireType > 5) throw new Error("illegal tag: field no " + fieldNo + " wire type " + wireType);
+		const start = this.pos;
+		const tag = this.uint32();
+		const bytesRead = this.pos - start;
+		if (bytesRead > 5 || bytesRead == 5 && this.buf[this.pos - 1] > 15) throw new Error("illegal tag: varint overflows uint32");
+		const fieldNo = tag >>> 3;
+		const wireType = tag & 7;
+		if (fieldNo <= 0 || wireType > 5) throw new Error("illegal tag: field no " + fieldNo + " wire type " + wireType);
 		return [fieldNo, wireType];
 	}
 	/**
@@ -786,10 +798,11 @@ var BinaryReader = class {
 		return this.buf.subarray(start, start + len);
 	}
 	/**
-	* Read a `string` field, length-delimited data converted to UTF-8 text.
+	* Read a `string` field, length-delimited data converted to UTF-8 text. If
+	* `strict` is true, throw on invalid UTF-8 instead of substituting U+FFFD.
 	*/
-	string() {
-		return this.decodeUtf8(this.bytes());
+	string(strict) {
+		return this.decodeUtf8(this.bytes(), strict);
 	}
 };
 /**
@@ -3329,7 +3342,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 	async benchmarkData(payload) {
 		const req = { metadata: {
-			id: payload.metadata?.id || (0, uuid.v4)(),
+			id: payload.metadata?.id || (0, crypto.randomUUID)(),
 			createdAt: payload.metadata?.createdAt || (/* @__PURE__ */ new Date()).toString(),
 			...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
 		} };
@@ -3340,7 +3353,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 			profile: payload.profile,
 			input: payload.input,
 			metadata: {
-				id: payload.metadata?.id || (0, uuid.v4)(),
+				id: payload.metadata?.id || (0, crypto.randomUUID)(),
 				createdAt: payload.metadata?.createdAt || (/* @__PURE__ */ new Date()).toString(),
 				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
 			}
@@ -3354,7 +3367,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 			caPrivateKey: payload.caPrivateKey,
 			caCert: payload.caCert,
 			metadata: {
-				id: payload.metadata?.id || (0, uuid.v4)(),
+				id: payload.metadata?.id || (0, crypto.randomUUID)(),
 				createdAt: payload.metadata?.createdAt || (/* @__PURE__ */ new Date()).toString(),
 				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
 			},
@@ -3372,8 +3385,10 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		return this.healthClient.Check(req).then((res) => res).catch(() => status_unknown);
 	}
 };
+const VERSION = "0.2.3";
 //#endregion
 exports.CertEncoding = CertEncoding;
 exports.CryptoBrokerClient = CryptoBrokerClient;
+exports.VERSION = VERSION;
 
 //# sourceMappingURL=client.cjs.map

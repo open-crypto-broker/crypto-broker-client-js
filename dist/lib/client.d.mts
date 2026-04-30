@@ -422,7 +422,7 @@ declare class BinaryWriter {
   private readonly encodeUtf8;
   /**
    * We cannot allocate a buffer for the entire output
-   * because we don't know it's size.
+   * because we don't know its size.
    *
    * So we collect smaller chunks of known size and
    * concat them later.
@@ -479,7 +479,7 @@ declare class BinaryWriter {
    */
   int32(value: number): this;
   /**
-   * Write a `bool` value, a variant.
+   * Write a `bool` value, a varint.
    */
   bool(value: boolean): this;
   /**
@@ -511,7 +511,7 @@ declare class BinaryWriter {
    */
   sint32(value: number): this;
   /**
-   * Write a `fixed64` value, a signed, fixed-length 64-bit integer.
+   * Write a `sfixed64` value, a signed, fixed-length 64-bit integer.
    */
   sfixed64(value: string | number | bigint): this;
   /**
@@ -543,9 +543,10 @@ declare class BinaryReader {
   readonly len: number;
   protected readonly buf: Uint8Array;
   private readonly view;
-  constructor(buf: Uint8Array, decodeUtf8?: (bytes: Uint8Array) => string);
+  constructor(buf: Uint8Array, decodeUtf8?: (bytes: Uint8Array, strict?: boolean) => string);
   /**
-   * Reads a tag - field number and wire type.
+   * Reads a tag - field number and wire type. Tags are uint32 varints; values
+   * that do not fit in uint32 are rejected.
    */
   tag(): [number, WireType];
   /**
@@ -617,9 +618,10 @@ declare class BinaryReader {
    */
   bytes(): Uint8Array;
   /**
-   * Read a `string` field, length-delimited data converted to UTF-8 text.
+   * Read a `string` field, length-delimited data converted to UTF-8 text. If
+   * `strict` is true, throw on invalid UTF-8 instead of substituting U+FFFD.
    */
-  string(): string;
+  string(strict?: boolean): string;
 }
 //#endregion
 //#region src/lib/proto/messages.d.ts
@@ -751,6 +753,7 @@ declare class CryptoBrokerClient {
   signCertificate(payload: SignPayload, options?: CertOptions): Promise<SignResponse>;
   healthData(): Promise<HealthCheckResponse>;
 }
+declare const VERSION: any;
 //#endregion
-export { BenchmarkPayload, CertEncoding, CryptoBrokerClient, HashPayload, Metadata, SignPayload, TraceContext };
+export { BenchmarkPayload, CertEncoding, CryptoBrokerClient, HashPayload, Metadata, SignPayload, TraceContext, VERSION };
 //# sourceMappingURL=client.d.mts.map

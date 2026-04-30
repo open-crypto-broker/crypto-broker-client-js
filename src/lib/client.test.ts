@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { CertEncoding, CryptoBrokerClient } from './client.js';
-import { validate } from 'uuid';
 import {
   BenchmarkRequest,
   BenchmarkResponse,
@@ -14,6 +13,12 @@ import {
   HealthCheckResponse,
 } from './proto/third_party/grpc/health/v1/health.js';
 import * as grpc from '@grpc/grpc-js';
+
+const isUUID4 = (val: string | undefined) => {
+  const regex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return typeof val === 'string' && regex.test(val);
+};
 
 // Mock the protobuf client under the hood, returning the same values after doing a gRPC call functions
 jest.mock('./proto/messages.js', () => ({
@@ -147,7 +152,7 @@ describe('CryptoBrokerClient', () => {
     // assert that the metadata was correctly autofilled
     expect(response.metadata).toBeDefined();
     expect(response.metadata?.id).not.toEqual('empty');
-    expect(validate(response.metadata?.id)).toBeTruthy();
+    expect(isUUID4(response.metadata?.id)).toBeTruthy();
     expect(response.metadata?.createdAt).not.toEqual('empty');
     expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
       'Invalid Date',
@@ -207,7 +212,7 @@ describe('CryptoBrokerClient', () => {
     // assert that the metadata was correctly autofilled
     expect(response.metadata).toBeDefined();
     expect(response.metadata?.id).not.toEqual('empty');
-    expect(validate(response.metadata?.id)).toBeTruthy();
+    expect(isUUID4(response.metadata?.id)).toBeTruthy();
     expect(response.metadata?.createdAt).not.toEqual('empty');
     expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
       'Invalid Date',
@@ -250,7 +255,7 @@ describe('CryptoBrokerClient', () => {
     // assert that the metadata was correctly autofilled
     expect(response.metadata).toBeDefined();
     expect(response.metadata?.id).not.toEqual('empty');
-    expect(validate(response.metadata?.id)).toBeTruthy();
+    expect(isUUID4(response.metadata?.id)).toBeTruthy();
     expect(response.metadata?.createdAt).not.toEqual('empty');
     expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
       'Invalid Date',
@@ -277,7 +282,7 @@ describe('CryptoBrokerClient', () => {
     // assert that the metadata was correctly autofilled
     expect(response.metadata).toBeDefined();
     expect(response.metadata?.id).not.toEqual('empty');
-    expect(validate(response.metadata?.id)).toBeTruthy();
+    expect(isUUID4(response.metadata?.id)).toBeTruthy();
     expect(response.metadata?.createdAt).not.toEqual('empty');
     expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
       'Invalid Date',

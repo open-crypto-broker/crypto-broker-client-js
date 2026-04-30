@@ -1,5 +1,5 @@
 import type { Config } from 'jest';
-import { createDefaultEsmPreset } from 'ts-jest'
+import { createDefaultEsmPreset } from 'ts-jest';
 
 const config: Config = {
   ...createDefaultEsmPreset(),
@@ -22,4 +22,9 @@ const config: Config = {
   ],
 };
 
-export default config;
+export default {
+  ...config,
+  globals: {
+    __VERSION__: 'test',
+  }
+};
