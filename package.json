@@ -49,7 +49,8 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.3",
-    "@peculiar/x509": "^2.0.0"
+    "@peculiar/x509": "^2.0.0",
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@bufbuild/protobuf": "^2.12.0",
