@@ -1,11 +1,11 @@
 import { defineConfig } from 'tsdown';
 import { execSync } from 'node:child_process';
 
-const pkgVersion = execSync("npm pkg get version | tr -d '\"'")
+const pkgVersion = execSync("/usr/bin/npm pkg get version | tr -d '\"'")
   .toString()
   .trim();
 
-const gitHash = execSync('git rev-parse HEAD').toString().trim();
+const gitHash = execSync('/usr/bin/git rev-parse HEAD').toString().trim();
 
 export default defineConfig({
   entry: ['src/client.ts'],
