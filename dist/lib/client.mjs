@@ -3363,7 +3363,8 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 };
 const VERSION = "0.2.3";
+const GIT_HASH = "ea2925c0c1535ddf01cf9867f146a066310364c5";
 //#endregion
-export { CertEncoding, CryptoBrokerClient, VERSION };
+export { CertEncoding, CryptoBrokerClient, GIT_HASH, VERSION };
 
 //# sourceMappingURL=client.mjs.map

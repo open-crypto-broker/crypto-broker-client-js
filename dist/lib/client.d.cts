@@ -754,6 +754,7 @@ declare class CryptoBrokerClient {
   healthData(): Promise<HealthCheckResponse>;
 }
 declare const VERSION: any;
+declare const GIT_HASH: any;
 //#endregion
-export { BenchmarkPayload, CertEncoding, CryptoBrokerClient, HashPayload, Metadata, SignPayload, TraceContext, VERSION };
+export { BenchmarkPayload, CertEncoding, CryptoBrokerClient, GIT_HASH, HashPayload, Metadata, SignPayload, TraceContext, VERSION };
 //# sourceMappingURL=client.d.cts.map
