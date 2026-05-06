@@ -5,6 +5,8 @@ const pkgVersion = execSync("npm pkg get version | tr -d '\"'")
   .toString()
   .trim();
 
+const gitHash = execSync('git rev-parse HEAD').toString().trim();
+
 export default defineConfig({
   entry: ['src/client.ts'],
   format: ['esm', 'cjs'],
@@ -17,5 +19,6 @@ export default defineConfig({
   },
   define: {
     __VERSION__: JSON.stringify(pkgVersion),
+    __GIT_HASH__: JSON.stringify(gitHash),
   },
 });
