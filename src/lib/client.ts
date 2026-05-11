@@ -244,3 +244,4 @@ export class CryptoBrokerClient {
 }
 
 export const VERSION = __VERSION__;
+export const GIT_HASH = __GIT_HASH__;

@@ -26,5 +26,6 @@ export default {
   ...config,
   globals: {
     __VERSION__: 'test',
+    __GIT_HASH__: 'test',
   }
 };
