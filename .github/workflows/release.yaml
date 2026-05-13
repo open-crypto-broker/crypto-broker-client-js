@@ -5,14 +5,19 @@ on:
     tags:
       - 'v*'
 
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
 permissions: {}
 
 jobs:
   github-release:
     name: Create GitHub Release
     permissions:
-      contents: write
+      contents: write # for creating the GitHub release
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -38,11 +43,12 @@ jobs:
   publish-npm:
     name: Publish to npmjs
     permissions:
-      contents: read
-      id-token: write
+      contents: read # for checking out code
+      id-token: write # for OIDC provenance
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
