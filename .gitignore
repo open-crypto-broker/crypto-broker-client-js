@@ -10,8 +10,9 @@ coverage/
 .npm
 # Optional eslint cache
 .eslintcache
-# VS Code
+# VS Code etc
 .vscode/*
+*.idea
 # Packed files
 *.tgz
 # Ignore temporary test folder
