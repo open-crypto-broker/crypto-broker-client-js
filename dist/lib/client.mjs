@@ -3259,6 +3259,96 @@ function isSet(value) {
 	return value !== null && value !== void 0;
 }
 //#endregion
+//#region src/lib/request_validation.ts
+const maxProfileNameLen = 64;
+const maxHashInputBytes = 1 << 20;
+const maxCSRBytes = 65536;
+const maxCAPrivateKeyBytes = 65536;
+const maxCACertBytes = 65536;
+const maxSubjectLen = 1024;
+const maxCRLDistributionPoints = 16;
+const maxCRLDistributionPointLen = 2048;
+const maxMetadataIdLen = 128;
+const maxMetadataCreatedAtLen = 64;
+const maxTraceIdLen = 32;
+const maxSpanIdLen = 16;
+const maxTraceFlagsLen = 2;
+const maxTraceStateLen = 512;
+const maxCorrelationIdLen = 128;
+const maxUint64 = BigInt("18446744073709551615");
+const certEncodings = ["B64", "PEM"];
+function typeError(field, msg) {
+	return /* @__PURE__ */ new TypeError(`${field}: ${msg}`);
+}
+function isRecord(value) {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function assertObject(value, field) {
+	if (!isRecord(value)) throw typeError(field, "must be an object");
+}
+function assertString(value, field, max, required = false) {
+	if (typeof value !== "string") throw typeError(field, "must be a string");
+	if (required && value === "") throw typeError(field, "required");
+	if (value.length > max) throw typeError(field, `too large (max ${max})`);
+}
+function assertOptionalString(value, field, max) {
+	if (value === void 0) return;
+	assertString(value, field, max);
+}
+function assertOptionalUint64(value, field) {
+	if (value === void 0) return;
+	if (!isRecord(value) || typeof value.toString !== "function") throw typeError(field, "must be a Long-compatible uint64 value");
+	const asString = value.toString();
+	if (!/^\d+$/.test(asString) || BigInt(asString) > maxUint64) throw typeError(field, "must be a uint64 value");
+}
+function validateMetadata(metadata) {
+	if (metadata === void 0) return;
+	assertObject(metadata, "metadata");
+	assertOptionalString(metadata.id, "metadata.id", maxMetadataIdLen);
+	assertOptionalString(metadata.createdAt, "metadata.createdAt", maxMetadataCreatedAtLen);
+	if (metadata.traceContext === void 0) return;
+	assertObject(metadata.traceContext, "metadata.traceContext");
+	assertString(metadata.traceContext.traceId, "metadata.traceContext.traceId", maxTraceIdLen);
+	assertString(metadata.traceContext.spanId, "metadata.traceContext.spanId", maxSpanIdLen);
+	assertString(metadata.traceContext.traceFlags, "metadata.traceContext.traceFlags", maxTraceFlagsLen);
+	assertString(metadata.traceContext.traceState, "metadata.traceContext.traceState", maxTraceStateLen);
+	assertString(metadata.traceContext.correlationId, "metadata.traceContext.correlationId", maxCorrelationIdLen);
+}
+function validateBenchmarkPayload(payload) {
+	assertObject(payload, "payload");
+	validateMetadata(payload.metadata);
+}
+function validateHashPayload(payload) {
+	assertObject(payload, "payload");
+	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	if (!(payload.input instanceof Uint8Array)) throw typeError("input", "must be a Uint8Array");
+	if (payload.input.length > maxHashInputBytes) throw typeError("input", `too large (max ${maxHashInputBytes})`);
+	validateMetadata(payload.metadata);
+}
+function validateSignPayload(payload) {
+	assertObject(payload, "payload");
+	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	assertString(payload.csr, "csr", maxCSRBytes, true);
+	assertString(payload.caPrivateKey, "caPrivateKey", maxCAPrivateKeyBytes, true);
+	assertString(payload.caCert, "caCert", maxCACertBytes, true);
+	assertOptionalUint64(payload.validNotBefore, "validNotBefore");
+	assertOptionalUint64(payload.validNotAfter, "validNotAfter");
+	assertOptionalString(payload.subject, "subject", maxSubjectLen);
+	if (payload.crlDistributionPoints !== void 0) {
+		if (!Array.isArray(payload.crlDistributionPoints)) throw typeError("crlDistributionPoints", "must be an array");
+		if (payload.crlDistributionPoints.length > maxCRLDistributionPoints) throw typeError("crlDistributionPoints", `too many entries (max ${maxCRLDistributionPoints})`);
+		payload.crlDistributionPoints.forEach((value, index) => {
+			assertString(value, `crlDistributionPoints[${index}]`, maxCRLDistributionPointLen);
+		});
+	}
+	validateMetadata(payload.metadata);
+}
+function validateCertOptions(options) {
+	if (options === void 0) return;
+	assertObject(options, "options");
+	if (!certEncodings.includes(options.encoding)) throw typeError("options.encoding", `must be one of: ${certEncodings.join(", ")}`);
+}
+//#endregion
 //#region src/lib/client.ts
 let CertEncoding = /* @__PURE__ */ function(CertEncoding) {
 	CertEncoding["B64"] = "B64";
@@ -3318,6 +3408,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		throw new Error("retry limit reached");
 	}
 	async benchmarkData(payload) {
+		validateBenchmarkPayload(payload);
 		const req = { metadata: {
 			id: payload.metadata?.id || randomUUID(),
 			createdAt: payload.metadata?.createdAt || (/* @__PURE__ */ new Date()).toString(),
@@ -3326,6 +3417,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		return this.client.Benchmark(req).then((res) => res);
 	}
 	async hashData(payload) {
+		validateHashPayload(payload);
 		const req = {
 			profile: payload.profile,
 			input: payload.input,
@@ -3338,6 +3430,8 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		return this.client.Hash(req).then((res) => res);
 	}
 	async signCertificate(payload, options) {
+		validateSignPayload(payload);
+		validateCertOptions(options);
 		const req = {
 			profile: payload.profile,
 			csr: payload.csr,
@@ -3362,8 +3456,8 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		return this.healthClient.Check(req).then((res) => res).catch(() => status_unknown);
 	}
 };
-const VERSION = "0.2.3";
-const GIT_HASH = "ea2925c0c1535ddf01cf9867f146a066310364c5";
+const VERSION = "";
+const GIT_HASH = "6004f28df663f659d24c012386648fa4b1f598d6";
 //#endregion
 export { CertEncoding, CryptoBrokerClient, GIT_HASH, VERSION };
 

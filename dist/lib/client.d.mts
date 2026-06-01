@@ -4,12 +4,12 @@ import * as grpc from "@grpc/grpc-js";
 // Common type definitions for both the ESM and UMD variants. The ESM variant
 // reexports the Long class as its default export, whereas the UMD variant makes
 // the Long class a whole-module export with a global variable fallback.
-type LongLike = Long$1 | number | bigint | string | {
+type LongLike = Long | number | bigint | string | {
   low: number;
   high: number;
   unsigned: boolean;
 };
-declare class Long$1 {
+declare class Long {
   /**
    * Constructs a 64 bit two's-complement integer, given its low and high 32 bit values as signed integers. See the from* functions below for more convenient ways of constructing Longs.
    */
@@ -17,35 +17,35 @@ declare class Long$1 {
   /**
    * Maximum unsigned value.
    */
-  static MAX_UNSIGNED_VALUE: Long$1;
+  static MAX_UNSIGNED_VALUE: Long;
   /**
    * Maximum signed value.
    */
-  static MAX_VALUE: Long$1;
+  static MAX_VALUE: Long;
   /**
    * Minimum signed value.
    */
-  static MIN_VALUE: Long$1;
+  static MIN_VALUE: Long;
   /**
    * Signed negative one.
    */
-  static NEG_ONE: Long$1;
+  static NEG_ONE: Long;
   /**
    * Signed one.
    */
-  static ONE: Long$1;
+  static ONE: Long;
   /**
    * Unsigned one.
    */
-  static UONE: Long$1;
+  static UONE: Long;
   /**
    * Unsigned zero.
    */
-  static UZERO: Long$1;
+  static UZERO: Long;
   /**
    * Signed zero
    */
-  static ZERO: Long$1;
+  static ZERO: Long;
   /**
    * The high 32 bits as a signed value.
    */
@@ -61,51 +61,51 @@ declare class Long$1 {
   /**
    * Returns a Long representing the 64 bit integer that comes by concatenating the given low and high bits. Each is assumed to use 32 bits.
    */
-  static fromBits(lowBits: number, highBits: number, unsigned?: boolean): Long$1;
+  static fromBits(lowBits: number, highBits: number, unsigned?: boolean): Long;
   /**
    * Returns a Long representing the given 32 bit integer value.
    */
-  static fromInt(value: number, unsigned?: boolean): Long$1;
+  static fromInt(value: number, unsigned?: boolean): Long;
   /**
    * Returns a Long representing the given value, provided that it is a finite number. Otherwise, zero is returned.
    */
-  static fromNumber(value: number, unsigned?: boolean): Long$1;
+  static fromNumber(value: number, unsigned?: boolean): Long;
   /**
    * Returns a Long representing the given big integer value.
    */
-  static fromBigInt(value: bigint, unsigned?: boolean): Long$1;
+  static fromBigInt(value: bigint, unsigned?: boolean): Long;
   /**
    * Returns a Long representation of the given string, written using the specified radix.
    */
-  static fromString(str: string, unsigned?: boolean | number, radix?: number): Long$1;
+  static fromString(str: string, unsigned?: boolean | number, radix?: number): Long;
   /**
    * Creates a Long from its byte representation.
    */
-  static fromBytes(bytes: number[], unsigned?: boolean, le?: boolean): Long$1;
+  static fromBytes(bytes: number[], unsigned?: boolean, le?: boolean): Long;
   /**
    * Creates a Long from its little endian byte representation.
    */
-  static fromBytesLE(bytes: number[], unsigned?: boolean): Long$1;
+  static fromBytesLE(bytes: number[], unsigned?: boolean): Long;
   /**
    * Creates a Long from its big endian byte representation.
    */
-  static fromBytesBE(bytes: number[], unsigned?: boolean): Long$1;
+  static fromBytesBE(bytes: number[], unsigned?: boolean): Long;
   /**
    * Tests if the specified object is a Long.
    */
-  static isLong(obj: any): obj is Long$1;
+  static isLong(obj: any): obj is Long;
   /**
    * Converts the specified value to a Long.
    */
-  static fromValue(val: LongLike, unsigned?: boolean): Long$1;
+  static fromValue(val: LongLike, unsigned?: boolean): Long;
   /**
    * Returns the sum of this and the specified Long.
    */
-  add(addend: LongLike): Long$1;
+  add(addend: LongLike): Long;
   /**
    * Returns the bitwise AND of this Long and the specified.
    */
-  and(other: LongLike): Long$1;
+  and(other: LongLike): Long;
   /**
    * Compares this Long's value with the specified's.
    */
@@ -117,11 +117,11 @@ declare class Long$1 {
   /**
    * Returns this Long divided by the specified.
    */
-  divide(divisor: LongLike): Long$1;
+  divide(divisor: LongLike): Long;
   /**
    * Returns this Long divided by the specified.
    */
-  div(divisor: LongLike): Long$1;
+  div(divisor: LongLike): Long;
   /**
    * Tests if this Long's value equals the specified's.
    */
@@ -221,35 +221,35 @@ declare class Long$1 {
   /**
    * Returns this Long modulo the specified.
    */
-  modulo(other: LongLike): Long$1;
+  modulo(other: LongLike): Long;
   /**
    * Returns this Long modulo the specified.
    */
-  mod(other: LongLike): Long$1;
+  mod(other: LongLike): Long;
   /**
    * Returns this Long modulo the specified.
    */
-  rem(other: LongLike): Long$1;
+  rem(other: LongLike): Long;
   /**
    * Returns the product of this and the specified Long.
    */
-  multiply(multiplier: LongLike): Long$1;
+  multiply(multiplier: LongLike): Long;
   /**
    * Returns the product of this and the specified Long.
    */
-  mul(multiplier: LongLike): Long$1;
+  mul(multiplier: LongLike): Long;
   /**
    * Negates this Long's value.
    */
-  negate(): Long$1;
+  negate(): Long;
   /**
    * Negates this Long's value.
    */
-  neg(): Long$1;
+  neg(): Long;
   /**
    * Returns the bitwise NOT of this Long.
    */
-  not(): Long$1;
+  not(): Long;
   /**
    * Returns count leading zeros of this Long.
    */
@@ -281,59 +281,59 @@ declare class Long$1 {
   /**
    * Returns the bitwise OR of this Long and the specified.
    */
-  or(other: LongLike): Long$1;
+  or(other: LongLike): Long;
   /**
    * Returns this Long with bits shifted to the left by the given amount.
    */
-  shiftLeft(numBits: number | Long$1): Long$1;
+  shiftLeft(numBits: number | Long): Long;
   /**
    * Returns this Long with bits shifted to the left by the given amount.
    */
-  shl(numBits: number | Long$1): Long$1;
+  shl(numBits: number | Long): Long;
   /**
    * Returns this Long with bits arithmetically shifted to the right by the given amount.
    */
-  shiftRight(numBits: number | Long$1): Long$1;
+  shiftRight(numBits: number | Long): Long;
   /**
    * Returns this Long with bits arithmetically shifted to the right by the given amount.
    */
-  shr(numBits: number | Long$1): Long$1;
+  shr(numBits: number | Long): Long;
   /**
    * Returns this Long with bits logically shifted to the right by the given amount.
    */
-  shiftRightUnsigned(numBits: number | Long$1): Long$1;
+  shiftRightUnsigned(numBits: number | Long): Long;
   /**
    * Returns this Long with bits logically shifted to the right by the given amount.
    */
-  shru(numBits: number | Long$1): Long$1;
+  shru(numBits: number | Long): Long;
   /**
    * Returns this Long with bits logically shifted to the right by the given amount.
    */
-  shr_u(numBits: number | Long$1): Long$1;
+  shr_u(numBits: number | Long): Long;
   /**
    * Returns this Long with bits rotated to the left by the given amount.
    */
-  rotateLeft(numBits: number | Long$1): Long$1;
+  rotateLeft(numBits: number | Long): Long;
   /**
    * Returns this Long with bits rotated to the left by the given amount.
    */
-  rotl(numBits: number | Long$1): Long$1;
+  rotl(numBits: number | Long): Long;
   /**
    * Returns this Long with bits rotated to the right by the given amount.
    */
-  rotateRight(numBits: number | Long$1): Long$1;
+  rotateRight(numBits: number | Long): Long;
   /**
    * Returns this Long with bits rotated to the right by the given amount.
    */
-  rotr(numBits: number | Long$1): Long$1;
+  rotr(numBits: number | Long): Long;
   /**
    * Returns the difference of this and the specified Long.
    */
-  subtract(subtrahend: LongLike): Long$1;
+  subtract(subtrahend: LongLike): Long;
   /**
    * Returns the difference of this and the specified Long.
    */
-  sub(subtrahend: LongLike): Long$1;
+  sub(subtrahend: LongLike): Long;
   /**
    * Converts the Long to a big integer.
    */
@@ -361,7 +361,7 @@ declare class Long$1 {
   /**
    * Converts this Long to signed.
    */
-  toSigned(): Long$1;
+  toSigned(): Long;
   /**
    * Converts the Long to a string written in the specified radix.
    */
@@ -369,11 +369,11 @@ declare class Long$1 {
   /**
    * Converts this Long to unsigned.
    */
-  toUnsigned(): Long$1;
+  toUnsigned(): Long;
   /**
    * Returns the bitwise XOR of this Long and the given one.
    */
-  xor(other: LongLike): Long$1;
+  xor(other: LongLike): Long;
 }
 //#endregion
 //#region node_modules/@bufbuild/protobuf/dist/esm/wire/binary-encoding.d.ts
@@ -661,7 +661,7 @@ declare const BenchmarkResponse: MessageFns$1<BenchmarkResponse>;
 declare const HashResponse: MessageFns$1<HashResponse>;
 declare const SignResponse: MessageFns$1<SignResponse>;
 type Builtin$1 = Date | Function | Uint8Array | string | number | boolean | undefined;
-type DeepPartial$1<T> = T extends Builtin$1 ? T : T extends Long$1 ? string | number | Long$1 : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial$1<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial$1<U>> : T extends {} ? { [K in keyof T]?: DeepPartial$1<T[K]> } : Partial<T>;
+type DeepPartial$1<T> = T extends Builtin$1 ? T : T extends Long ? string | number | Long : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial$1<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial$1<U>> : T extends {} ? { [K in keyof T]?: DeepPartial$1<T[K]> } : Partial<T>;
 type KeysOfUnion$1<T> = T extends T ? keyof T : never;
 type Exact$1<P, I extends P> = P extends Builtin$1 ? P : P & { [K in keyof P]: Exact$1<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion$1<P>>]: never };
 interface MessageFns$1<T> {
