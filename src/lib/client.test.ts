@@ -134,6 +134,39 @@ describe('CryptoBrokerClient', () => {
     });
   });
 
+  it('should reject invalid hash payloads before making a request', async () => {
+    await expect(
+      client.hashData(undefined as unknown as HashRequest),
+    ).rejects.toThrow(TypeError);
+    await expect(
+      client.hashData({
+        profile: '',
+        input: Buffer.from('Testing Data'),
+      }),
+    ).rejects.toThrow('profile');
+    await expect(
+      client.hashData({
+        profile: 'Default',
+        input: 'Testing Data' as unknown as Uint8Array,
+      }),
+    ).rejects.toThrow('input');
+    await expect(
+      client.hashData({
+        profile: 'Default',
+        input: Buffer.from('Testing Data'),
+        metadata: {
+          traceContext: {
+            traceId: '0'.repeat(33),
+            spanId: '',
+            traceFlags: '',
+            traceState: '',
+            correlationId: '',
+          },
+        },
+      }),
+    ).rejects.toThrow('metadata.traceContext.traceId');
+  });
+
   it('hash should autofill the metadata values', async () => {
     const payload: HashRequest = {
       profile: 'Default',
@@ -182,6 +215,73 @@ describe('CryptoBrokerClient', () => {
         'MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQwgYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAoBgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQIEwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAxMjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuzGNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjfpxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1EcUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==',
       metadata: { id: 'mocked-id', createdAt: 'mocked-date' },
     });
+  });
+
+  it('should reject invalid sign payloads before making a request', async () => {
+    await expect(
+      client.signCertificate(null as unknown as SignRequest),
+    ).rejects.toThrow(TypeError);
+    await expect(
+      client.signCertificate({
+        profile: 'Default',
+        csr: '',
+        caPrivateKey: 'mocked-key',
+        caCert: 'mocked-cert',
+      }),
+    ).rejects.toThrow('csr');
+    await expect(
+      client.signCertificate({
+        profile: 'Default',
+        csr: 'mocked-csr',
+        caPrivateKey: 'mocked-key',
+        caCert: 'mocked-cert',
+        validNotBefore: 42 as unknown as SignRequest['validNotBefore'],
+      }),
+    ).rejects.toThrow('validNotBefore');
+    await expect(
+      client.signCertificate({
+        profile: 'Default',
+        csr: 'mocked-csr',
+        caPrivateKey: 'mocked-key',
+        caCert: 'mocked-cert',
+        subject: 'A'.repeat(1025),
+      }),
+    ).rejects.toThrow('subject');
+    await expect(
+      client.signCertificate({
+        profile: 'Default',
+        csr: 'mocked-csr',
+        caPrivateKey: 'mocked-key',
+        caCert: 'mocked-cert',
+        crlDistributionPoints: Array.from(
+          { length: 17 },
+          () => 'http://example.com/crl',
+        ),
+      }),
+    ).rejects.toThrow('crlDistributionPoints');
+    await expect(
+      client.signCertificate({
+        profile: 'Default',
+        csr: 'mocked-csr',
+        caPrivateKey: 'mocked-key',
+        caCert: 'mocked-cert',
+        crlDistributionPoints: [42 as unknown as string],
+      }),
+    ).rejects.toThrow('crlDistributionPoints[0]');
+  });
+
+  it('should reject invalid certificate encoding options', async () => {
+    await expect(
+      client.signCertificate(
+        {
+          profile: 'Default',
+          csr: 'mocked-csr',
+          caPrivateKey: 'mocked-key',
+          caCert: 'mocked-cert',
+        },
+        { encoding: 'DER' as CertEncoding },
+      ),
+    ).rejects.toThrow('options.encoding');
   });
 
   it('sign should autofill the metadata', async () => {
@@ -287,6 +387,16 @@ describe('CryptoBrokerClient', () => {
     expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
       'Invalid Date',
     );
+  });
+
+  it('should reject invalid benchmark metadata', async () => {
+    await expect(
+      client.benchmarkData({
+        metadata: {
+          id: 'A'.repeat(129),
+        },
+      }),
+    ).rejects.toThrow('metadata.id');
   });
 
   it('should return the mocked benchmark data response', async () => {

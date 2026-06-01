@@ -18,6 +18,13 @@ import {
   HealthCheckResponse,
   HealthClientImpl,
 } from './proto/third_party/grpc/health/v1/health.js';
+import {
+  validateBenchmarkPayload,
+  validateCertOptions,
+  validateHashPayload,
+  validateSignPayload,
+} from './request_validation.js';
+import type Long from 'long';
 
 type CreateCryptoBrokerClientParams = {
   options?: grpc.ClientOptions;
@@ -170,6 +177,8 @@ export class CryptoBrokerClient {
   }
 
   async benchmarkData(payload: BenchmarkPayload): Promise<BenchmarkResponse> {
+    validateBenchmarkPayload(payload);
+
     const req: BenchmarkRequest = {
       metadata: {
         id: payload.metadata?.id || randomUUID(),
@@ -183,6 +192,8 @@ export class CryptoBrokerClient {
   }
 
   async hashData(payload: HashPayload): Promise<HashResponse> {
+    validateHashPayload(payload);
+
     const req: HashRequest = {
       profile: payload.profile,
       input: payload.input,
@@ -201,6 +212,9 @@ export class CryptoBrokerClient {
     payload: SignPayload,
     options?: CertOptions,
   ): Promise<SignResponse> {
+    validateSignPayload(payload);
+    validateCertOptions(options);
+
     // Prepare the Request
     const req: SignRequest = {
       profile: payload.profile,
