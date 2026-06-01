@@ -636,7 +636,6 @@ interface TraceContext$1 {
 /** Metadata shared across all methods */
 interface Metadata$1 {
   id: string;
-  createdAt: string;
   traceContext?: TraceContext$1 | undefined;
 }
 /** Response for a Benchmark Request */
@@ -701,7 +700,8 @@ interface MessageFns<T> {
 //#endregion
 //#region src/lib/client.d.ts
 type CreateCryptoBrokerClientParams = {
-  options?: grpc.ClientOptions;
+  grpcOptions?: grpc.ClientOptions;
+  circuitBreakerOptions?: CircuitBreakerConfig;
 };
 interface TraceContext {
   traceId: string;
@@ -711,8 +711,7 @@ interface TraceContext {
   correlationId: string;
 }
 interface Metadata {
-  id?: string;
-  createdAt?: string;
+  id: string;
   traceContext?: TraceContext;
 }
 interface BenchmarkPayload {
@@ -741,11 +740,22 @@ declare enum CertEncoding {
 type CertOptions = {
   encoding: CertEncoding;
 };
+interface CircuitBreakerConfig {
+  enabled: boolean;
+  name: string;
+  maxRequests: number;
+  interval: number;
+  timeout: number;
+  consecutiveFailures: number;
+  failureStatusCodes: number[];
+}
 declare class CryptoBrokerClient {
   private client;
   private healthClient;
+  private devClient;
   private address;
   private conn;
+  private breakerConfig;
   constructor(opts?: CreateCryptoBrokerClientParams);
   static NewLibrary(opts?: CreateCryptoBrokerClientParams): Promise<CryptoBrokerClient>;
   benchmarkData(payload: BenchmarkPayload): Promise<BenchmarkResponse>;

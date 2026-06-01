@@ -1,4 +1,4 @@
-export const serviceConfig = {
+export const defaultServiceConfig = {
   methodConfig: [
     {
       name: [{}],

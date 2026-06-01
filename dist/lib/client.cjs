@@ -29,7 +29,7 @@ let crypto = require("crypto");
 let _peculiar_x509 = require("@peculiar/x509");
 _peculiar_x509 = __toESM(_peculiar_x509, 1);
 //#region src/lib/conf/service_config.ts
-const serviceConfig = { methodConfig: [{
+const defaultServiceConfig = { methodConfig: [{
 	name: [{}],
 	retryPolicy: {
 		maxAttempts: 5,
@@ -43,6 +43,21 @@ const serviceConfig = { methodConfig: [{
 		]
 	}
 }] };
+//#endregion
+//#region src/lib/conf/circuitbreaker_config.ts
+const defaultCircuitConfig = {
+	enabled: true,
+	name: "crypto-grpc",
+	maxRequests: 3,
+	interval: 30,
+	timeout: 5,
+	consecutiveFailures: 3,
+	failureStatusCodes: [
+		14,
+		8,
+		10
+	]
+};
 //#endregion
 //#region node_modules/@bufbuild/protobuf/dist/esm/wire/varint.js
 /**
@@ -2393,14 +2408,12 @@ const TraceContext = {
 function createBaseMetadata() {
 	return {
 		id: "",
-		createdAt: "",
 		traceContext: void 0
 	};
 }
 const Metadata = {
 	encode(message, writer = new BinaryWriter()) {
 		if (message.id !== "") writer.uint32(10).string(message.id);
-		if (message.createdAt !== "") writer.uint32(18).string(message.createdAt);
 		if (message.traceContext !== void 0) TraceContext.encode(message.traceContext, writer.uint32(26).fork()).join();
 		return writer;
 	},
@@ -2415,10 +2428,6 @@ const Metadata = {
 					if (tag !== 10) break;
 					message.id = reader.string();
 					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.createdAt = reader.string();
-					continue;
 				case 3:
 					if (tag !== 26) break;
 					message.traceContext = TraceContext.decode(reader, reader.uint32());
@@ -2432,14 +2441,12 @@ const Metadata = {
 	fromJSON(object) {
 		return {
 			id: isSet$1(object.id) ? globalThis.String(object.id) : "",
-			createdAt: isSet$1(object.createdAt) ? globalThis.String(object.createdAt) : "",
 			traceContext: isSet$1(object.traceContext) ? TraceContext.fromJSON(object.traceContext) : void 0
 		};
 	},
 	toJSON(message) {
 		const obj = {};
 		if (message.id !== "") obj.id = message.id;
-		if (message.createdAt !== "") obj.createdAt = message.createdAt;
 		if (message.traceContext !== void 0) obj.traceContext = TraceContext.toJSON(message.traceContext);
 		return obj;
 	},
@@ -2449,7 +2456,6 @@ const Metadata = {
 	fromPartial(object) {
 		const message = createBaseMetadata();
 		message.id = object.id ?? "";
-		message.createdAt = object.createdAt ?? "";
 		message.traceContext = object.traceContext !== void 0 && object.traceContext !== null ? TraceContext.fromPartial(object.traceContext) : void 0;
 		return message;
 	}
@@ -2955,14 +2961,8 @@ var CryptoGrpcClientImpl = class {
 	constructor(rpc, opts) {
 		this.service = opts?.service || "CryptoBroker.CryptoGrpc";
 		this.rpc = rpc;
-		this.Benchmark = this.Benchmark.bind(this);
 		this.Hash = this.Hash.bind(this);
 		this.Sign = this.Sign.bind(this);
-		this.FakeEndpoint = this.FakeEndpoint.bind(this);
-	}
-	Benchmark(request) {
-		const data = BenchmarkRequest.encode(request).finish();
-		return this.rpc.request(this.service, "Benchmark", data).then((data) => BenchmarkResponse.decode(new BinaryReader(data)));
 	}
 	Hash(request) {
 		const data = HashRequest.encode(request).finish();
@@ -2971,6 +2971,20 @@ var CryptoGrpcClientImpl = class {
 	Sign(request) {
 		const data = SignRequest.encode(request).finish();
 		return this.rpc.request(this.service, "Sign", data).then((data) => SignResponse.decode(new BinaryReader(data)));
+	}
+};
+var CryptoGrpcDevClientImpl = class {
+	rpc;
+	service;
+	constructor(rpc, opts) {
+		this.service = opts?.service || "CryptoBroker.CryptoGrpcDev";
+		this.rpc = rpc;
+		this.Benchmark = this.Benchmark.bind(this);
+		this.FakeEndpoint = this.FakeEndpoint.bind(this);
+	}
+	Benchmark(request) {
+		const data = BenchmarkRequest.encode(request).finish();
+		return this.rpc.request(this.service, "Benchmark", data).then((data) => BenchmarkResponse.decode(new BinaryReader(data)));
 	}
 	FakeEndpoint(request) {
 		const data = FakeEndpointRequest.encode(request).finish();
@@ -3298,13 +3312,21 @@ const encoders = {
 var CryptoBrokerClient = class CryptoBrokerClient {
 	client;
 	healthClient;
+	devClient;
 	address;
 	conn;
+	breakerConfig;
 	constructor(opts = {}) {
 		this.address = "unix:/tmp/open-crypto-broker/crypto-broker-server.sock";
-		const client_options = opts.options || {};
-		client_options["grpc.service_config"] = JSON.stringify(serviceConfig);
-		this.conn = new _grpc_grpc_js.Client(this.address, _grpc_grpc_js.credentials.createInsecure(), client_options);
+		const grpcOptions = {
+			["grpc.service_config"]: JSON.stringify(defaultServiceConfig),
+			...opts.grpcOptions
+		};
+		this.breakerConfig = {
+			...defaultCircuitConfig,
+			...opts.circuitBreakerOptions
+		};
+		this.conn = new _grpc_grpc_js.Client(this.address, _grpc_grpc_js.credentials.createInsecure(), grpcOptions);
 		const sendRequest = (service, method, data) => {
 			const path = `/${service}/${method}`;
 			return new Promise((resolve, reject) => {
@@ -3322,6 +3344,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		const hcRpc = { request: sendRequest };
 		this.client = new CryptoGrpcClientImpl(rpc);
 		this.healthClient = new HealthClientImpl(hcRpc);
+		this.devClient = new CryptoGrpcDevClientImpl(rpc);
 	}
 	static async NewLibrary(opts) {
 		const instance = new CryptoBrokerClient(opts);
@@ -3343,10 +3366,9 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	async benchmarkData(payload) {
 		const req = { metadata: {
 			id: payload.metadata?.id || (0, crypto.randomUUID)(),
-			createdAt: payload.metadata?.createdAt || (/* @__PURE__ */ new Date()).toString(),
 			...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
 		} };
-		return this.client.Benchmark(req).then((res) => res);
+		return this.devClient.Benchmark(req).then((res) => res);
 	}
 	async hashData(payload) {
 		const req = {
@@ -3354,7 +3376,6 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 			input: payload.input,
 			metadata: {
 				id: payload.metadata?.id || (0, crypto.randomUUID)(),
-				createdAt: payload.metadata?.createdAt || (/* @__PURE__ */ new Date()).toString(),
 				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
 			}
 		};
@@ -3368,7 +3389,6 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 			caCert: payload.caCert,
 			metadata: {
 				id: payload.metadata?.id || (0, crypto.randomUUID)(),
-				createdAt: payload.metadata?.createdAt || (/* @__PURE__ */ new Date()).toString(),
 				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
 			},
 			validNotBefore: payload.validNotBefore,
@@ -3386,7 +3406,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 };
 const VERSION = "0.2.3";
-const GIT_HASH = "ea2925c0c1535ddf01cf9867f146a066310364c5";
+const GIT_HASH = "9b36bd7fed4227a35f74fcd14266d5783625fac6";
 //#endregion
 exports.CertEncoding = CertEncoding;
 exports.CryptoBrokerClient = CryptoBrokerClient;

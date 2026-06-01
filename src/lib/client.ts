@@ -1,13 +1,15 @@
 import 'reflect-metadata';
 import * as grpc from '@grpc/grpc-js';
 import { UnaryCallback } from '@grpc/grpc-js/build/src/client.js';
-import { serviceConfig } from './conf/service_config.js';
+import { defaultServiceConfig } from './conf/service_config.js';
+import { defaultCircuitConfig } from './conf/circuitbreaker_config.js';
 import { randomUUID } from 'crypto';
 import x509 from '@peculiar/x509';
 import {
+  CryptoGrpcClientImpl,
+  CryptoGrpcDevClientImpl,
   BenchmarkRequest,
   BenchmarkResponse,
-  CryptoGrpcClientImpl,
   HashRequest,
   HashResponse,
   SignRequest,
@@ -18,9 +20,11 @@ import {
   HealthCheckResponse,
   HealthClientImpl,
 } from './proto/third_party/grpc/health/v1/health.js';
+import { ClientOptions } from '@grpc/grpc-js';
 
 type CreateCryptoBrokerClientParams = {
-  options?: grpc.ClientOptions;
+  grpcOptions?: grpc.ClientOptions;
+  circuitBreakerOptions?: CircuitBreakerConfig;
 };
 
 export interface TraceContext {
@@ -32,8 +36,7 @@ export interface TraceContext {
 }
 
 export interface Metadata {
-  id?: string;
-  createdAt?: string;
+  id: string;
   traceContext?: TraceContext;
 }
 
@@ -76,24 +79,45 @@ type CertOptions = {
   encoding: CertEncoding;
 };
 
+interface CircuitBreakerConfig {
+  enabled: boolean;
+  name: string;
+  maxRequests: number;
+  interval: number;
+  timeout: number;
+  consecutiveFailures: number;
+  failureStatusCodes: number[];
+}
+
 export class CryptoBrokerClient {
   private client: CryptoGrpcClientImpl;
   private healthClient: HealthClientImpl;
+  private devClient: CryptoGrpcDevClientImpl;
   private address: string;
   private conn: grpc.Client;
+  private breakerConfig: CircuitBreakerConfig;
 
   constructor(opts: CreateCryptoBrokerClientParams = {}) {
     // setup of connection parameters
     this.address = 'unix:/tmp/open-crypto-broker/crypto-broker-server.sock';
-    const client_options = opts.options || {};
 
-    // set retry policy via service config, note this will also overwrite others
-    client_options['grpc.service_config'] = JSON.stringify(serviceConfig);
+    // apply grpc client configuration
+    const grpcOptions: ClientOptions = {
+      // set retry policy via service config
+      ['grpc.service_config']: JSON.stringify(defaultServiceConfig),
+      ...opts.grpcOptions,
+    };
+
+    // apply circuit breaker configuration
+    this.breakerConfig = {
+      ...defaultCircuitConfig,
+      ...opts.circuitBreakerOptions,
+    };
 
     this.conn = new grpc.Client(
       this.address,
       grpc.credentials.createInsecure(),
-      client_options,
+      grpcOptions,
     );
 
     type RpcImpl = (
@@ -139,6 +163,7 @@ export class CryptoBrokerClient {
     };
     this.client = new CryptoGrpcClientImpl(rpc);
     this.healthClient = new HealthClientImpl(hcRpc);
+    this.devClient = new CryptoGrpcDevClientImpl(rpc);
   }
 
   static async NewLibrary(
@@ -173,13 +198,12 @@ export class CryptoBrokerClient {
     const req: BenchmarkRequest = {
       metadata: {
         id: payload.metadata?.id || randomUUID(),
-        createdAt: payload.metadata?.createdAt || new Date().toString(),
         ...(payload.metadata?.traceContext !== undefined && {
           traceContext: payload.metadata?.traceContext,
         }),
       },
     };
-    return this.client.Benchmark(req).then((res: BenchmarkResponse) => res);
+    return this.devClient.Benchmark(req).then((res: BenchmarkResponse) => res);
   }
 
   async hashData(payload: HashPayload): Promise<HashResponse> {
@@ -188,7 +212,6 @@ export class CryptoBrokerClient {
       input: payload.input,
       metadata: {
         id: payload.metadata?.id || randomUUID(),
-        createdAt: payload.metadata?.createdAt || new Date().toString(),
         ...(payload.metadata?.traceContext !== undefined && {
           traceContext: payload.metadata?.traceContext,
         }),
@@ -209,7 +232,6 @@ export class CryptoBrokerClient {
       caCert: payload.caCert,
       metadata: {
         id: payload.metadata?.id || randomUUID(),
-        createdAt: payload.metadata?.createdAt || new Date().toString(),
         ...(payload.metadata?.traceContext !== undefined && {
           traceContext: payload.metadata?.traceContext,
         }),
