@@ -31,7 +31,6 @@ jest.mock('./proto/messages.js', () => ({
         hashAlgorithm: 'sha3-512',
         metadata: {
           id: input.metadata?.id || 'empty',
-          createdAt: input.metadata?.createdAt || 'empty',
         },
       })),
     Sign: jest
@@ -41,9 +40,10 @@ jest.mock('./proto/messages.js', () => ({
           'MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQwgYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAoBgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQIEwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAxMjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuzGNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjfpxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1EcUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==',
         metadata: {
           id: input.metadata?.id || 'empty',
-          createdAt: input.metadata?.createdAt || 'empty',
         },
       })),
+  })),
+  CryptoGrpcDevClientImpl: jest.fn().mockImplementation(() => ({
     Benchmark: jest
       .fn<(input: BenchmarkRequest) => Promise<BenchmarkResponse>>()
       .mockImplementation(async (input) => ({
@@ -57,7 +57,6 @@ jest.mock('./proto/messages.js', () => ({
         }),
         metadata: {
           id: input.metadata?.id || 'empty',
-          createdAt: input.metadata?.createdAt || 'empty',
         },
       })),
   })),
@@ -121,7 +120,7 @@ describe('CryptoBrokerClient', () => {
     const payload = {
       profile: 'Default',
       input: Buffer.from('Testing Data'),
-      metadata: { id: 'mocked-id', createdAt: 'mocked-date' },
+      metadata: { id: 'mocked-id' },
     };
     const response: HashResponse = await client.hashData(payload);
 
@@ -130,7 +129,7 @@ describe('CryptoBrokerClient', () => {
       hashValue:
         '217a621302950213819fcb88a904b3e59735de83d366112dd4b817103b097d334a3a283a0fbc20aaf5b9fafc2f3d1d685e1ea812c7686840d389a99c9dfb168f',
       hashAlgorithm: 'sha3-512',
-      metadata: { id: 'mocked-id', createdAt: 'mocked-date' },
+      metadata: { id: 'mocked-id' },
     });
   });
 
@@ -153,10 +152,6 @@ describe('CryptoBrokerClient', () => {
     expect(response.metadata).toBeDefined();
     expect(response.metadata?.id).not.toEqual('empty');
     expect(isUUID4(response.metadata?.id)).toBeTruthy();
-    expect(response.metadata?.createdAt).not.toEqual('empty');
-    expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
-      'Invalid Date',
-    );
   });
 
   it('should return mocked sign response', async () => {
@@ -165,7 +160,7 @@ describe('CryptoBrokerClient', () => {
       csr: 'mocked-csr',
       caPrivateKey: 'mocked-key',
       caCert: 'mocked-cert',
-      metadata: { id: 'mocked-id', createdAt: 'mocked-date' },
+      metadata: { id: 'mocked-id' },
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
     };
@@ -180,7 +175,7 @@ describe('CryptoBrokerClient', () => {
     expect(response).toEqual({
       signedCertificate:
         'MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQwgYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAoBgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQIEwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAxMjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuzGNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjfpxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1EcUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==',
-      metadata: { id: 'mocked-id', createdAt: 'mocked-date' },
+      metadata: { id: 'mocked-id' },
     });
   });
 
@@ -213,10 +208,6 @@ describe('CryptoBrokerClient', () => {
     expect(response.metadata).toBeDefined();
     expect(response.metadata?.id).not.toEqual('empty');
     expect(isUUID4(response.metadata?.id)).toBeTruthy();
-    expect(response.metadata?.createdAt).not.toEqual('empty');
-    expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
-      'Invalid Date',
-    );
   });
 
   it('should return mocked sign response (PEM-encoded)', async () => {
@@ -256,10 +247,6 @@ describe('CryptoBrokerClient', () => {
     expect(response.metadata).toBeDefined();
     expect(response.metadata?.id).not.toEqual('empty');
     expect(isUUID4(response.metadata?.id)).toBeTruthy();
-    expect(response.metadata?.createdAt).not.toEqual('empty');
-    expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
-      'Invalid Date',
-    );
   });
 
   it('should return the mocked health response', async () => {
@@ -283,10 +270,6 @@ describe('CryptoBrokerClient', () => {
     expect(response.metadata).toBeDefined();
     expect(response.metadata?.id).not.toEqual('empty');
     expect(isUUID4(response.metadata?.id)).toBeTruthy();
-    expect(response.metadata?.createdAt).not.toEqual('empty');
-    expect(new Date(response.metadata?.createdAt || '')).not.toEqual(
-      'Invalid Date',
-    );
   });
 
   it('should return the mocked benchmark data response', async () => {
