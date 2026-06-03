@@ -2,6 +2,7 @@ import "reflect-metadata";
 import * as grpc from "@grpc/grpc-js";
 import { randomUUID } from "crypto";
 import x509 from "@peculiar/x509";
+import CircuitBreaker from "opossum";
 //#region \0rolldown/runtime.js
 var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
 //#endregion
@@ -25,15 +26,18 @@ const defaultServiceConfig = { methodConfig: [{
 const defaultCircuitConfig = {
 	enabled: true,
 	name: "crypto-grpc",
-	maxRequests: 3,
-	interval: 30,
-	timeout: 5,
-	consecutiveFailures: 3,
+	rollingCountTimeout: 12e4,
+	timeout: 3e4,
+	errorThresholdPercentage: 25,
+	resetTimeout: 5e3,
 	failureStatusCodes: [
 		14,
 		8,
 		10
-	]
+	],
+	errorFilter: (err) => {
+		return typeof err === "object" && "code" in err && typeof err.code === "number" && !defaultCircuitConfig.failureStatusCodes.includes(err.code);
+	}
 };
 //#endregion
 //#region node_modules/@bufbuild/protobuf/dist/esm/wire/varint.js
@@ -3273,6 +3277,14 @@ function isSet(value) {
 	return value !== null && value !== void 0;
 }
 //#endregion
+//#region \0@oxc-project+runtime@0.127.0/helpers/decorate.js
+function __decorate(decorators, target, key, desc) {
+	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+	else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+	return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+//#endregion
 //#region src/lib/client.ts
 let CertEncoding = /* @__PURE__ */ function(CertEncoding) {
 	CertEncoding["B64"] = "B64";
@@ -3286,6 +3298,20 @@ const encoders = {
 		return input;
 	}
 };
+const breakers = /* @__PURE__ */ new WeakMap();
+function WithCircuitBreaker(_prototype, _name, descriptor) {
+	const original = descriptor.value;
+	descriptor.value = async function(...args) {
+		const breakerConfig = this.breakerConfig;
+		let breaker = breakers.get(this);
+		if (!breaker) {
+			breaker = new CircuitBreaker((...args) => original.apply(this, args), breakerConfig);
+			breakers.set(this, breaker);
+		}
+		return breaker.fire(...args);
+	};
+	return descriptor;
+}
 var CryptoBrokerClient = class CryptoBrokerClient {
 	client;
 	healthClient;
@@ -3382,8 +3408,11 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		return this.healthClient.Check(req).then((res) => res).catch(() => status_unknown);
 	}
 };
+__decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null);
+__decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
+__decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.2.3";
-const GIT_HASH = "9b36bd7fed4227a35f74fcd14266d5783625fac6";
+const GIT_HASH = "49d6e7e0cd0d497e21ffe6a54b7705680d6ed7fc";
 //#endregion
 export { CertEncoding, CryptoBrokerClient, GIT_HASH, VERSION };
 

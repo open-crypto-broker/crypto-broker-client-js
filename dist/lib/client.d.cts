@@ -743,11 +743,12 @@ type CertOptions = {
 interface CircuitBreakerConfig {
   enabled: boolean;
   name: string;
-  maxRequests: number;
-  interval: number;
+  rollingCountTimeout: number;
   timeout: number;
-  consecutiveFailures: number;
+  errorThresholdPercentage: number;
+  resetTimeout: number;
   failureStatusCodes: number[];
+  errorFilter: (err: Error) => boolean;
 }
 declare class CryptoBrokerClient {
   private client;
