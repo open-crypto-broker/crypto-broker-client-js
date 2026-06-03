@@ -3412,7 +3412,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.2.3";
-const GIT_HASH = "49d6e7e0cd0d497e21ffe6a54b7705680d6ed7fc";
+const GIT_HASH = "46f6474bac9d5a2b4550c8b75e9bb50c5e12d3e7";
 //#endregion
 export { CertEncoding, CryptoBrokerClient, GIT_HASH, VERSION };
 

@@ -82,13 +82,13 @@ type CertOptions = {
 
 interface CircuitBreakerConfig {
   enabled: boolean;
-  name: string;
-  rollingCountTimeout: number;
-  timeout: number;
-  errorThresholdPercentage: number;
-  resetTimeout: number;
-  failureStatusCodes: number[]; // grpc status codes to be considered as failure
-  errorFilter: (err: Error) => boolean;
+  name?: string;
+  rollingCountTimeout?: number;
+  timeout?: number;
+  errorThresholdPercentage?: number;
+  resetTimeout?: number;
+  failureStatusCodes?: number[]; // grpc status codes to be considered as failure
+  errorFilter?: (err: Error) => boolean;
 }
 
 const breakers = new WeakMap<object, CircuitBreaker>();
