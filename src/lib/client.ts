@@ -21,6 +21,7 @@ import {
   HealthClientImpl,
 } from './proto/third_party/grpc/health/v1/health.js';
 import { ClientOptions } from '@grpc/grpc-js';
+import CircuitBreaker from 'opossum';
 
 type CreateCryptoBrokerClientParams = {
   grpcOptions?: grpc.ClientOptions;
@@ -81,12 +82,39 @@ type CertOptions = {
 
 interface CircuitBreakerConfig {
   enabled: boolean;
-  name: string;
-  maxRequests: number;
-  interval: number;
-  timeout: number;
-  consecutiveFailures: number;
-  failureStatusCodes: number[];
+  name?: string;
+  rollingCountTimeout?: number;
+  timeout?: number;
+  errorThresholdPercentage?: number;
+  resetTimeout?: number;
+  failureStatusCodes?: number[]; // grpc status codes to be considered as failure
+  errorFilter?: (err: Error) => boolean;
+}
+
+const breakers = new WeakMap<object, CircuitBreaker>();
+
+// circuit breaker decorator
+function WithCircuitBreaker(
+  _prototype: object,
+  _name: string,
+  descriptor: PropertyDescriptor,
+) {
+  const original = descriptor.value;
+
+  descriptor.value = async function (...args: unknown[]) {
+    const breakerConfig = (this as { breakerConfig: CircuitBreakerConfig })
+      .breakerConfig;
+    let breaker = breakers.get(this);
+    if (!breaker) {
+      breaker = new CircuitBreaker(
+        (...args: unknown[]) => original.apply(this, args),
+        breakerConfig,
+      );
+      breakers.set(this, breaker);
+    }
+    return breaker.fire(...args);
+  };
+  return descriptor;
 }
 
 export class CryptoBrokerClient {
@@ -206,6 +234,7 @@ export class CryptoBrokerClient {
     return this.devClient.Benchmark(req).then((res: BenchmarkResponse) => res);
   }
 
+  @WithCircuitBreaker
   async hashData(payload: HashPayload): Promise<HashResponse> {
     const req: HashRequest = {
       profile: payload.profile,
@@ -220,6 +249,7 @@ export class CryptoBrokerClient {
     return this.client.Hash(req).then((res: HashResponse) => res);
   }
 
+  @WithCircuitBreaker
   async signCertificate(
     payload: SignPayload,
     options?: CertOptions,
@@ -249,6 +279,7 @@ export class CryptoBrokerClient {
       .then((res: SignResponse) => encoders[encoding](res));
   }
 
+  @WithCircuitBreaker
   async healthData(): Promise<HealthCheckResponse> {
     const req: HealthCheckRequest = {
       service: '',

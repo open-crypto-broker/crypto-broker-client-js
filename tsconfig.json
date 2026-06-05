@@ -12,6 +12,7 @@
     "resolveJsonModule": false,
     "rootDir": "./src/lib",
     "types": ["node"],
+    "experimentalDecorators": true,
   },
   "exclude": ["node_modules", "dist", "jest.config.ts"],
 }
