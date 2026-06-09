@@ -2,7 +2,10 @@ import 'reflect-metadata';
 import * as grpc from '@grpc/grpc-js';
 import { UnaryCallback } from '@grpc/grpc-js/build/src/client.js';
 import { defaultServiceConfig } from './conf/service_config.js';
-import { defaultCircuitConfig } from './conf/circuitbreaker_config.js';
+import {
+  CircuitBreakerConfig,
+  circuitBreakerConfigFactory,
+} from './conf/circuitbreaker_config.js';
 import { randomUUID } from 'crypto';
 import x509 from '@peculiar/x509';
 import {
@@ -80,17 +83,6 @@ type CertOptions = {
   encoding: CertEncoding;
 };
 
-interface CircuitBreakerConfig {
-  enabled: boolean;
-  name?: string;
-  rollingCountTimeout?: number;
-  timeout?: number;
-  errorThresholdPercentage?: number;
-  resetTimeout?: number;
-  failureStatusCodes?: number[]; // grpc status codes to be considered as failure
-  errorFilter?: (err: Error) => boolean;
-}
-
 const breakers = new WeakMap<object, CircuitBreaker>();
 
 // circuit breaker decorator
@@ -137,10 +129,9 @@ export class CryptoBrokerClient {
     };
 
     // apply circuit breaker configuration
-    this.breakerConfig = {
-      ...defaultCircuitConfig,
-      ...opts.circuitBreakerOptions,
-    };
+    this.breakerConfig = circuitBreakerConfigFactory(
+      opts.circuitBreakerOptions,
+    );
 
     this.conn = new grpc.Client(
       this.address,

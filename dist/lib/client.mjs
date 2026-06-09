@@ -23,21 +23,28 @@ const defaultServiceConfig = { methodConfig: [{
 }] };
 //#endregion
 //#region src/lib/conf/circuitbreaker_config.ts
-const defaultCircuitConfig = {
-	enabled: true,
-	name: "crypto-grpc",
-	rollingCountTimeout: 12e4,
-	timeout: 3e4,
-	errorThresholdPercentage: 25,
-	resetTimeout: 5e3,
-	failureStatusCodes: [
-		14,
-		8,
-		10
-	],
-	errorFilter: (err) => {
-		return typeof err === "object" && "code" in err && typeof err.code === "number" && !defaultCircuitConfig.failureStatusCodes.includes(err.code);
-	}
+const circuitBreakerConfigFactory = (override) => {
+	const defaultConfig = {
+		enabled: true,
+		name: "crypto-grpc",
+		rollingCountTimeout: 12e4,
+		timeout: 3e4,
+		errorThresholdPercentage: 25,
+		resetTimeout: 5e3,
+		failureStatusCodes: [
+			14,
+			8,
+			10
+		]
+	};
+	const failureStatusCodes = override?.failureStatusCodes ?? defaultConfig.failureStatusCodes ?? [];
+	return {
+		...defaultConfig,
+		...override,
+		errorFilter: (err) => {
+			return typeof err === "object" && "code" in err && typeof err.code === "number" && !failureStatusCodes.includes(err.code);
+		}
+	};
 };
 //#endregion
 //#region node_modules/@bufbuild/protobuf/dist/esm/wire/varint.js
@@ -3325,10 +3332,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 			["grpc.service_config"]: JSON.stringify(defaultServiceConfig),
 			...opts.grpcOptions
 		};
-		this.breakerConfig = {
-			...defaultCircuitConfig,
-			...opts.circuitBreakerOptions
-		};
+		this.breakerConfig = circuitBreakerConfigFactory(opts.circuitBreakerOptions);
 		this.conn = new grpc.Client(this.address, grpc.credentials.createInsecure(), grpcOptions);
 		const sendRequest = (service, method, data) => {
 			const path = `/${service}/${method}`;
@@ -3412,7 +3416,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.2.3";
-const GIT_HASH = "46f6474bac9d5a2b4550c8b75e9bb50c5e12d3e7";
+const GIT_HASH = "4b7fa8d1208ed6fee0ed7a924c18c5b09931ce2e";
 //#endregion
 export { CertEncoding, CryptoBrokerClient, GIT_HASH, VERSION };
 
