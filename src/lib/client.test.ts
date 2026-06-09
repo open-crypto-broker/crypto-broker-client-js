@@ -7,6 +7,7 @@ import {
   HashResponse,
   SignRequest,
   SignResponse,
+  CryptoGrpcClientImpl,
 } from './proto/messages.js';
 import {
   HealthCheckRequest,
@@ -278,5 +279,66 @@ describe('CryptoBrokerClient', () => {
     // Test that the response is valid and has json-parsable results
     expect(response.benchmarkResults).toBeDefined();
     expect(JSON.parse(response.benchmarkResults)).toHaveProperty('results');
+  });
+  it('should open the circuit breaker on reaching failure threshold', async () => {
+    jest.useFakeTimers();
+    const mockedHashResponse = {
+      metadata: { id: 'mocked-id' },
+      hashAlgorithm: 'mocked-algorithm',
+      hashValue: 'mocked-value',
+    };
+    (CryptoGrpcClientImpl as jest.Mock).mockImplementationOnce(() => ({
+      Hash: jest
+        .fn<(input: HashRequest) => Promise<HashResponse>>()
+        .mockResolvedValue(mockedHashResponse)
+        .mockResolvedValueOnce(mockedHashResponse)
+        .mockRejectedValueOnce(
+          Object.assign(new Error('grpc cancelled'), {
+            code: grpc.status.CANCELLED,
+          }),
+        )
+        .mockRejectedValueOnce(
+          Object.assign(new Error('grpc unavailable'), {
+            code: grpc.status.UNAVAILABLE,
+          }),
+        ),
+    }));
+
+    const client = new CryptoBrokerClient();
+    const payload: HashRequest = {
+      profile: 'Default',
+      input: Buffer.from('Testing Data'),
+      metadata: { id: 'mocked-id' },
+    };
+
+    // the first request should succeed and the circuit remains closed
+    await expect(client.hashData(payload)).resolves.toBe(mockedHashResponse);
+
+    // the second request should return grpc error 1, which is ignored by the
+    // CB due to default failureStatusCodes in the configuration
+    await jest.advanceTimersByTimeAsync(1000);
+    await expect(client.hashData(payload)).rejects.toMatchObject({
+      message: 'grpc cancelled',
+      code: grpc.status.CANCELLED,
+    });
+
+    // the third request should fail and open the circuit due to threshold (33% > 25%)
+    await jest.advanceTimersByTimeAsync(1000);
+    await expect(client.hashData(payload)).rejects.toMatchObject({
+      message: 'grpc unavailable',
+      code: grpc.status.UNAVAILABLE,
+    });
+
+    // try to request while the circuit is open until it half-opens after 5sec
+    for (let i = 0; i < 4; i++) {
+      await jest.advanceTimersByTimeAsync(1000);
+      await expect(client.hashData(payload)).rejects.toMatchObject({
+        message: 'Breaker is open',
+        code: 'EOPENBREAKER',
+      });
+    }
+    // after 5 seconds the breaker should be half-open and the request succeed
+    await jest.advanceTimersByTimeAsync(1000);
+    await expect(client.hashData(payload)).resolves.toBe(mockedHashResponse);
   });
 });

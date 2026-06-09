@@ -3439,8 +3439,8 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
-const VERSION = "0.2.3";
-const GIT_HASH = "4b7fa8d1208ed6fee0ed7a924c18c5b09931ce2e";
+const VERSION = "0.3.0";
+const GIT_HASH = "1c02a31bef4f01cb4395c4ea843a00276c301040";
 //#endregion
 exports.CertEncoding = CertEncoding;
 exports.CryptoBrokerClient = CryptoBrokerClient;
