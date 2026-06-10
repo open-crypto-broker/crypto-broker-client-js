@@ -10,14 +10,14 @@ The following command can then be used to install the package to your project:
 
 ```bash
 npm install @open-crypto-broker/cryptobroker-client # or for a specific version:
-npm install @open-crypto-broker/cryptobroker-client@0.2.0
+npm install @open-crypto-broker/cryptobroker-client@0.3.0
 ```
 
 Alternatively, you can also reference this git repository (and provide a dedicated version or branch tag if needed):
 
 ```bash
-npm install github:open-crypto-broker/crypto-broker-client-js#v0.2.0 # or
-npm install https://github.com/open-crypto-broker/crypto-broker-client-js#v0.2.0
+npm install github:open-crypto-broker/crypto-broker-client-js#v0.3.0 # or
+npm install https://github.com/open-crypto-broker/crypto-broker-client-js#v0.3.0
 ```
 
 ### Library Usage
@@ -118,6 +118,56 @@ console.log(`Status: ${ServingStatus[healthResponse.status]}`);
 ```
 
 Note, that the possible status values are described in the [specification](https://github.com/open-crypto-broker/crypto-broker-documentation).
+
+## Additional CryptoBrokerClient Configurations
+
+The library provides further configuration options for operational purposes. 
+
+The gRPC retry policy can be configured via the `grpc.service_config` using `grpcOptions`, for example:
+
+```ts
+const options = {
+  grpcOptions: {
+    'grpc.service_config': JSON.stringify({
+      methodConfig: [
+        {
+          name: [{}],
+          retryPolicy: {
+            maxAttempts: 5,
+            initialBackoff: '0.5s',
+            maxBackoff: '5s',
+            backoffMultiplier: 2.0,
+            retryableStatusCodes: ['UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'ABORTED'],
+          },
+        },
+      ],
+    }),
+  }
+}
+const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
+```
+
+The Circuit Breaker can be configured via the CircuitBreakerConfig using `circuitBreakerOptions`, for example:
+
+```ts
+const options = {
+  circuitBreakerOptions: {
+    enabled: true,
+    name: 'crypto-grpc',
+    rollingCountTimeout: 120000,
+    timeout: 30000,
+    errorThresholdPercentage: 25,
+    resetTimeout: 5000,
+    failureStatusCodes: [
+      14, // UNAVAILABLE
+      8,  // RESOURCE_EXHAUSTED
+      10, // ABORTED
+    ],
+    errorFilter: (error) => { ... }
+  },
+}
+const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
+```
 
 ## Development
 
