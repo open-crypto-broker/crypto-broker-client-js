@@ -1,5 +1,17 @@
 import * as grpc from "@grpc/grpc-js";
 
+//#region src/lib/conf/circuitbreaker_config.d.ts
+interface CircuitBreakerConfig {
+  enabled: boolean;
+  name?: string;
+  rollingCountTimeout?: number;
+  timeout?: number;
+  errorThresholdPercentage?: number;
+  resetTimeout?: number;
+  failureStatusCodes?: number[];
+  errorFilter?: (err: Error) => boolean;
+}
+//#endregion
 //#region node_modules/long/types.d.ts
 // Common type definitions for both the ESM and UMD variants. The ESM variant
 // reexports the Long class as its default export, whereas the UMD variant makes
@@ -740,16 +752,6 @@ declare enum CertEncoding {
 type CertOptions = {
   encoding: CertEncoding;
 };
-interface CircuitBreakerConfig {
-  enabled: boolean;
-  name?: string;
-  rollingCountTimeout?: number;
-  timeout?: number;
-  errorThresholdPercentage?: number;
-  resetTimeout?: number;
-  failureStatusCodes?: number[];
-  errorFilter?: (err: Error) => boolean;
-}
 declare class CryptoBrokerClient {
   private client;
   private healthClient;

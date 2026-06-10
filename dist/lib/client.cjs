@@ -47,21 +47,28 @@ const defaultServiceConfig = { methodConfig: [{
 }] };
 //#endregion
 //#region src/lib/conf/circuitbreaker_config.ts
-const defaultCircuitConfig = {
-	enabled: true,
-	name: "crypto-grpc",
-	rollingCountTimeout: 12e4,
-	timeout: 3e4,
-	errorThresholdPercentage: 25,
-	resetTimeout: 5e3,
-	failureStatusCodes: [
-		14,
-		8,
-		10
-	],
-	errorFilter: (err) => {
-		return typeof err === "object" && "code" in err && typeof err.code === "number" && !defaultCircuitConfig.failureStatusCodes.includes(err.code);
-	}
+const circuitBreakerConfigFactory = (override) => {
+	const defaultConfig = {
+		enabled: true,
+		name: "crypto-grpc",
+		rollingCountTimeout: 12e4,
+		timeout: 3e4,
+		errorThresholdPercentage: 25,
+		resetTimeout: 5e3,
+		failureStatusCodes: [
+			14,
+			8,
+			10
+		]
+	};
+	const failureStatusCodes = override?.failureStatusCodes ?? defaultConfig.failureStatusCodes ?? [];
+	return {
+		...defaultConfig,
+		...override,
+		errorFilter: (err) => {
+			return typeof err === "object" && "code" in err && typeof err.code === "number" && !failureStatusCodes.includes(err.code);
+		}
+	};
 };
 //#endregion
 //#region node_modules/@bufbuild/protobuf/dist/esm/wire/varint.js
@@ -3349,10 +3356,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 			["grpc.service_config"]: JSON.stringify(defaultServiceConfig),
 			...opts.grpcOptions
 		};
-		this.breakerConfig = {
-			...defaultCircuitConfig,
-			...opts.circuitBreakerOptions
-		};
+		this.breakerConfig = circuitBreakerConfigFactory(opts.circuitBreakerOptions);
 		this.conn = new _grpc_grpc_js.Client(this.address, _grpc_grpc_js.credentials.createInsecure(), grpcOptions);
 		const sendRequest = (service, method, data) => {
 			const path = `/${service}/${method}`;
@@ -3435,8 +3439,8 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
-const VERSION = "0.2.3";
-const GIT_HASH = "46f6474bac9d5a2b4550c8b75e9bb50c5e12d3e7";
+const VERSION = "0.3.0";
+const GIT_HASH = "1c02a31bef4f01cb4395c4ea843a00276c301040";
 //#endregion
 exports.CertEncoding = CertEncoding;
 exports.CryptoBrokerClient = CryptoBrokerClient;
