@@ -24,7 +24,7 @@ npm install https://github.com/open-crypto-broker/crypto-broker-client-js#v0.3.0
 
 To use the Crypto Broker Library, simply create a client instance and call the functions with the specified parameters. Code examples for both TypeScript and CommonJS can be found below:
 
-<details>
+<details open>
 
 <summary>TypeScript Example</summary>
 
@@ -121,9 +121,13 @@ Note, that the possible status values are described in the [specification](https
 
 ## Additional CryptoBrokerClient Configurations
 
-The library provides further configuration options for operational purposes. 
+The library provides further configuration options for operational purposes.
 
 The gRPC retry policy can be configured via the `grpc.service_config` using `grpcOptions`, for example:
+
+<details>
+
+<summary>Example</summary>
 
 ```ts
 const options = {
@@ -147,7 +151,13 @@ const options = {
 const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
 ```
 
+</details>
+
 The Circuit Breaker can be configured via the CircuitBreakerConfig using `circuitBreakerOptions`, for example:
+
+<details>
+
+<summary>Example</summary>
 
 ```ts
 const options = {
@@ -168,6 +178,8 @@ const options = {
 }
 const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
 ```
+
+</details>
 
 ## Development
 
