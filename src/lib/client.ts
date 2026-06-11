@@ -26,9 +26,14 @@ import {
 import { ClientOptions } from '@grpc/grpc-js';
 import CircuitBreaker from 'opossum';
 
+export interface ConnectOptions {
+  retryAmount: number;
+}
+
 type CreateCryptoBrokerClientParams = {
   grpcOptions?: grpc.ClientOptions;
   circuitBreakerOptions?: CircuitBreakerConfig;
+  connectOptions?: ConnectOptions;
 };
 
 export interface TraceContext {
@@ -190,7 +195,7 @@ export class CryptoBrokerClient {
   ): Promise<CryptoBrokerClient> {
     const instance = new CryptoBrokerClient(opts);
 
-    const conn_max_retries: number = 60;
+    const conn_max_retries: number = opts?.connectOptions?.retryAmount ?? 60;
     const conn_retry_delay_ms: number = 1000;
 
     for (let attempt = 1; attempt <= conn_max_retries; attempt++) {
