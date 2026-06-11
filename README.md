@@ -121,9 +121,29 @@ Note, that the possible status values are described in the [specification](https
 
 ## Additional CryptoBrokerClient Configurations
 
-The library provides further configuration options for operational purposes.
+The library provides further configuration options for operational flexibility.
 
-The gRPC retry policy can be configured via the `grpc.service_config` using `grpcOptions`, for example:
+### Retry Mechanisms
+
+
+If an initial connection to the crypto broker server could not be established, the library attempts to connect every second for a specified amount of time. This amount can be configured via `retryAmount` using `connectOptions`, for example:
+
+<details>
+
+<summary>Example</summary>
+
+```ts
+const options = {
+  connectptions: {
+    retryAmount: 60,
+  }
+}
+const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
+```
+
+</details>
+
+To change the gRPC retry policy (which handles each request), the `grpc.service_config` can be configured using `grpcOptions`, for example:
 
 <details>
 
@@ -152,6 +172,8 @@ const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
 ```
 
 </details>
+
+### Circuit Breaker Configuration
 
 The Circuit Breaker can be configured via the CircuitBreakerConfig using `circuitBreakerOptions`, for example:
 
