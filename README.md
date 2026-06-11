@@ -125,7 +125,6 @@ The library provides further configuration options for operational flexibility.
 
 ### Retry Mechanisms
 
-
 If an initial connection to the crypto broker server could not be established, the library attempts to connect every second for a specified amount of time. This amount can be configured via `retryAmount` using `connectOptions`, for example:
 
 <details>
