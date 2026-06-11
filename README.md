@@ -142,6 +142,8 @@ const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
 
 </details>
 
+NOTE: We do not recommend using values that are too low, as this can lead to undesirable connection behavior and early program restarts.
+
 To change the gRPC retry policy (which handles each request), the `grpc.service_config` can be configured using `grpcOptions`, for example:
 
 <details>
