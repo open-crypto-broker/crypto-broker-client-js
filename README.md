@@ -10,21 +10,21 @@ The following command can then be used to install the package to your project:
 
 ```bash
 npm install @open-crypto-broker/cryptobroker-client # or for a specific version:
-npm install @open-crypto-broker/cryptobroker-client@0.2.0
+npm install @open-crypto-broker/cryptobroker-client@0.3.0
 ```
 
 Alternatively, you can also reference this git repository (and provide a dedicated version or branch tag if needed):
 
 ```bash
-npm install github:open-crypto-broker/crypto-broker-client-js#v0.2.0 # or
-npm install https://github.com/open-crypto-broker/crypto-broker-client-js#v0.2.0
+npm install github:open-crypto-broker/crypto-broker-client-js#v0.3.0 # or
+npm install https://github.com/open-crypto-broker/crypto-broker-client-js#v0.3.0
 ```
 
 ### Library Usage
 
 To use the Crypto Broker Library, simply create a client instance and call the functions with the specified parameters. Code examples for both TypeScript and CommonJS can be found below:
 
-<details>
+<details open>
 
 <summary>TypeScript Example</summary>
 
@@ -118,6 +118,91 @@ console.log(`Status: ${ServingStatus[healthResponse.status]}`);
 ```
 
 Note, that the possible status values are described in the [specification](https://github.com/open-crypto-broker/crypto-broker-documentation).
+
+## Additional CryptoBrokerClient Configurations
+
+The library provides further configuration options for operational flexibility.
+
+### Retry Mechanisms
+
+If an initial connection to the crypto broker server could not be established, the library attempts to connect every second for a specified amount of time. This amount can be configured via `retryAmount` using `connectOptions`, for example:
+
+<details>
+
+<summary>Example</summary>
+
+```ts
+const options = {
+  connectptions: {
+    retryAmount: 60,
+  }
+}
+const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
+```
+
+</details>
+
+NOTE: We do not recommend using values that are too low, as this can lead to undesirable connection behavior and early program restarts. It is recommended to use health checks to probe for the connection readiness of the server.
+
+To change the gRPC retry policy (which handles each request), the `grpc.service_config` can be configured using `grpcOptions`, for example:
+
+<details>
+
+<summary>Example</summary>
+
+```ts
+const options = {
+  grpcOptions: {
+    'grpc.service_config': JSON.stringify({
+      methodConfig: [
+        {
+          name: [{}],
+          retryPolicy: {
+            maxAttempts: 5,
+            initialBackoff: '0.5s',
+            maxBackoff: '5s',
+            backoffMultiplier: 2.0,
+            retryableStatusCodes: ['UNAVAILABLE', 'RESOURCE_EXHAUSTED', 'ABORTED'],
+          },
+        },
+      ],
+    }),
+  }
+}
+const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
+```
+
+</details>
+
+### Circuit Breaker Configuration
+
+The Circuit Breaker can be configured via the CircuitBreakerConfig using `circuitBreakerOptions`, for example:
+
+<details>
+
+<summary>Example</summary>
+
+```ts
+const options = {
+  circuitBreakerOptions: {
+    enabled: true,
+    name: 'crypto-grpc',
+    rollingCountTimeout: 120000,
+    timeout: 30000,
+    errorThresholdPercentage: 25,
+    resetTimeout: 5000,
+    failureStatusCodes: [
+      14, // UNAVAILABLE
+      8,  // RESOURCE_EXHAUSTED
+      10, // ABORTED
+    ],
+    errorFilter: (error) => { ... }
+  },
+}
+const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
+```
+
+</details>
 
 ## Development
 
