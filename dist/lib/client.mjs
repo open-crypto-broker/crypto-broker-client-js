@@ -3355,7 +3355,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 	static async NewLibrary(opts) {
 		const instance = new CryptoBrokerClient(opts);
-		const conn_max_retries = 60;
+		const conn_max_retries = opts?.connectOptions?.retryAmount ?? 60;
 		const conn_retry_delay_ms = 1e3;
 		for (let attempt = 1; attempt <= conn_max_retries; attempt++) {
 			const deadline = Date.now() + conn_retry_delay_ms;
@@ -3416,7 +3416,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.3.0";
-const GIT_HASH = "1c02a31bef4f01cb4395c4ea843a00276c301040";
+const GIT_HASH = "a4ad7f5d7cceead9e1c9e4475ece16f937f276aa";
 //#endregion
 export { CertEncoding, CryptoBrokerClient, GIT_HASH, VERSION };
 
