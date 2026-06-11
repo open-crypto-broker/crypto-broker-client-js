@@ -711,9 +711,13 @@ interface MessageFns<T> {
 }
 //#endregion
 //#region src/lib/client.d.ts
+interface ConnectOptions {
+  retryAmount: number;
+}
 type CreateCryptoBrokerClientParams = {
   grpcOptions?: grpc.ClientOptions;
   circuitBreakerOptions?: CircuitBreakerConfig;
+  connectOptions?: ConnectOptions;
 };
 interface TraceContext {
   traceId: string;
@@ -769,5 +773,5 @@ declare class CryptoBrokerClient {
 declare const VERSION: any;
 declare const GIT_HASH: any;
 //#endregion
-export { BenchmarkPayload, CertEncoding, CryptoBrokerClient, GIT_HASH, HashPayload, Metadata, SignPayload, TraceContext, VERSION };
+export { BenchmarkPayload, CertEncoding, ConnectOptions, CryptoBrokerClient, GIT_HASH, HashPayload, Metadata, SignPayload, TraceContext, VERSION };
 //# sourceMappingURL=client.d.cts.map
