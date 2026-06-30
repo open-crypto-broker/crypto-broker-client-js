@@ -1,6 +1,5 @@
 import type {
   BenchmarkPayload,
-  CertEncoding,
   HashPayload,
   Metadata,
   SignPayload,
@@ -22,11 +21,17 @@ const maxTraceStateLen = 512;
 const maxCorrelationIdLen = 128;
 const maxUint64 = BigInt('18446744073709551615');
 
-type CertOptions = {
-  encoding: CertEncoding;
-};
+export enum HashOutputFormat {
+  HEX = 0,
+  RAW = 1,
+  UNRECOGNIZED = -1,
+}
 
-const certEncodings = ['B64', 'PEM'] as const;
+export enum SignOutputFormat {
+  DER = 0,
+  PEM = 1,
+  UNRECOGNIZED = -1,
+}
 
 function typeError(field: string, msg: string): TypeError {
   return new TypeError(`${field}: ${msg}`);
@@ -71,6 +76,28 @@ function assertOptionalString(
     return;
   }
   assertString(value, field, max);
+}
+
+function enumKeysToStringArray<E extends Record<string, string | number>>(
+  enumType: E,
+) {
+  return Object.keys(enumType)
+    .filter((key) => isNaN(Number(key)))
+    .filter((key) => key !== 'UNRECOGNIZED'); // do not accept -1
+}
+function assertEnumValue<E extends Record<string, string | number>>(
+  value: unknown,
+  enumType: E,
+  field: string,
+): asserts value is E[keyof E] {
+  const values = Object.values(enumType)
+    .filter((v): v is number => typeof v === 'number')
+    .filter((v) => v != -1);
+
+  const stringValues = enumKeysToStringArray(enumType);
+  if (!values.includes(value as number)) {
+    throw typeError(field, `must be one of: ${stringValues.join(', ')}`);
+  }
 }
 
 function assertOptionalUint64(value: unknown, field: string): void {
@@ -138,6 +165,7 @@ export function validateHashPayload(
 ): asserts payload is HashPayload {
   assertObject(payload, 'payload');
   assertString(payload.profile, 'profile', maxProfileNameLen, true);
+  assertEnumValue(payload.outputFormat, HashOutputFormat, 'outputFormat');
 
   if (!(payload.input instanceof Uint8Array)) {
     throw typeError('input', 'must be a Uint8Array');
@@ -165,6 +193,7 @@ export function validateSignPayload(
   assertOptionalUint64(payload.validNotBefore, 'validNotBefore');
   assertOptionalUint64(payload.validNotAfter, 'validNotAfter');
   assertOptionalString(payload.subject, 'subject', maxSubjectLen);
+  assertEnumValue(payload.outputFormat, SignOutputFormat, 'outputFormat');
 
   if (payload.crlDistributionPoints !== undefined) {
     if (!Array.isArray(payload.crlDistributionPoints)) {
@@ -186,22 +215,4 @@ export function validateSignPayload(
   }
 
   validateMetadata(payload.metadata as Metadata | undefined);
-}
-
-export function validateCertOptions(
-  options: unknown,
-): asserts options is CertOptions | undefined {
-  if (options === undefined) {
-    return;
-  }
-
-  assertObject(options, 'options');
-  if (
-    !certEncodings.includes(options.encoding as (typeof certEncodings)[number])
-  ) {
-    throw typeError(
-      'options.encoding',
-      `must be one of: ${certEncodings.join(', ')}`,
-    );
-  }
 }
