@@ -1,19 +1,30 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { CertEncoding, CryptoBrokerClient } from './client.js';
+import { CryptoBrokerClient } from './client.js';
 import {
   BenchmarkRequest,
   BenchmarkResponse,
-  HashRequest,
-  HashResponse,
-  SignRequest,
-  SignResponse,
   CryptoGrpcClientImpl,
+  HashDataRequest,
+  HashDataResponse,
+  SignCertificateRequest,
+  SignCertificateResponse,
 } from './proto/messages.js';
 import {
   HealthCheckRequest,
   HealthCheckResponse,
 } from './proto/third_party/grpc/health/v1/health.js';
 import * as grpc from '@grpc/grpc-js';
+
+enum HashOutputFormat {
+  HEX = 0,
+  RAW = 1,
+  UNRECOGNIZED = -1,
+}
+enum SignOutputFormat {
+  DER = 0,
+  PEM = 1,
+  UNRECOGNIZED = -1,
+}
 
 const isUUID4 = (val: string | undefined) => {
   const regex =
@@ -24,25 +35,60 @@ const isUUID4 = (val: string | undefined) => {
 // Mock the protobuf client under the hood, returning the same values after doing a gRPC call functions
 jest.mock('./proto/messages.js', () => ({
   CryptoGrpcClientImpl: jest.fn().mockImplementation(() => ({
-    Hash: jest
-      .fn<(input: HashRequest) => Promise<HashResponse>>()
-      .mockImplementation(async (input) => ({
-        hashValue:
-          '217a621302950213819fcb88a904b3e59735de83d366112dd4b817103b097d334a3a283a0fbc20aaf5b9fafc2f3d1d685e1ea812c7686840d389a99c9dfb168f',
-        hashAlgorithm: 'sha3-512',
-        metadata: {
-          id: input.metadata?.id || 'empty',
-        },
-      })),
-    Sign: jest
-      .fn<(input: SignRequest) => Promise<SignResponse>>()
-      .mockImplementation(async (input) => ({
-        signedCertificate:
-          'MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQwgYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAoBgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQIEwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAxMjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuzGNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjfpxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1EcUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==',
-        metadata: {
-          id: input.metadata?.id || 'empty',
-        },
-      })),
+    HashData: jest
+      .fn<(input: HashDataRequest) => Promise<HashDataResponse>>()
+      .mockImplementation(async (input) => {
+        const base = {
+          hashAlgorithm: 'sha3-512',
+          metadata: {
+            id: input.metadata?.id || 'empty',
+          },
+        };
+        if (input.outputFormat === HashOutputFormat.HEX) {
+          return {
+            ...base,
+            hashValueHex:
+              '217a621302950213819fcb88a904b3e59735de83d366112dd4b817103b097d334a3a283a0fbc20aaf5b9fafc2f3d1d685e1ea812c7686840d389a99c9dfb168f',
+          };
+        }
+        return {
+          ...base,
+          hashValueRaw: new Uint8Array([0x63, 0x72, 0x79, 0x70, 0x74, 0x6f]),
+        };
+      }),
+    SignCertificate: jest
+      .fn<(input: SignCertificateRequest) => Promise<SignCertificateResponse>>()
+      .mockImplementation(async (input) => {
+        const base = {
+          metadata: {
+            id: input.metadata?.id || 'empty',
+          },
+        };
+        if (input.outputFormat === SignOutputFormat.PEM) {
+          return {
+            ...base,
+            pem: `-----BEGIN CERTIFICATE-----
+MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQw
+gYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0
+LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAo
+BgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3
+MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQI
+EwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAx
+MjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuz
+GNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjf
+pxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMC
+BaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAW
+gBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE
+01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1E
+cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
+-----END CERTIFICATE-----`,
+          };
+        }
+        return {
+          ...base,
+          der: new Uint8Array([0x63, 0x72, 0x79, 0x70, 0x74, 0x6f]),
+        };
+      }),
   })),
   CryptoGrpcDevClientImpl: jest.fn().mockImplementation(() => ({
     Benchmark: jest
@@ -126,12 +172,13 @@ describe('CryptoBrokerClient', () => {
       profile: 'Default',
       input: Buffer.from('Testing Data'),
       metadata: { id: 'mocked-id' },
+      outputFormat: HashOutputFormat.HEX,
     };
-    const response: HashResponse = await client.hashData(payload);
+    const response: HashDataResponse = await client.hashData(payload);
 
     // Test that the response matches what is expected
     expect(response).toEqual({
-      hashValue:
+      hashValueHex:
         '217a621302950213819fcb88a904b3e59735de83d366112dd4b817103b097d334a3a283a0fbc20aaf5b9fafc2f3d1d685e1ea812c7686840d389a99c9dfb168f',
       hashAlgorithm: 'sha3-512',
       metadata: { id: 'mocked-id' },
@@ -139,18 +186,20 @@ describe('CryptoBrokerClient', () => {
   });
   it('should reject invalid hash payloads before making a request', async () => {
     await expect(
-      client.hashData(undefined as unknown as HashRequest),
+      client.hashData(undefined as unknown as HashDataRequest),
     ).rejects.toThrow(TypeError);
     await expect(
       client.hashData({
         profile: '',
         input: Buffer.from('Testing Data'),
+        outputFormat: HashOutputFormat.HEX,
       }),
     ).rejects.toThrow('profile');
     await expect(
       client.hashData({
         profile: 'Default',
         input: 'Testing Data' as unknown as Uint8Array,
+        outputFormat: HashOutputFormat.HEX,
       }),
     ).rejects.toThrow('input');
     await expect(
@@ -167,21 +216,23 @@ describe('CryptoBrokerClient', () => {
             correlationId: '',
           },
         },
+        outputFormat: HashOutputFormat.HEX,
       }),
     ).rejects.toThrow('metadata.traceContext.traceId');
   });
 
   it('hash should autofill the metadata values', async () => {
-    const payload: HashRequest = {
+    const payload: HashDataRequest = {
       profile: 'Default',
       input: Buffer.from('Testing Data'),
       metadata: undefined,
+      outputFormat: HashOutputFormat.HEX,
     };
-    const response: HashResponse = await client.hashData(payload);
+    const response: HashDataResponse = await client.hashData(payload);
 
     // Test that the response is a subset of the object
     expect(response).toMatchObject({
-      hashValue:
+      hashValueHex:
         '217a621302950213819fcb88a904b3e59735de83d366112dd4b817103b097d334a3a283a0fbc20aaf5b9fafc2f3d1d685e1ea812c7686840d389a99c9dfb168f',
       hashAlgorithm: 'sha3-512',
     });
@@ -193,7 +244,7 @@ describe('CryptoBrokerClient', () => {
   });
 
   it('should return mocked sign response', async () => {
-    const payload: SignRequest = {
+    const payload: SignCertificateRequest = {
       profile: 'Default',
       csr: 'mocked-csr',
       caPrivateKey: 'mocked-key',
@@ -201,24 +252,33 @@ describe('CryptoBrokerClient', () => {
       metadata: { id: 'mocked-id' },
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
+      outputFormat: SignOutputFormat.PEM,
     };
-    const options = {
-      encoding: CertEncoding.B64,
-    };
-    const response: SignResponse = await client.signCertificate(
-      payload,
-      options,
-    );
+    const response: SignCertificateResponse =
+      await client.signCertificate(payload);
 
     expect(response).toEqual({
-      signedCertificate:
-        'MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQwgYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAoBgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQIEwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAxMjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuzGNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjfpxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1EcUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==',
+      pem: `-----BEGIN CERTIFICATE-----
+MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQw
+gYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0
+LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAo
+BgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3
+MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQI
+EwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAx
+MjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuz
+GNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjf
+pxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMC
+BaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAW
+gBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE
+01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1E
+cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
+-----END CERTIFICATE-----`,
       metadata: { id: 'mocked-id' },
     });
   });
   it('should reject invalid sign payloads before making a request', async () => {
     await expect(
-      client.signCertificate(null as unknown as SignRequest),
+      client.signCertificate(null as unknown as SignCertificateRequest),
     ).rejects.toThrow(TypeError);
     await expect(
       client.signCertificate({
@@ -226,6 +286,7 @@ describe('CryptoBrokerClient', () => {
         csr: '',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        outputFormat: SignOutputFormat.PEM,
       }),
     ).rejects.toThrow('csr');
     await expect(
@@ -234,7 +295,9 @@ describe('CryptoBrokerClient', () => {
         csr: 'mocked-csr',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
-        validNotBefore: 42 as unknown as SignRequest['validNotBefore'],
+        validNotBefore:
+          42 as unknown as SignCertificateRequest['validNotBefore'],
+        outputFormat: SignOutputFormat.PEM,
       }),
     ).rejects.toThrow('validNotBefore');
     await expect(
@@ -244,6 +307,7 @@ describe('CryptoBrokerClient', () => {
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
         subject: 'A'.repeat(1025),
+        outputFormat: SignOutputFormat.PEM,
       }),
     ).rejects.toThrow('subject');
     await expect(
@@ -256,6 +320,7 @@ describe('CryptoBrokerClient', () => {
           { length: 17 },
           () => 'http://example.com/crl',
         ),
+        outputFormat: SignOutputFormat.PEM,
       }),
     ).rejects.toThrow('crlDistributionPoints');
     await expect(
@@ -265,22 +330,21 @@ describe('CryptoBrokerClient', () => {
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
         crlDistributionPoints: [42 as unknown as string],
+        outputFormat: SignOutputFormat.PEM,
       }),
     ).rejects.toThrow('crlDistributionPoints[0]');
   });
 
   it('should reject invalid certificate encoding options', async () => {
     await expect(
-      client.signCertificate(
-        {
-          profile: 'Default',
-          csr: 'mocked-csr',
-          caPrivateKey: 'mocked-key',
-          caCert: 'mocked-cert',
-        },
-        { encoding: 'DER' as CertEncoding },
-      ),
-    ).rejects.toThrow('options.encoding');
+      client.signCertificate({
+        profile: 'Default',
+        csr: 'mocked-csr',
+        caPrivateKey: 'mocked-key',
+        caCert: 'mocked-cert',
+        outputFormat: SignOutputFormat.UNRECOGNIZED,
+      }),
+    ).rejects.toThrow('outputFormat');
   });
 
   it('sign should autofill the metadata', async () => {
@@ -293,19 +357,28 @@ describe('CryptoBrokerClient', () => {
       validNotAfterOffset: '1',
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
+      outputFormat: SignOutputFormat.PEM,
     };
-    const options = {
-      encoding: CertEncoding.B64,
-    };
-    const response: SignResponse = await client.signCertificate(
-      payload,
-      options,
-    );
+    const response: SignCertificateResponse =
+      await client.signCertificate(payload);
 
     // Test that the response is a subset of the object
     expect(response).toMatchObject({
-      signedCertificate:
-        'MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQwgYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAoBgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQIEwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAxMjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuzGNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjfpxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1EcUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==',
+      pem: `-----BEGIN CERTIFICATE-----
+MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQw
+gYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0
+LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAo
+BgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3
+MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQI
+EwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAx
+MjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuz
+GNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjf
+pxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMC
+BaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAW
+gBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE
+01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1E
+cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
+-----END CERTIFICATE-----`,
     });
 
     // assert that the metadata was correctly autofilled
@@ -324,27 +397,28 @@ describe('CryptoBrokerClient', () => {
       validNotAfterOffset: '1',
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
+      outputFormat: SignOutputFormat.PEM,
     };
-    const response: SignResponse = await client.signCertificate(payload);
+    const response: SignCertificateResponse =
+      await client.signCertificate(payload);
 
     // Test that the response is a subset of the object
     expect(response).toMatchObject({
-      signedCertificate:
-        '-----BEGIN CERTIFICATE-----\n' +
-        'MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQw\n' +
-        'gYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0\n' +
-        'LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAo\n' +
-        'BgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3\n' +
-        'MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQI\n' +
-        'EwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAx\n' +
-        'MjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuz\n' +
-        'GNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjf\n' +
-        'pxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMC\n' +
-        'BaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAW\n' +
-        'gBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE\n' +
-        '01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1E\n' +
-        'cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==\n' +
-        '-----END CERTIFICATE-----',
+      pem: `-----BEGIN CERTIFICATE-----
+MIICZzCCAe6gAwIBAgIUIxZKFE64ZO/jNqFK1TAMnI1kOcYwCgYIKoZIzj0EAwQw
+gYYxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMRowGAYDVQQKDBFUZXN0
+LU9yZ2FuaXphdGlvbjEdMBsGA1UECwwUVGVzdC1Pcmdhbml6YXRpb24tQ0ExKjAo
+BgNVBAMMIVRlc3QtT3JnYW5pemF0aW9uLUludGVybWVkaWF0ZS1DQTAeFw0yNTA3
+MjQwOTAxNTNaFw0yNjA3MjQxMDAxNTNaMEwxCzAJBgNVBAYTAkRFMQswCQYDVQQI
+EwJCQTEMMAoGA1UEChMDU0FQMQ8wDQYDVQQDEwZNeUNlcnQxETAPBgNVBAUTCDAx
+MjM0NTU2MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEgLWqYJmgsXLUJLta6oIOykuz
+GNz76VMZj+wcfb9+MZA5A/WSfPVk9/JigQOfF49JcOI1Wb+gIfq1TNAkK/xOMTjf
+pxXeYglrFW/e278Q3TbYvhEHI3kOgIUJDbhSvRn/o1YwVDAOBgNVHQ8BAf8EBAMC
+BaAwEwYDVR0lBAwwCgYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAW
+gBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE
+01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1E
+cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
+-----END CERTIFICATE-----`,
     });
 
     // assert that the metadata was correctly autofilled
@@ -395,16 +469,16 @@ describe('CryptoBrokerClient', () => {
 
   it('should open the circuit breaker on reaching failure threshold', async () => {
     jest.useFakeTimers();
-    const mockedHashResponse = {
+    const mockedHashDataResponse = {
       metadata: { id: 'mocked-id' },
       hashAlgorithm: 'mocked-algorithm',
-      hashValue: 'mocked-value',
+      hashValueHex: 'mocked-value',
     };
     (CryptoGrpcClientImpl as jest.Mock).mockImplementationOnce(() => ({
-      Hash: jest
-        .fn<(input: HashRequest) => Promise<HashResponse>>()
-        .mockResolvedValue(mockedHashResponse)
-        .mockResolvedValueOnce(mockedHashResponse)
+      HashData: jest
+        .fn<(input: HashDataRequest) => Promise<HashDataResponse>>()
+        .mockResolvedValue(mockedHashDataResponse)
+        .mockResolvedValueOnce(mockedHashDataResponse)
         .mockRejectedValueOnce(
           Object.assign(new Error('grpc cancelled'), {
             code: grpc.status.CANCELLED,
@@ -418,14 +492,17 @@ describe('CryptoBrokerClient', () => {
     }));
 
     const client = new CryptoBrokerClient();
-    const payload: HashRequest = {
+    const payload: HashDataRequest = {
       profile: 'Default',
       input: Buffer.from('Testing Data'),
       metadata: { id: 'mocked-id' },
+      outputFormat: HashOutputFormat.HEX,
     };
 
     // the first request should succeed and the circuit remains closed
-    await expect(client.hashData(payload)).resolves.toBe(mockedHashResponse);
+    await expect(client.hashData(payload)).resolves.toBe(
+      mockedHashDataResponse,
+    );
 
     // the second request should return grpc error 1, which is ignored by the
     // CB due to default failureStatusCodes in the configuration
@@ -452,6 +529,8 @@ describe('CryptoBrokerClient', () => {
     }
     // after 5 seconds the breaker should be half-open and the request succeed
     await jest.advanceTimersByTimeAsync(1000);
-    await expect(client.hashData(payload)).resolves.toBe(mockedHashResponse);
+    await expect(client.hashData(payload)).resolves.toBe(
+      mockedHashDataResponse,
+    );
   });
 });
