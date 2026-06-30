@@ -133,7 +133,7 @@ If an initial connection to the crypto broker server could not be established, t
 
 ```ts
 const options = {
-  connectptions: {
+  connectOptions: {
     retryAmount: 60,
   }
 }

@@ -304,10 +304,10 @@ function varint32read() {
 /**
 * Int64Support for the current environment.
 */
-const protoInt64 = /* @__PURE__ */ makeInt64Support();
+const protoInt64 = /*@__PURE__*/ makeInt64Support();
 function makeInt64Support() {
 	const dv = /* @__PURE__ */ new DataView(/* @__PURE__ */ new ArrayBuffer(8));
-	if (typeof BigInt === "function" && typeof dv.getBigInt64 === "function" && typeof dv.getBigUint64 === "function" && typeof dv.setBigInt64 === "function" && typeof dv.setBigUint64 === "function" && (!!globalThis.Deno || typeof process != "object" || typeof process.env != "object" || process.env.BUF_BIGINT_DISABLE !== "1")) {
+	if (typeof BigInt === "function" && typeof dv.getBigInt64 === "function" && typeof dv.getBigUint64 === "function" && typeof dv.setBigInt64 === "function" && typeof dv.setBigUint64 === "function" && (!!globalThis.Deno || !!globalThis.Bun || typeof process != "object" || typeof process.env != "object" || process.env.BUF_BIGINT_DISABLE !== "1")) {
 		const MIN = BigInt("-9223372036854775808");
 		const MAX = BigInt("9223372036854775807");
 		const UMIN = BigInt("0");
@@ -587,7 +587,7 @@ var BinaryWriter = class {
 	*/
 	float(value) {
 		assertFloat32(value);
-		let chunk = new Uint8Array(4);
+		let chunk = /* @__PURE__ */ new Uint8Array(4);
 		new DataView(chunk.buffer).setFloat32(0, value, true);
 		return this.raw(chunk);
 	}
@@ -595,7 +595,7 @@ var BinaryWriter = class {
 	* Write a `double` value, a 64-bit floating point number.
 	*/
 	double(value) {
-		let chunk = new Uint8Array(8);
+		let chunk = /* @__PURE__ */ new Uint8Array(8);
 		new DataView(chunk.buffer).setFloat64(0, value, true);
 		return this.raw(chunk);
 	}
@@ -604,7 +604,7 @@ var BinaryWriter = class {
 	*/
 	fixed32(value) {
 		assertUInt32(value);
-		let chunk = new Uint8Array(4);
+		let chunk = /* @__PURE__ */ new Uint8Array(4);
 		new DataView(chunk.buffer).setUint32(0, value, true);
 		return this.raw(chunk);
 	}
@@ -613,7 +613,7 @@ var BinaryWriter = class {
 	*/
 	sfixed32(value) {
 		assertInt32(value);
-		let chunk = new Uint8Array(4);
+		let chunk = /* @__PURE__ */ new Uint8Array(4);
 		new DataView(chunk.buffer).setInt32(0, value, true);
 		return this.raw(chunk);
 	}
@@ -630,7 +630,7 @@ var BinaryWriter = class {
 	* Write a `sfixed64` value, a signed, fixed-length 64-bit integer.
 	*/
 	sfixed64(value) {
-		let chunk = new Uint8Array(8), view = new DataView(chunk.buffer), tc = protoInt64.enc(value);
+		let chunk = /* @__PURE__ */ new Uint8Array(8), view = new DataView(chunk.buffer), tc = protoInt64.enc(value);
 		view.setInt32(0, tc.lo, true);
 		view.setInt32(4, tc.hi, true);
 		return this.raw(chunk);
@@ -639,7 +639,7 @@ var BinaryWriter = class {
 	* Write a `fixed64` value, an unsigned, fixed-length 64 bit integer.
 	*/
 	fixed64(value) {
-		let chunk = new Uint8Array(8), view = new DataView(chunk.buffer), tc = protoInt64.uEnc(value);
+		let chunk = /* @__PURE__ */ new Uint8Array(8), view = new DataView(chunk.buffer), tc = protoInt64.uEnc(value);
 		view.setInt32(0, tc.lo, true);
 		view.setInt32(4, tc.hi, true);
 		return this.raw(chunk);
@@ -700,9 +700,11 @@ var BinaryReader = class {
 	* Skip one element and return the skipped data.
 	*
 	* When skipping StartGroup, provide the tags field number to check for
-	* matching field number in the EndGroup tag.
+	* matching field number in the EndGroup tag. Recursion into nested groups
+	* is guarded by the `recursionLimit` argument: When the limit is reached,
+	* this method throws.
 	*/
-	skip(wireType, fieldNo) {
+	skip(wireType, fieldNo, recursionLimit = 100) {
 		let start = this.pos;
 		switch (wireType) {
 			case WireType.Varint:
@@ -717,13 +719,14 @@ var BinaryReader = class {
 				this.pos += len;
 				break;
 			case WireType.StartGroup:
+				if (recursionLimit <= 0) throw new Error("maximum recursion depth reached");
 				for (;;) {
 					const [fn, wt] = this.tag();
 					if (wt === WireType.EndGroup) {
 						if (fieldNo !== void 0 && fn !== fieldNo) throw new Error("invalid end group tag");
 						break;
 					}
-					this.skip(wt, fn);
+					this.skip(wt, fn, recursionLimit - 1);
 				}
 				break;
 			default: throw new Error("cant skip wire type " + wireType);
@@ -859,6 +862,25 @@ function assertFloat32(arg) {
 	} else if (typeof arg != "number") throw new Error("invalid float32: " + typeof arg);
 	if (Number.isFinite(arg) && (arg > 34028234663852886e22 || arg < -34028234663852886e22)) throw new Error("invalid float32: " + arg);
 }
+/**
+* @license
+* Copyright 2009 The Closure Library Authors
+* Copyright 2020 Daniel Wirtz / The long.js Authors.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+* SPDX-License-Identifier: Apache-2.0
+*/
 //#endregion
 //#region src/lib/proto/messages.ts
 const Long = (/* @__PURE__ */ __commonJSMin(((exports, module) => {
@@ -883,25 +905,6 @@ const Long = (/* @__PURE__ */ __commonJSMin(((exports, module) => {
 		"use strict";
 		Object.defineProperty(_exports, "__esModule", { value: true });
 		_exports.default = void 0;
-		/**
-		* @license
-		* Copyright 2009 The Closure Library Authors
-		* Copyright 2020 Daniel Wirtz / The long.js Authors.
-		*
-		* Licensed under the Apache License, Version 2.0 (the "License");
-		* you may not use this file except in compliance with the License.
-		* You may obtain a copy of the License at
-		*
-		*     http://www.apache.org/licenses/LICENSE-2.0
-		*
-		* Unless required by applicable law or agreed to in writing, software
-		* distributed under the License is distributed on an "AS IS" BASIS,
-		* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-		* See the License for the specific language governing permissions and
-		* limitations under the License.
-		*
-		* SPDX-License-Identifier: Apache-2.0
-		*/
 		var wasm = null;
 		try {
 			wasm = new WebAssembly.Instance(new WebAssembly.Module(new Uint8Array([
@@ -2572,7 +2575,7 @@ const BenchmarkResponse = {
 function createBaseHashRequest() {
 	return {
 		profile: "",
-		input: new Uint8Array(0),
+		input: /* @__PURE__ */ new Uint8Array(0),
 		metadata: void 0
 	};
 }
@@ -2611,7 +2614,7 @@ const HashRequest = {
 	fromJSON(object) {
 		return {
 			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
-			input: isSet$1(object.input) ? bytesFromBase64(object.input) : new Uint8Array(0),
+			input: isSet$1(object.input) ? bytesFromBase64(object.input) : /* @__PURE__ */ new Uint8Array(0),
 			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
@@ -2628,7 +2631,7 @@ const HashRequest = {
 	fromPartial(object) {
 		const message = createBaseHashRequest();
 		message.profile = object.profile ?? "";
-		message.input = object.input ?? new Uint8Array(0);
+		message.input = object.input ?? /* @__PURE__ */ new Uint8Array(0);
 		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		return message;
 	}
@@ -3308,7 +3311,95 @@ function isSet(value) {
 	return value !== null && value !== void 0;
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.127.0/helpers/decorate.js
+//#region src/lib/request_validation.ts
+const maxProfileNameLen = 64;
+const maxHashInputBytes = 1 << 20;
+const maxCSRBytes = 65536;
+const maxCAPrivateKeyBytes = 65536;
+const maxCACertBytes = 65536;
+const maxSubjectLen = 1024;
+const maxCRLDistributionPoints = 16;
+const maxCRLDistributionPointLen = 2048;
+const maxMetadataIdLen = 128;
+const maxTraceIdLen = 32;
+const maxSpanIdLen = 16;
+const maxTraceFlagsLen = 2;
+const maxTraceStateLen = 512;
+const maxCorrelationIdLen = 128;
+const maxUint64 = BigInt("18446744073709551615");
+const certEncodings = ["B64", "PEM"];
+function typeError(field, msg) {
+	return /* @__PURE__ */ new TypeError(`${field}: ${msg}`);
+}
+function isRecord(value) {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function assertObject(value, field) {
+	if (!isRecord(value)) throw typeError(field, "must be an object");
+}
+function assertString(value, field, max, required = false) {
+	if (typeof value !== "string") throw typeError(field, "must be a string");
+	if (required && value === "") throw typeError(field, "required");
+	if (value.length > max) throw typeError(field, `too large (max ${max})`);
+}
+function assertOptionalString(value, field, max) {
+	if (value === void 0) return;
+	assertString(value, field, max);
+}
+function assertOptionalUint64(value, field) {
+	if (value === void 0) return;
+	if (!isRecord(value) || typeof value.toString !== "function") throw typeError(field, "must be a Long-compatible uint64 value");
+	const asString = value.toString();
+	if (!/^\d+$/.test(asString) || BigInt(asString) > maxUint64) throw typeError(field, "must be a uint64 value");
+}
+function validateMetadata(metadata) {
+	if (metadata === void 0) return;
+	assertObject(metadata, "metadata");
+	assertOptionalString(metadata.id, "metadata.id", maxMetadataIdLen);
+	if (metadata.traceContext === void 0) return;
+	assertObject(metadata.traceContext, "metadata.traceContext");
+	assertString(metadata.traceContext.traceId, "metadata.traceContext.traceId", maxTraceIdLen);
+	assertString(metadata.traceContext.spanId, "metadata.traceContext.spanId", maxSpanIdLen);
+	assertString(metadata.traceContext.traceFlags, "metadata.traceContext.traceFlags", maxTraceFlagsLen);
+	assertString(metadata.traceContext.traceState, "metadata.traceContext.traceState", maxTraceStateLen);
+	assertString(metadata.traceContext.correlationId, "metadata.traceContext.correlationId", maxCorrelationIdLen);
+}
+function validateBenchmarkPayload(payload) {
+	assertObject(payload, "payload");
+	validateMetadata(payload.metadata);
+}
+function validateHashPayload(payload) {
+	assertObject(payload, "payload");
+	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	if (!(payload.input instanceof Uint8Array)) throw typeError("input", "must be a Uint8Array");
+	if (payload.input.length > maxHashInputBytes) throw typeError("input", `too large (max ${maxHashInputBytes})`);
+	validateMetadata(payload.metadata);
+}
+function validateSignPayload(payload) {
+	assertObject(payload, "payload");
+	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	assertString(payload.csr, "csr", maxCSRBytes, true);
+	assertString(payload.caPrivateKey, "caPrivateKey", maxCAPrivateKeyBytes, true);
+	assertString(payload.caCert, "caCert", maxCACertBytes, true);
+	assertOptionalUint64(payload.validNotBefore, "validNotBefore");
+	assertOptionalUint64(payload.validNotAfter, "validNotAfter");
+	assertOptionalString(payload.subject, "subject", maxSubjectLen);
+	if (payload.crlDistributionPoints !== void 0) {
+		if (!Array.isArray(payload.crlDistributionPoints)) throw typeError("crlDistributionPoints", "must be an array");
+		if (payload.crlDistributionPoints.length > maxCRLDistributionPoints) throw typeError("crlDistributionPoints", `too many entries (max ${maxCRLDistributionPoints})`);
+		payload.crlDistributionPoints.forEach((value, index) => {
+			assertString(value, `crlDistributionPoints[${index}]`, maxCRLDistributionPointLen);
+		});
+	}
+	validateMetadata(payload.metadata);
+}
+function validateCertOptions(options) {
+	if (options === void 0) return;
+	assertObject(options, "options");
+	if (!certEncodings.includes(options.encoding)) throw typeError("options.encoding", `must be one of: ${certEncodings.join(", ")}`);
+}
+//#endregion
+//#region \0@oxc-project+runtime@0.137.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
 	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3330,14 +3421,19 @@ const encoders = {
 	}
 };
 const breakers = /* @__PURE__ */ new WeakMap();
-function WithCircuitBreaker(_prototype, _name, descriptor) {
+function WithCircuitBreaker(_prototype, name, descriptor) {
 	const original = descriptor.value;
-	descriptor.value = async function(...args) {
-		const breakerConfig = this.breakerConfig;
-		let breaker = breakers.get(this);
+	descriptor.value = function(...args) {
+		const self = this;
+		let byMethod = breakers.get(self);
+		if (!byMethod) {
+			byMethod = /* @__PURE__ */ new Map();
+			breakers.set(self, byMethod);
+		}
+		let breaker = byMethod.get(name);
 		if (!breaker) {
-			breaker = new opossum.default((...args) => original.apply(this, args), breakerConfig);
-			breakers.set(this, breaker);
+			breaker = new opossum.default((...args) => original.apply(this, args), self.breakerConfig);
+			byMethod.set(name, breaker);
 		}
 		return breaker.fire(...args);
 	};
@@ -3395,6 +3491,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		throw new Error("retry limit reached");
 	}
 	async benchmarkData(payload) {
+		validateBenchmarkPayload(payload);
 		const req = { metadata: {
 			id: payload.metadata?.id || (0, crypto.randomUUID)(),
 			...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
@@ -3402,6 +3499,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		return this.devClient.Benchmark(req).then((res) => res);
 	}
 	async hashData(payload) {
+		validateHashPayload(payload);
 		const req = {
 			profile: payload.profile,
 			input: payload.input,
@@ -3413,6 +3511,8 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		return this.client.Hash(req).then((res) => res);
 	}
 	async signCertificate(payload, options) {
+		validateSignPayload(payload);
+		validateCertOptions(options);
 		const req = {
 			profile: payload.profile,
 			csr: payload.csr,
@@ -3440,7 +3540,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.3.0";
-const GIT_HASH = "a4ad7f5d7cceead9e1c9e4475ece16f937f276aa";
+const GIT_HASH = "ad7c35a03a7fd24c46c1f5f53b4333f562f484df";
 //#endregion
 exports.CertEncoding = CertEncoding;
 exports.CryptoBrokerClient = CryptoBrokerClient;
