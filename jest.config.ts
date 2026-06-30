@@ -15,7 +15,7 @@ const config: Config = {
   moduleNameMapper: {
     '^src/(.*)\\.js$': '<rootDir>/src/$1.ts',
     '^\\./conf/(.*)\\.js$': '<rootDir>/src/lib/conf/$1.ts',
-    '^\\./(client|proto/messages|proto/third_party/grpc/health/v1/health)\\.js$': '<rootDir>/src/lib/$1.ts',
+    '^\\./(client|request_validation|proto/messages|proto/third_party/grpc/health/v1/health)\\.js$': '<rootDir>/src/lib/$1.ts',
   },
   coveragePathIgnorePatterns: [
     "lib/proto/third_party"

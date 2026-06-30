@@ -23,6 +23,13 @@ import {
   HealthCheckResponse,
   HealthClientImpl,
 } from './proto/third_party/grpc/health/v1/health.js';
+import {
+  validateBenchmarkPayload,
+  validateCertOptions,
+  validateHashPayload,
+  validateSignPayload,
+} from './request_validation.js';
+import type Long from 'long';
 import { ClientOptions } from '@grpc/grpc-js';
 import CircuitBreaker from 'opossum';
 
@@ -88,29 +95,37 @@ type CertOptions = {
   encoding: CertEncoding;
 };
 
-const breakers = new WeakMap<object, CircuitBreaker>();
+const breakers = new WeakMap<object, Map<string, CircuitBreaker>>();
 
 // circuit breaker decorator
 function WithCircuitBreaker(
   _prototype: object,
-  _name: string,
+  name: string,
   descriptor: PropertyDescriptor,
 ) {
   const original = descriptor.value;
 
-  descriptor.value = async function (...args: unknown[]) {
-    const breakerConfig = (this as { breakerConfig: CircuitBreakerConfig })
-      .breakerConfig;
-    let breaker = breakers.get(this);
+  descriptor.value = function (...args: unknown[]) {
+    const self = this as { breakerConfig: CircuitBreakerConfig };
+
+    let byMethod = breakers.get(self);
+    if (!byMethod) {
+      byMethod = new Map();
+      breakers.set(self, byMethod);
+    }
+
+    let breaker = byMethod.get(name);
     if (!breaker) {
       breaker = new CircuitBreaker(
         (...args: unknown[]) => original.apply(this, args),
-        breakerConfig,
+        self.breakerConfig,
       );
-      breakers.set(this, breaker);
+      byMethod.set(name, breaker);
     }
+
     return breaker.fire(...args);
   };
+
   return descriptor;
 }
 
@@ -219,6 +234,7 @@ export class CryptoBrokerClient {
   }
 
   async benchmarkData(payload: BenchmarkPayload): Promise<BenchmarkResponse> {
+    validateBenchmarkPayload(payload);
     const req: BenchmarkRequest = {
       metadata: {
         id: payload.metadata?.id || randomUUID(),
@@ -232,6 +248,7 @@ export class CryptoBrokerClient {
 
   @WithCircuitBreaker
   async hashData(payload: HashPayload): Promise<HashResponse> {
+    validateHashPayload(payload);
     const req: HashRequest = {
       profile: payload.profile,
       input: payload.input,
@@ -250,6 +267,8 @@ export class CryptoBrokerClient {
     payload: SignPayload,
     options?: CertOptions,
   ): Promise<SignResponse> {
+    validateSignPayload(payload);
+    validateCertOptions(options);
     // Prepare the Request
     const req: SignRequest = {
       profile: payload.profile,
