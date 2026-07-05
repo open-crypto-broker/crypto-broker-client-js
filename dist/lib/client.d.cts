@@ -639,6 +639,22 @@ declare class BinaryReader {
 }
 //#endregion
 //#region src/lib/proto/messages.d.ts
+/** Output formats */
+declare enum HashOutputFormat {
+  HEX = 0,
+  RAW = 1,
+  UNRECOGNIZED = -1
+}
+declare enum SignOutputFormat {
+  DER = 0,
+  PEM = 1,
+  UNRECOGNIZED = -1
+}
+/** Meta-structures shared across other messages and functions */
+interface Metadata$1 {
+  id: string;
+  traceContext?: TraceContext$1 | undefined;
+}
 /** Trace context for manual propagation */
 interface TraceContext$1 {
   traceId: string;
@@ -647,32 +663,27 @@ interface TraceContext$1 {
   traceState: string;
   correlationId: string;
 }
-/** Metadata shared across all methods */
-interface Metadata$1 {
-  id: string;
-  traceContext?: TraceContext$1 | undefined;
+interface HashDataResponse {
+  hashAlgorithm: string;
+  metadata: Metadata$1 | undefined;
+  hashValueHex?: string | undefined;
+  hashValueRaw?: Uint8Array | undefined;
 }
-/** Response for a Benchmark Request */
+/** Response to a SignCertificate Request */
+interface SignCertificateResponse {
+  metadata: Metadata$1 | undefined;
+  pem?: string | undefined;
+  der?: Uint8Array | undefined;
+}
 interface BenchmarkResponse {
   benchmarkResults: string;
   metadata: Metadata$1 | undefined;
 }
-/** Response to a Hash Request */
-interface HashResponse {
-  hashValue: string;
-  hashAlgorithm: string;
-  metadata: Metadata$1 | undefined;
-}
-/** Response to a Sign Request */
-interface SignResponse {
-  signedCertificate: string;
-  metadata: Metadata$1 | undefined;
-}
-declare const TraceContext$1: MessageFns$1<TraceContext$1>;
 declare const Metadata$1: MessageFns$1<Metadata$1>;
+declare const TraceContext$1: MessageFns$1<TraceContext$1>;
+declare const HashDataResponse: MessageFns$1<HashDataResponse>;
+declare const SignCertificateResponse: MessageFns$1<SignCertificateResponse>;
 declare const BenchmarkResponse: MessageFns$1<BenchmarkResponse>;
-declare const HashResponse: MessageFns$1<HashResponse>;
-declare const SignResponse: MessageFns$1<SignResponse>;
 type Builtin$1 = Date | Function | Uint8Array | string | number | boolean | undefined;
 type DeepPartial$1<T> = T extends Builtin$1 ? T : T extends Long ? string | number | Long : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial$1<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial$1<U>> : T extends {} ? { [K in keyof T]?: DeepPartial$1<T[K]> } : Partial<T>;
 type KeysOfUnion$1<T> = T extends T ? keyof T : never;
@@ -739,6 +750,7 @@ interface HashPayload {
   profile: string;
   input: Uint8Array;
   metadata?: Metadata;
+  outputFormat: HashOutputFormat;
 }
 interface SignPayload {
   profile: string;
@@ -750,14 +762,8 @@ interface SignPayload {
   metadata?: Metadata;
   subject?: string;
   crlDistributionPoints?: string[];
+  outputFormat: SignOutputFormat;
 }
-declare enum CertEncoding {
-  B64 = "B64",
-  PEM = "PEM"
-}
-type CertOptions = {
-  encoding: CertEncoding;
-};
 declare class CryptoBrokerClient {
   private client;
   private healthClient;
@@ -768,12 +774,12 @@ declare class CryptoBrokerClient {
   constructor(opts?: CreateCryptoBrokerClientParams);
   static NewLibrary(opts?: CreateCryptoBrokerClientParams): Promise<CryptoBrokerClient>;
   benchmarkData(payload: BenchmarkPayload): Promise<BenchmarkResponse>;
-  hashData(payload: HashPayload): Promise<HashResponse>;
-  signCertificate(payload: SignPayload, options?: CertOptions): Promise<SignResponse>;
+  hashData(payload: HashPayload): Promise<HashDataResponse>;
+  signCertificate(payload: SignPayload): Promise<SignCertificateResponse>;
   healthData(): Promise<HealthCheckResponse>;
 }
 declare const VERSION: any;
 declare const GIT_HASH: any;
 //#endregion
-export { BenchmarkPayload, CertEncoding, ConnectOptions, CryptoBrokerClient, GIT_HASH, HashPayload, Metadata, SignPayload, TraceContext, VERSION };
+export { BenchmarkPayload, ConnectOptions, CryptoBrokerClient, GIT_HASH, HashOutputFormat, HashPayload, Metadata, SignOutputFormat, SignPayload, TraceContext, VERSION };
 //# sourceMappingURL=client.d.cts.map

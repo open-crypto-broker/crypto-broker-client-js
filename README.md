@@ -29,8 +29,12 @@ To use the Crypto Broker Library, simply create a client instance and call the f
 <summary>TypeScript Example</summary>
 
 ```ts
-import { CertEncoding, CryptoBrokerClient } from "@open-crypto-broker/cryptobroker-client";
-import { v4 as uuidv4 } from 'uuid';
+import {
+  HasOutputFormat,
+  SignOutputFormat,
+  CryptoBrokerClient
+} from "@open-crypto-broker/cryptobroker-client";
+import { randomUUID } from 'crypto';
 import Long from 'long';
 
 const cryptoLib = await CryptoBrokerClient.NewLibrary();
@@ -38,19 +42,20 @@ const cryptoLib = await CryptoBrokerClient.NewLibrary();
 const hashResponse = await cryptoLib.hashData({
     profile: profile,
     input: Buffer.from(data),
+    outputFormat: HashOutputFormat.HEX,
     // Optional values
     metadata: {
-        id : uuidv4(),
-        createdAt: new Date().toString()
+        id : randomUUID(),
     },
 });
-console.log(`Hashed response: ${hashResponse.hashValue}`);
+console.log(`Hashed response: ${hashResponse.hashValueHex}`);
 
 const signResponse = await cryptoLib.signCertificate({
     profile: profile,
     csr: csr,
     caPrivateKey: caPrivateKey,
     caCert: caCert,
+    outputFormat: SignOutputFormat.PEM,
     // Optional values
     validNotBefore: Long.fromNumber(Math.floor(new Date().getTime() / 1000)), // now
     validNotAfter: Long.fromNumber(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
@@ -60,11 +65,10 @@ const signResponse = await cryptoLib.signCertificate({
         'http://example.com/crls/list2.crl',
     ],
     metadata: {
-        id: uuidv4(),
-        createdAt: new Date().toString(),
+        id: randomUUID(),
     },
 });
-console.log("Certificate signed by CryptoBroker in PEM format\n", signResponse.signedCertificate)
+console.log("Certificate signed by CryptoBroker in PEM format\n", signResponse.pem);
 ```
 
 </details>
@@ -76,30 +80,22 @@ console.log("Certificate signed by CryptoBroker in PEM format\n", signResponse.s
 ```js
 const client = require("@open-crypto-broker/cryptobroker-client");
 const long = require('long');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 client.CryptoBrokerClient.NewLibrary()
   .then((cryptoLib) => cryptoLib.hashData({
     profile: "Default",
     input: Buffer.from("Hello world"),
+    outputFormat: client.HashOutputFormat.HEX,
+    // Optional values
     metadata: {
-      id: uuidv4(),
-      createdAt: new Date().toString(),
+      id: randomUUID(),
     }
   })
     .then((hashResponse) => console.log(`Response: ${JSON.stringify(hashResponse, 0, 2)}`)));
 ```
 
 </details>
-
-If desired, options for the certificate encoding output can be specified as follows:
-
-```ts
-const options = {
-    encoding: CertEncoding.B64,  // encode as Base64 string, default is PEM
-}
-const signResponse = await cryptoLib.signCertificate({...}, options);
-```
 
 Further, it is also possible to check the health status of the server:
 

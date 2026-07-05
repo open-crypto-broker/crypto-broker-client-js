@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import * as grpc from '@grpc/grpc-js';
+import { ClientOptions } from '@grpc/grpc-js';
 import { UnaryCallback } from '@grpc/grpc-js/build/src/client.js';
 import { defaultServiceConfig } from './conf/service_config.js';
 import {
@@ -7,16 +8,17 @@ import {
   circuitBreakerConfigFactory,
 } from './conf/circuitbreaker_config.js';
 import { randomUUID } from 'crypto';
-import x509 from '@peculiar/x509';
 import {
-  CryptoGrpcClientImpl,
-  CryptoGrpcDevClientImpl,
   BenchmarkRequest,
   BenchmarkResponse,
-  HashRequest,
-  HashResponse,
-  SignRequest,
-  SignResponse,
+  CryptoGrpcClientImpl,
+  CryptoGrpcDevClientImpl,
+  HashOutputFormat,
+  HashDataRequest,
+  HashDataResponse,
+  SignOutputFormat,
+  SignCertificateRequest,
+  SignCertificateResponse,
 } from './proto/messages.js';
 import {
   HealthCheckRequest,
@@ -25,12 +27,10 @@ import {
 } from './proto/third_party/grpc/health/v1/health.js';
 import {
   validateBenchmarkPayload,
-  validateCertOptions,
   validateHashPayload,
   validateSignPayload,
 } from './request_validation.js';
 import type Long from 'long';
-import { ClientOptions } from '@grpc/grpc-js';
 import CircuitBreaker from 'opossum';
 
 export interface ConnectOptions {
@@ -64,6 +64,7 @@ export interface HashPayload {
   profile: string;
   input: Uint8Array;
   metadata?: Metadata;
+  outputFormat: HashOutputFormat;
 }
 
 export interface SignPayload {
@@ -76,24 +77,8 @@ export interface SignPayload {
   metadata?: Metadata;
   subject?: string;
   crlDistributionPoints?: string[];
+  outputFormat: SignOutputFormat;
 }
-
-export enum CertEncoding {
-  B64 = 'B64',
-  PEM = 'PEM',
-}
-const encoders = {
-  [CertEncoding.B64]: (input: SignResponse): SignResponse => input, // the server provides this already
-  [CertEncoding.PEM]: (input: SignResponse): SignResponse => {
-    const cert = new x509.X509Certificate(input.signedCertificate);
-    input.signedCertificate = cert.toString();
-    return input;
-  },
-};
-
-type CertOptions = {
-  encoding: CertEncoding;
-};
 
 const breakers = new WeakMap<object, Map<string, CircuitBreaker>>();
 
@@ -247,11 +232,12 @@ export class CryptoBrokerClient {
   }
 
   @WithCircuitBreaker
-  async hashData(payload: HashPayload): Promise<HashResponse> {
+  async hashData(payload: HashPayload): Promise<HashDataResponse> {
     validateHashPayload(payload);
-    const req: HashRequest = {
+    const req: HashDataRequest = {
       profile: payload.profile,
       input: payload.input,
+      outputFormat: payload.outputFormat,
       metadata: {
         id: payload.metadata?.id || randomUUID(),
         ...(payload.metadata?.traceContext !== undefined && {
@@ -259,22 +245,21 @@ export class CryptoBrokerClient {
         }),
       },
     };
-    return this.client.Hash(req).then((res: HashResponse) => res);
+    return this.client.HashData(req).then((res: HashDataResponse) => res);
   }
 
   @WithCircuitBreaker
   async signCertificate(
     payload: SignPayload,
-    options?: CertOptions,
-  ): Promise<SignResponse> {
+  ): Promise<SignCertificateResponse> {
     validateSignPayload(payload);
-    validateCertOptions(options);
     // Prepare the Request
-    const req: SignRequest = {
+    const req: SignCertificateRequest = {
       profile: payload.profile,
       csr: payload.csr,
       caPrivateKey: payload.caPrivateKey,
       caCert: payload.caCert,
+      outputFormat: payload.outputFormat,
       metadata: {
         id: payload.metadata?.id || randomUUID(),
         ...(payload.metadata?.traceContext !== undefined && {
@@ -286,12 +271,10 @@ export class CryptoBrokerClient {
       subject: payload.subject,
       crlDistributionPoints: payload.crlDistributionPoints || [],
     };
-    // Apply options
-    const encoding = (options && options.encoding) || CertEncoding.PEM;
     // Send the Request
     return this.client
-      .Sign(req)
-      .then((res: SignResponse) => encoders[encoding](res));
+      .SignCertificate(req)
+      .then((res: SignCertificateResponse) => res);
   }
 
   @WithCircuitBreaker
@@ -313,3 +296,4 @@ export class CryptoBrokerClient {
 
 export const VERSION = __VERSION__;
 export const GIT_HASH = __GIT_HASH__;
+export { HashOutputFormat, SignOutputFormat };

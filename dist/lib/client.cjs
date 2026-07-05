@@ -26,8 +26,6 @@ require("reflect-metadata");
 let _grpc_grpc_js = require("@grpc/grpc-js");
 _grpc_grpc_js = __toESM(_grpc_grpc_js, 1);
 let crypto = require("crypto");
-let _peculiar_x509 = require("@peculiar/x509");
-_peculiar_x509 = __toESM(_peculiar_x509, 1);
 let opossum = require("opossum");
 opossum = __toESM(opossum, 1);
 //#region src/lib/conf/service_config.ts
@@ -2338,6 +2336,106 @@ const Long = (/* @__PURE__ */ __commonJSMin(((exports, module) => {
 		_exports.default = Long;
 	});
 })))();
+/** Output formats */
+let HashOutputFormat = /* @__PURE__ */ function(HashOutputFormat) {
+	HashOutputFormat[HashOutputFormat["HEX"] = 0] = "HEX";
+	HashOutputFormat[HashOutputFormat["RAW"] = 1] = "RAW";
+	HashOutputFormat[HashOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
+	return HashOutputFormat;
+}({});
+function hashOutputFormatFromJSON(object) {
+	switch (object) {
+		case 0:
+		case "HEX": return 0;
+		case 1:
+		case "RAW": return 1;
+		default: return -1;
+	}
+}
+function hashOutputFormatToJSON(object) {
+	switch (object) {
+		case 0: return "HEX";
+		case 1: return "RAW";
+		default: return "UNRECOGNIZED";
+	}
+}
+let SignOutputFormat = /* @__PURE__ */ function(SignOutputFormat) {
+	SignOutputFormat[SignOutputFormat["DER"] = 0] = "DER";
+	SignOutputFormat[SignOutputFormat["PEM"] = 1] = "PEM";
+	SignOutputFormat[SignOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
+	return SignOutputFormat;
+}({});
+function signOutputFormatFromJSON(object) {
+	switch (object) {
+		case 0:
+		case "DER": return 0;
+		case 1:
+		case "PEM": return 1;
+		default: return -1;
+	}
+}
+function signOutputFormatToJSON(object) {
+	switch (object) {
+		case 0: return "DER";
+		case 1: return "PEM";
+		default: return "UNRECOGNIZED";
+	}
+}
+function createBaseMetadata() {
+	return {
+		id: "",
+		traceContext: void 0
+	};
+}
+const Metadata = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.id !== "") writer.uint32(10).string(message.id);
+		if (message.traceContext !== void 0) TraceContext.encode(message.traceContext, writer.uint32(26).fork()).join();
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseMetadata();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.id = reader.string();
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.traceContext = TraceContext.decode(reader, reader.uint32());
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			id: isSet$1(object.id) ? globalThis.String(object.id) : "",
+			traceContext: isSet$1(object.traceContext) ? TraceContext.fromJSON(object.traceContext) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.id !== "") obj.id = message.id;
+		if (message.traceContext !== void 0) obj.traceContext = TraceContext.toJSON(message.traceContext);
+		return obj;
+	},
+	create(base) {
+		return Metadata.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseMetadata();
+		message.id = object.id ?? "";
+		message.traceContext = object.traceContext !== void 0 && object.traceContext !== null ? TraceContext.fromPartial(object.traceContext) : void 0;
+		return message;
+	}
+};
 function createBaseTraceContext() {
 	return {
 		traceId: "",
@@ -2420,32 +2518,44 @@ const TraceContext = {
 		return message;
 	}
 };
-function createBaseMetadata() {
+function createBaseHashDataRequest() {
 	return {
-		id: "",
-		traceContext: void 0
+		profile: "",
+		input: /* @__PURE__ */ new Uint8Array(0),
+		metadata: void 0,
+		outputFormat: 0
 	};
 }
-const Metadata = {
+const HashDataRequest = {
 	encode(message, writer = new BinaryWriter()) {
-		if (message.id !== "") writer.uint32(10).string(message.id);
-		if (message.traceContext !== void 0) TraceContext.encode(message.traceContext, writer.uint32(26).fork()).join();
+		if (message.profile !== "") writer.uint32(10).string(message.profile);
+		if (message.input.length !== 0) writer.uint32(18).bytes(message.input);
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
+		if (message.outputFormat !== 0) writer.uint32(32).int32(message.outputFormat);
 		return writer;
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
 		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseMetadata();
+		const message = createBaseHashDataRequest();
 		while (reader.pos < end) {
 			const tag = reader.uint32();
 			switch (tag >>> 3) {
 				case 1:
 					if (tag !== 10) break;
-					message.id = reader.string();
+					message.profile = reader.string();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.input = reader.bytes();
 					continue;
 				case 3:
 					if (tag !== 26) break;
-					message.traceContext = TraceContext.decode(reader, reader.uint32());
+					message.metadata = Metadata.decode(reader, reader.uint32());
+					continue;
+				case 4:
+					if (tag !== 32) break;
+					message.outputFormat = reader.int32();
 					continue;
 			}
 			if ((tag & 7) === 4 || tag === 0) break;
@@ -2455,23 +2565,293 @@ const Metadata = {
 	},
 	fromJSON(object) {
 		return {
-			id: isSet$1(object.id) ? globalThis.String(object.id) : "",
-			traceContext: isSet$1(object.traceContext) ? TraceContext.fromJSON(object.traceContext) : void 0
+			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
+			input: isSet$1(object.input) ? bytesFromBase64(object.input) : /* @__PURE__ */ new Uint8Array(0),
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
+			outputFormat: isSet$1(object.outputFormat) ? hashOutputFormatFromJSON(object.outputFormat) : 0
 		};
 	},
 	toJSON(message) {
 		const obj = {};
-		if (message.id !== "") obj.id = message.id;
-		if (message.traceContext !== void 0) obj.traceContext = TraceContext.toJSON(message.traceContext);
+		if (message.profile !== "") obj.profile = message.profile;
+		if (message.input.length !== 0) obj.input = base64FromBytes(message.input);
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
+		if (message.outputFormat !== 0) obj.outputFormat = hashOutputFormatToJSON(message.outputFormat);
 		return obj;
 	},
 	create(base) {
-		return Metadata.fromPartial(base ?? {});
+		return HashDataRequest.fromPartial(base ?? {});
 	},
 	fromPartial(object) {
-		const message = createBaseMetadata();
-		message.id = object.id ?? "";
-		message.traceContext = object.traceContext !== void 0 && object.traceContext !== null ? TraceContext.fromPartial(object.traceContext) : void 0;
+		const message = createBaseHashDataRequest();
+		message.profile = object.profile ?? "";
+		message.input = object.input ?? /* @__PURE__ */ new Uint8Array(0);
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
+		message.outputFormat = object.outputFormat ?? 0;
+		return message;
+	}
+};
+function createBaseHashDataResponse() {
+	return {
+		hashAlgorithm: "",
+		metadata: void 0,
+		hashValueHex: void 0,
+		hashValueRaw: void 0
+	};
+}
+const HashDataResponse = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.hashAlgorithm !== "") writer.uint32(18).string(message.hashAlgorithm);
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
+		if (message.hashValueHex !== void 0) writer.uint32(34).string(message.hashValueHex);
+		if (message.hashValueRaw !== void 0) writer.uint32(42).bytes(message.hashValueRaw);
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseHashDataResponse();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 2:
+					if (tag !== 18) break;
+					message.hashAlgorithm = reader.string();
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.metadata = Metadata.decode(reader, reader.uint32());
+					continue;
+				case 4:
+					if (tag !== 34) break;
+					message.hashValueHex = reader.string();
+					continue;
+				case 5:
+					if (tag !== 42) break;
+					message.hashValueRaw = reader.bytes();
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			hashAlgorithm: isSet$1(object.hashAlgorithm) ? globalThis.String(object.hashAlgorithm) : "",
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
+			hashValueHex: isSet$1(object.hashValueHex) ? globalThis.String(object.hashValueHex) : void 0,
+			hashValueRaw: isSet$1(object.hashValueRaw) ? bytesFromBase64(object.hashValueRaw) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.hashAlgorithm !== "") obj.hashAlgorithm = message.hashAlgorithm;
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
+		if (message.hashValueHex !== void 0) obj.hashValueHex = message.hashValueHex;
+		if (message.hashValueRaw !== void 0) obj.hashValueRaw = base64FromBytes(message.hashValueRaw);
+		return obj;
+	},
+	create(base) {
+		return HashDataResponse.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseHashDataResponse();
+		message.hashAlgorithm = object.hashAlgorithm ?? "";
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
+		message.hashValueHex = object.hashValueHex ?? void 0;
+		message.hashValueRaw = object.hashValueRaw ?? void 0;
+		return message;
+	}
+};
+function createBaseSignCertificateRequest() {
+	return {
+		profile: "",
+		csr: "",
+		caPrivateKey: "",
+		caCert: "",
+		metadata: void 0,
+		validNotBefore: void 0,
+		validNotAfter: void 0,
+		subject: void 0,
+		crlDistributionPoints: [],
+		outputFormat: 0
+	};
+}
+const SignCertificateRequest = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.profile !== "") writer.uint32(10).string(message.profile);
+		if (message.csr !== "") writer.uint32(18).string(message.csr);
+		if (message.caPrivateKey !== "") writer.uint32(26).string(message.caPrivateKey);
+		if (message.caCert !== "") writer.uint32(34).string(message.caCert);
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(42).fork()).join();
+		if (message.validNotBefore !== void 0) writer.uint32(48).uint64(message.validNotBefore.toString());
+		if (message.validNotAfter !== void 0) writer.uint32(56).uint64(message.validNotAfter.toString());
+		if (message.subject !== void 0) writer.uint32(66).string(message.subject);
+		for (const v of message.crlDistributionPoints) writer.uint32(74).string(v);
+		if (message.outputFormat !== 0) writer.uint32(80).int32(message.outputFormat);
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseSignCertificateRequest();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.profile = reader.string();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.csr = reader.string();
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.caPrivateKey = reader.string();
+					continue;
+				case 4:
+					if (tag !== 34) break;
+					message.caCert = reader.string();
+					continue;
+				case 5:
+					if (tag !== 42) break;
+					message.metadata = Metadata.decode(reader, reader.uint32());
+					continue;
+				case 6:
+					if (tag !== 48) break;
+					message.validNotBefore = Long.fromString(reader.uint64().toString(), true);
+					continue;
+				case 7:
+					if (tag !== 56) break;
+					message.validNotAfter = Long.fromString(reader.uint64().toString(), true);
+					continue;
+				case 8:
+					if (tag !== 66) break;
+					message.subject = reader.string();
+					continue;
+				case 9:
+					if (tag !== 74) break;
+					message.crlDistributionPoints.push(reader.string());
+					continue;
+				case 10:
+					if (tag !== 80) break;
+					message.outputFormat = reader.int32();
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
+			csr: isSet$1(object.csr) ? globalThis.String(object.csr) : "",
+			caPrivateKey: isSet$1(object.caPrivateKey) ? globalThis.String(object.caPrivateKey) : "",
+			caCert: isSet$1(object.caCert) ? globalThis.String(object.caCert) : "",
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
+			validNotBefore: isSet$1(object.validNotBefore) ? Long.fromValue(object.validNotBefore) : void 0,
+			validNotAfter: isSet$1(object.validNotAfter) ? Long.fromValue(object.validNotAfter) : void 0,
+			subject: isSet$1(object.subject) ? globalThis.String(object.subject) : void 0,
+			crlDistributionPoints: globalThis.Array.isArray(object?.crlDistributionPoints) ? object.crlDistributionPoints.map((e) => globalThis.String(e)) : [],
+			outputFormat: isSet$1(object.outputFormat) ? signOutputFormatFromJSON(object.outputFormat) : 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.profile !== "") obj.profile = message.profile;
+		if (message.csr !== "") obj.csr = message.csr;
+		if (message.caPrivateKey !== "") obj.caPrivateKey = message.caPrivateKey;
+		if (message.caCert !== "") obj.caCert = message.caCert;
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
+		if (message.validNotBefore !== void 0) obj.validNotBefore = (message.validNotBefore || Long.UZERO).toString();
+		if (message.validNotAfter !== void 0) obj.validNotAfter = (message.validNotAfter || Long.UZERO).toString();
+		if (message.subject !== void 0) obj.subject = message.subject;
+		if (message.crlDistributionPoints?.length) obj.crlDistributionPoints = message.crlDistributionPoints;
+		if (message.outputFormat !== 0) obj.outputFormat = signOutputFormatToJSON(message.outputFormat);
+		return obj;
+	},
+	create(base) {
+		return SignCertificateRequest.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseSignCertificateRequest();
+		message.profile = object.profile ?? "";
+		message.csr = object.csr ?? "";
+		message.caPrivateKey = object.caPrivateKey ?? "";
+		message.caCert = object.caCert ?? "";
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
+		message.validNotBefore = object.validNotBefore !== void 0 && object.validNotBefore !== null ? Long.fromValue(object.validNotBefore) : void 0;
+		message.validNotAfter = object.validNotAfter !== void 0 && object.validNotAfter !== null ? Long.fromValue(object.validNotAfter) : void 0;
+		message.subject = object.subject ?? void 0;
+		message.crlDistributionPoints = object.crlDistributionPoints?.map((e) => e) || [];
+		message.outputFormat = object.outputFormat ?? 0;
+		return message;
+	}
+};
+function createBaseSignCertificateResponse() {
+	return {
+		metadata: void 0,
+		pem: void 0,
+		der: void 0
+	};
+}
+const SignCertificateResponse = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(18).fork()).join();
+		if (message.pem !== void 0) writer.uint32(26).string(message.pem);
+		if (message.der !== void 0) writer.uint32(34).bytes(message.der);
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseSignCertificateResponse();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 2:
+					if (tag !== 18) break;
+					message.metadata = Metadata.decode(reader, reader.uint32());
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.pem = reader.string();
+					continue;
+				case 4:
+					if (tag !== 34) break;
+					message.der = reader.bytes();
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
+			pem: isSet$1(object.pem) ? globalThis.String(object.pem) : void 0,
+			der: isSet$1(object.der) ? bytesFromBase64(object.der) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
+		if (message.pem !== void 0) obj.pem = message.pem;
+		if (message.der !== void 0) obj.der = base64FromBytes(message.der);
+		return obj;
+	},
+	create(base) {
+		return SignCertificateResponse.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseSignCertificateResponse();
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
+		message.pem = object.pem ?? void 0;
+		message.der = object.der ?? void 0;
 		return message;
 	}
 };
@@ -2568,307 +2948,6 @@ const BenchmarkResponse = {
 	fromPartial(object) {
 		const message = createBaseBenchmarkResponse();
 		message.benchmarkResults = object.benchmarkResults ?? "";
-		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
-		return message;
-	}
-};
-function createBaseHashRequest() {
-	return {
-		profile: "",
-		input: /* @__PURE__ */ new Uint8Array(0),
-		metadata: void 0
-	};
-}
-const HashRequest = {
-	encode(message, writer = new BinaryWriter()) {
-		if (message.profile !== "") writer.uint32(10).string(message.profile);
-		if (message.input.length !== 0) writer.uint32(18).bytes(message.input);
-		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
-		return writer;
-	},
-	decode(input, length) {
-		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseHashRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.profile = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.input = reader.bytes();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
-			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
-		}
-		return message;
-	},
-	fromJSON(object) {
-		return {
-			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
-			input: isSet$1(object.input) ? bytesFromBase64(object.input) : /* @__PURE__ */ new Uint8Array(0),
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
-		};
-	},
-	toJSON(message) {
-		const obj = {};
-		if (message.profile !== "") obj.profile = message.profile;
-		if (message.input.length !== 0) obj.input = base64FromBytes(message.input);
-		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
-		return obj;
-	},
-	create(base) {
-		return HashRequest.fromPartial(base ?? {});
-	},
-	fromPartial(object) {
-		const message = createBaseHashRequest();
-		message.profile = object.profile ?? "";
-		message.input = object.input ?? /* @__PURE__ */ new Uint8Array(0);
-		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
-		return message;
-	}
-};
-function createBaseHashResponse() {
-	return {
-		hashValue: "",
-		hashAlgorithm: "",
-		metadata: void 0
-	};
-}
-const HashResponse = {
-	encode(message, writer = new BinaryWriter()) {
-		if (message.hashValue !== "") writer.uint32(10).string(message.hashValue);
-		if (message.hashAlgorithm !== "") writer.uint32(18).string(message.hashAlgorithm);
-		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
-		return writer;
-	},
-	decode(input, length) {
-		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseHashResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.hashValue = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.hashAlgorithm = reader.string();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
-			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
-		}
-		return message;
-	},
-	fromJSON(object) {
-		return {
-			hashValue: isSet$1(object.hashValue) ? globalThis.String(object.hashValue) : "",
-			hashAlgorithm: isSet$1(object.hashAlgorithm) ? globalThis.String(object.hashAlgorithm) : "",
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
-		};
-	},
-	toJSON(message) {
-		const obj = {};
-		if (message.hashValue !== "") obj.hashValue = message.hashValue;
-		if (message.hashAlgorithm !== "") obj.hashAlgorithm = message.hashAlgorithm;
-		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
-		return obj;
-	},
-	create(base) {
-		return HashResponse.fromPartial(base ?? {});
-	},
-	fromPartial(object) {
-		const message = createBaseHashResponse();
-		message.hashValue = object.hashValue ?? "";
-		message.hashAlgorithm = object.hashAlgorithm ?? "";
-		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
-		return message;
-	}
-};
-function createBaseSignRequest() {
-	return {
-		profile: "",
-		csr: "",
-		caPrivateKey: "",
-		caCert: "",
-		metadata: void 0,
-		validNotBefore: void 0,
-		validNotAfter: void 0,
-		subject: void 0,
-		crlDistributionPoints: []
-	};
-}
-const SignRequest = {
-	encode(message, writer = new BinaryWriter()) {
-		if (message.profile !== "") writer.uint32(10).string(message.profile);
-		if (message.csr !== "") writer.uint32(18).string(message.csr);
-		if (message.caPrivateKey !== "") writer.uint32(26).string(message.caPrivateKey);
-		if (message.caCert !== "") writer.uint32(34).string(message.caCert);
-		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(42).fork()).join();
-		if (message.validNotBefore !== void 0) writer.uint32(48).uint64(message.validNotBefore.toString());
-		if (message.validNotAfter !== void 0) writer.uint32(56).uint64(message.validNotAfter.toString());
-		if (message.subject !== void 0) writer.uint32(66).string(message.subject);
-		for (const v of message.crlDistributionPoints) writer.uint32(74).string(v);
-		return writer;
-	},
-	decode(input, length) {
-		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseSignRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.profile = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.csr = reader.string();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.caPrivateKey = reader.string();
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.caCert = reader.string();
-					continue;
-				case 5:
-					if (tag !== 42) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
-				case 6:
-					if (tag !== 48) break;
-					message.validNotBefore = Long.fromString(reader.uint64().toString(), true);
-					continue;
-				case 7:
-					if (tag !== 56) break;
-					message.validNotAfter = Long.fromString(reader.uint64().toString(), true);
-					continue;
-				case 8:
-					if (tag !== 66) break;
-					message.subject = reader.string();
-					continue;
-				case 9:
-					if (tag !== 74) break;
-					message.crlDistributionPoints.push(reader.string());
-					continue;
-			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
-		}
-		return message;
-	},
-	fromJSON(object) {
-		return {
-			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
-			csr: isSet$1(object.csr) ? globalThis.String(object.csr) : "",
-			caPrivateKey: isSet$1(object.caPrivateKey) ? globalThis.String(object.caPrivateKey) : "",
-			caCert: isSet$1(object.caCert) ? globalThis.String(object.caCert) : "",
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
-			validNotBefore: isSet$1(object.validNotBefore) ? Long.fromValue(object.validNotBefore) : void 0,
-			validNotAfter: isSet$1(object.validNotAfter) ? Long.fromValue(object.validNotAfter) : void 0,
-			subject: isSet$1(object.subject) ? globalThis.String(object.subject) : void 0,
-			crlDistributionPoints: globalThis.Array.isArray(object?.crlDistributionPoints) ? object.crlDistributionPoints.map((e) => globalThis.String(e)) : []
-		};
-	},
-	toJSON(message) {
-		const obj = {};
-		if (message.profile !== "") obj.profile = message.profile;
-		if (message.csr !== "") obj.csr = message.csr;
-		if (message.caPrivateKey !== "") obj.caPrivateKey = message.caPrivateKey;
-		if (message.caCert !== "") obj.caCert = message.caCert;
-		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
-		if (message.validNotBefore !== void 0) obj.validNotBefore = (message.validNotBefore || Long.UZERO).toString();
-		if (message.validNotAfter !== void 0) obj.validNotAfter = (message.validNotAfter || Long.UZERO).toString();
-		if (message.subject !== void 0) obj.subject = message.subject;
-		if (message.crlDistributionPoints?.length) obj.crlDistributionPoints = message.crlDistributionPoints;
-		return obj;
-	},
-	create(base) {
-		return SignRequest.fromPartial(base ?? {});
-	},
-	fromPartial(object) {
-		const message = createBaseSignRequest();
-		message.profile = object.profile ?? "";
-		message.csr = object.csr ?? "";
-		message.caPrivateKey = object.caPrivateKey ?? "";
-		message.caCert = object.caCert ?? "";
-		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
-		message.validNotBefore = object.validNotBefore !== void 0 && object.validNotBefore !== null ? Long.fromValue(object.validNotBefore) : void 0;
-		message.validNotAfter = object.validNotAfter !== void 0 && object.validNotAfter !== null ? Long.fromValue(object.validNotAfter) : void 0;
-		message.subject = object.subject ?? void 0;
-		message.crlDistributionPoints = object.crlDistributionPoints?.map((e) => e) || [];
-		return message;
-	}
-};
-function createBaseSignResponse() {
-	return {
-		signedCertificate: "",
-		metadata: void 0
-	};
-}
-const SignResponse = {
-	encode(message, writer = new BinaryWriter()) {
-		if (message.signedCertificate !== "") writer.uint32(10).string(message.signedCertificate);
-		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(18).fork()).join();
-		return writer;
-	},
-	decode(input, length) {
-		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseSignResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.signedCertificate = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
-			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
-		}
-		return message;
-	},
-	fromJSON(object) {
-		return {
-			signedCertificate: isSet$1(object.signedCertificate) ? globalThis.String(object.signedCertificate) : "",
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
-		};
-	},
-	toJSON(message) {
-		const obj = {};
-		if (message.signedCertificate !== "") obj.signedCertificate = message.signedCertificate;
-		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
-		return obj;
-	},
-	create(base) {
-		return SignResponse.fromPartial(base ?? {});
-	},
-	fromPartial(object) {
-		const message = createBaseSignResponse();
-		message.signedCertificate = object.signedCertificate ?? "";
 		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		return message;
 	}
@@ -2976,16 +3055,16 @@ var CryptoGrpcClientImpl = class {
 	constructor(rpc, opts) {
 		this.service = opts?.service || "CryptoBroker.CryptoGrpc";
 		this.rpc = rpc;
-		this.Hash = this.Hash.bind(this);
-		this.Sign = this.Sign.bind(this);
+		this.HashData = this.HashData.bind(this);
+		this.SignCertificate = this.SignCertificate.bind(this);
 	}
-	Hash(request) {
-		const data = HashRequest.encode(request).finish();
-		return this.rpc.request(this.service, "Hash", data).then((data) => HashResponse.decode(new BinaryReader(data)));
+	HashData(request) {
+		const data = HashDataRequest.encode(request).finish();
+		return this.rpc.request(this.service, "HashData", data).then((data) => HashDataResponse.decode(new BinaryReader(data)));
 	}
-	Sign(request) {
-		const data = SignRequest.encode(request).finish();
-		return this.rpc.request(this.service, "Sign", data).then((data) => SignResponse.decode(new BinaryReader(data)));
+	SignCertificate(request) {
+		const data = SignCertificateRequest.encode(request).finish();
+		return this.rpc.request(this.service, "SignCertificate", data).then((data) => SignCertificateResponse.decode(new BinaryReader(data)));
 	}
 };
 var CryptoGrpcDevClientImpl = class {
@@ -3327,7 +3406,18 @@ const maxTraceFlagsLen = 2;
 const maxTraceStateLen = 512;
 const maxCorrelationIdLen = 128;
 const maxUint64 = BigInt("18446744073709551615");
-const certEncodings = ["B64", "PEM"];
+let HashOutputFormat$1 = /* @__PURE__ */ function(HashOutputFormat) {
+	HashOutputFormat[HashOutputFormat["HEX"] = 0] = "HEX";
+	HashOutputFormat[HashOutputFormat["RAW"] = 1] = "RAW";
+	HashOutputFormat[HashOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
+	return HashOutputFormat;
+}({});
+let SignOutputFormat$1 = /* @__PURE__ */ function(SignOutputFormat) {
+	SignOutputFormat[SignOutputFormat["DER"] = 0] = "DER";
+	SignOutputFormat[SignOutputFormat["PEM"] = 1] = "PEM";
+	SignOutputFormat[SignOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
+	return SignOutputFormat;
+}({});
 function typeError(field, msg) {
 	return /* @__PURE__ */ new TypeError(`${field}: ${msg}`);
 }
@@ -3345,6 +3435,14 @@ function assertString(value, field, max, required = false) {
 function assertOptionalString(value, field, max) {
 	if (value === void 0) return;
 	assertString(value, field, max);
+}
+function enumKeysToStringArray(enumType) {
+	return Object.keys(enumType).filter((key) => isNaN(Number(key))).filter((key) => key !== "UNRECOGNIZED");
+}
+function assertEnumValue(value, enumType, field) {
+	const values = Object.values(enumType).filter((v) => typeof v === "number").filter((v) => v != -1);
+	const stringValues = enumKeysToStringArray(enumType);
+	if (!values.includes(value)) throw typeError(field, `must be one of: ${stringValues.join(", ")}`);
 }
 function assertOptionalUint64(value, field) {
 	if (value === void 0) return;
@@ -3371,6 +3469,7 @@ function validateBenchmarkPayload(payload) {
 function validateHashPayload(payload) {
 	assertObject(payload, "payload");
 	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	assertEnumValue(payload.outputFormat, HashOutputFormat$1, "outputFormat");
 	if (!(payload.input instanceof Uint8Array)) throw typeError("input", "must be a Uint8Array");
 	if (payload.input.length > maxHashInputBytes) throw typeError("input", `too large (max ${maxHashInputBytes})`);
 	validateMetadata(payload.metadata);
@@ -3384,6 +3483,7 @@ function validateSignPayload(payload) {
 	assertOptionalUint64(payload.validNotBefore, "validNotBefore");
 	assertOptionalUint64(payload.validNotAfter, "validNotAfter");
 	assertOptionalString(payload.subject, "subject", maxSubjectLen);
+	assertEnumValue(payload.outputFormat, SignOutputFormat$1, "outputFormat");
 	if (payload.crlDistributionPoints !== void 0) {
 		if (!Array.isArray(payload.crlDistributionPoints)) throw typeError("crlDistributionPoints", "must be an array");
 		if (payload.crlDistributionPoints.length > maxCRLDistributionPoints) throw typeError("crlDistributionPoints", `too many entries (max ${maxCRLDistributionPoints})`);
@@ -3392,11 +3492,6 @@ function validateSignPayload(payload) {
 		});
 	}
 	validateMetadata(payload.metadata);
-}
-function validateCertOptions(options) {
-	if (options === void 0) return;
-	assertObject(options, "options");
-	if (!certEncodings.includes(options.encoding)) throw typeError("options.encoding", `must be one of: ${certEncodings.join(", ")}`);
 }
 //#endregion
 //#region \0@oxc-project+runtime@0.137.0/helpers/esm/decorate.js
@@ -3408,18 +3503,6 @@ function __decorate(decorators, target, key, desc) {
 }
 //#endregion
 //#region src/lib/client.ts
-let CertEncoding = /* @__PURE__ */ function(CertEncoding) {
-	CertEncoding["B64"] = "B64";
-	CertEncoding["PEM"] = "PEM";
-	return CertEncoding;
-}({});
-const encoders = {
-	["B64"]: (input) => input,
-	["PEM"]: (input) => {
-		input.signedCertificate = new _peculiar_x509.default.X509Certificate(input.signedCertificate).toString();
-		return input;
-	}
-};
 const breakers = /* @__PURE__ */ new WeakMap();
 function WithCircuitBreaker(_prototype, name, descriptor) {
 	const original = descriptor.value;
@@ -3503,21 +3586,22 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		const req = {
 			profile: payload.profile,
 			input: payload.input,
+			outputFormat: payload.outputFormat,
 			metadata: {
 				id: payload.metadata?.id || (0, crypto.randomUUID)(),
 				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
 			}
 		};
-		return this.client.Hash(req).then((res) => res);
+		return this.client.HashData(req).then((res) => res);
 	}
-	async signCertificate(payload, options) {
+	async signCertificate(payload) {
 		validateSignPayload(payload);
-		validateCertOptions(options);
 		const req = {
 			profile: payload.profile,
 			csr: payload.csr,
 			caPrivateKey: payload.caPrivateKey,
 			caCert: payload.caCert,
+			outputFormat: payload.outputFormat,
 			metadata: {
 				id: payload.metadata?.id || (0, crypto.randomUUID)(),
 				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
@@ -3527,8 +3611,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 			subject: payload.subject,
 			crlDistributionPoints: payload.crlDistributionPoints || []
 		};
-		const encoding = options && options.encoding || "PEM";
-		return this.client.Sign(req).then((res) => encoders[encoding](res));
+		return this.client.SignCertificate(req).then((res) => res);
 	}
 	async healthData() {
 		const req = { service: "" };
@@ -3540,11 +3623,12 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.3.0";
-const GIT_HASH = "ad7c35a03a7fd24c46c1f5f53b4333f562f484df";
+const GIT_HASH = "ae0f506b02a2982d770dfc07b4f5c09e49b2243a";
 //#endregion
-exports.CertEncoding = CertEncoding;
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.GIT_HASH = GIT_HASH;
+exports.HashOutputFormat = HashOutputFormat;
+exports.SignOutputFormat = SignOutputFormat;
 exports.VERSION = VERSION;
 
 //# sourceMappingURL=client.cjs.map
