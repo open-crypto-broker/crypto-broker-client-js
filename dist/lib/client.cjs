@@ -3412,12 +3412,6 @@ let HashOutputFormat$1 = /* @__PURE__ */ function(HashOutputFormat) {
 	HashOutputFormat[HashOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
 	return HashOutputFormat;
 }({});
-let SignOutputFormat$1 = /* @__PURE__ */ function(SignOutputFormat) {
-	SignOutputFormat[SignOutputFormat["DER"] = 0] = "DER";
-	SignOutputFormat[SignOutputFormat["PEM"] = 1] = "PEM";
-	SignOutputFormat[SignOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
-	return SignOutputFormat;
-}({});
 function typeError(field, msg) {
 	return /* @__PURE__ */ new TypeError(`${field}: ${msg}`);
 }
@@ -3474,7 +3468,7 @@ function validateHashPayload(payload) {
 	if (payload.input.length > maxHashInputBytes) throw typeError("input", `too large (max ${maxHashInputBytes})`);
 	validateMetadata(payload.metadata);
 }
-function validateSignPayload(payload) {
+function validateSignCertificatePayload(payload) {
 	assertObject(payload, "payload");
 	assertString(payload.profile, "profile", maxProfileNameLen, true);
 	assertString(payload.csr, "csr", maxCSRBytes, true);
@@ -3483,7 +3477,7 @@ function validateSignPayload(payload) {
 	assertOptionalUint64(payload.validNotBefore, "validNotBefore");
 	assertOptionalUint64(payload.validNotAfter, "validNotAfter");
 	assertOptionalString(payload.subject, "subject", maxSubjectLen);
-	assertEnumValue(payload.outputFormat, SignOutputFormat$1, "outputFormat");
+	assertEnumValue(payload.outputFormat, SignOutputFormat, "outputFormat");
 	if (payload.crlDistributionPoints !== void 0) {
 		if (!Array.isArray(payload.crlDistributionPoints)) throw typeError("crlDistributionPoints", "must be an array");
 		if (payload.crlDistributionPoints.length > maxCRLDistributionPoints) throw typeError("crlDistributionPoints", `too many entries (max ${maxCRLDistributionPoints})`);
@@ -3595,7 +3589,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		return this.client.HashData(req).then((res) => res);
 	}
 	async signCertificate(payload) {
-		validateSignPayload(payload);
+		validateSignCertificatePayload(payload);
 		const req = {
 			profile: payload.profile,
 			csr: payload.csr,
@@ -3623,12 +3617,12 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.3.0";
-const GIT_HASH = "ae0f506b02a2982d770dfc07b4f5c09e49b2243a";
+const GIT_HASH = "24fb796b4eaa7b8850511316cf67077dcaeab622";
 //#endregion
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.GIT_HASH = GIT_HASH;
 exports.HashOutputFormat = HashOutputFormat;
-exports.SignOutputFormat = SignOutputFormat;
+exports.SignCertificateOutputFormat = SignOutputFormat;
 exports.VERSION = VERSION;
 
 //# sourceMappingURL=client.cjs.map

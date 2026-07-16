@@ -2,8 +2,9 @@ import type {
   BenchmarkPayload,
   HashPayload,
   Metadata,
-  SignPayload,
+  SignCertificatePayload,
 } from './client.js';
+import { SignOutputFormat as SignCertificateOutputFormat } from './proto/messages.js';
 
 const maxProfileNameLen = 64;
 const maxHashInputBytes = 1 << 20;
@@ -24,12 +25,6 @@ const maxUint64 = BigInt('18446744073709551615');
 export enum HashOutputFormat {
   HEX = 0,
   RAW = 1,
-  UNRECOGNIZED = -1,
-}
-
-export enum SignOutputFormat {
-  DER = 0,
-  PEM = 1,
   UNRECOGNIZED = -1,
 }
 
@@ -177,9 +172,9 @@ export function validateHashPayload(
   validateMetadata(payload.metadata as Metadata | undefined);
 }
 
-export function validateSignPayload(
+export function validateSignCertificatePayload(
   payload: unknown,
-): asserts payload is SignPayload {
+): asserts payload is SignCertificatePayload {
   assertObject(payload, 'payload');
   assertString(payload.profile, 'profile', maxProfileNameLen, true);
   assertString(payload.csr, 'csr', maxCSRBytes, true);
@@ -193,7 +188,11 @@ export function validateSignPayload(
   assertOptionalUint64(payload.validNotBefore, 'validNotBefore');
   assertOptionalUint64(payload.validNotAfter, 'validNotAfter');
   assertOptionalString(payload.subject, 'subject', maxSubjectLen);
-  assertEnumValue(payload.outputFormat, SignOutputFormat, 'outputFormat');
+  assertEnumValue(
+    payload.outputFormat,
+    SignCertificateOutputFormat,
+    'outputFormat',
+  );
 
   if (payload.crlDistributionPoints !== undefined) {
     if (!Array.isArray(payload.crlDistributionPoints)) {

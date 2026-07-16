@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { CryptoBrokerClient } from './client.js';
+import { CryptoBrokerClient, SignCertificateOutputFormat } from './client.js';
 import {
   BenchmarkRequest,
   BenchmarkResponse,
@@ -20,12 +20,6 @@ enum HashOutputFormat {
   RAW = 1,
   UNRECOGNIZED = -1,
 }
-enum SignOutputFormat {
-  DER = 0,
-  PEM = 1,
-  UNRECOGNIZED = -1,
-}
-
 const isUUID4 = (val: string | undefined) => {
   const regex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -34,6 +28,11 @@ const isUUID4 = (val: string | undefined) => {
 
 // Mock the protobuf client under the hood, returning the same values after doing a gRPC call functions
 jest.mock('./proto/messages.js', () => ({
+  SignOutputFormat: {
+    DER: 0,
+    PEM: 1,
+    UNRECOGNIZED: -1,
+  },
   CryptoGrpcClientImpl: jest.fn().mockImplementation(() => ({
     HashData: jest
       .fn<(input: HashDataRequest) => Promise<HashDataResponse>>()
@@ -64,7 +63,7 @@ jest.mock('./proto/messages.js', () => ({
             id: input.metadata?.id || 'empty',
           },
         };
-        if (input.outputFormat === SignOutputFormat.PEM) {
+        if (input.outputFormat === SignCertificateOutputFormat.PEM) {
           return {
             ...base,
             pem: `-----BEGIN CERTIFICATE-----
@@ -243,7 +242,7 @@ describe('CryptoBrokerClient', () => {
     expect(isUUID4(response.metadata?.id)).toBeTruthy();
   });
 
-  it('should return mocked sign response', async () => {
+  it('should return mocked sign certificate response', async () => {
     const payload: SignCertificateRequest = {
       profile: 'Default',
       csr: 'mocked-csr',
@@ -252,7 +251,7 @@ describe('CryptoBrokerClient', () => {
       metadata: { id: 'mocked-id' },
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
-      outputFormat: SignOutputFormat.PEM,
+      outputFormat: SignCertificateOutputFormat.PEM,
     };
     const response: SignCertificateResponse =
       await client.signCertificate(payload);
@@ -276,7 +275,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       metadata: { id: 'mocked-id' },
     });
   });
-  it('should reject invalid sign payloads before making a request', async () => {
+  it('should reject invalid sign certificate payloads before making a request', async () => {
     await expect(
       client.signCertificate(null as unknown as SignCertificateRequest),
     ).rejects.toThrow(TypeError);
@@ -286,7 +285,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         csr: '',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
-        outputFormat: SignOutputFormat.PEM,
+        outputFormat: SignCertificateOutputFormat.PEM,
       }),
     ).rejects.toThrow('csr');
     await expect(
@@ -297,7 +296,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         caCert: 'mocked-cert',
         validNotBefore:
           42 as unknown as SignCertificateRequest['validNotBefore'],
-        outputFormat: SignOutputFormat.PEM,
+        outputFormat: SignCertificateOutputFormat.PEM,
       }),
     ).rejects.toThrow('validNotBefore');
     await expect(
@@ -307,7 +306,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
         subject: 'A'.repeat(1025),
-        outputFormat: SignOutputFormat.PEM,
+        outputFormat: SignCertificateOutputFormat.PEM,
       }),
     ).rejects.toThrow('subject');
     await expect(
@@ -320,7 +319,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
           { length: 17 },
           () => 'http://example.com/crl',
         ),
-        outputFormat: SignOutputFormat.PEM,
+        outputFormat: SignCertificateOutputFormat.PEM,
       }),
     ).rejects.toThrow('crlDistributionPoints');
     await expect(
@@ -330,7 +329,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
         crlDistributionPoints: [42 as unknown as string],
-        outputFormat: SignOutputFormat.PEM,
+        outputFormat: SignCertificateOutputFormat.PEM,
       }),
     ).rejects.toThrow('crlDistributionPoints[0]');
   });
@@ -342,12 +341,12 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         csr: 'mocked-csr',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
-        outputFormat: SignOutputFormat.UNRECOGNIZED,
+        outputFormat: SignCertificateOutputFormat.UNRECOGNIZED,
       }),
     ).rejects.toThrow('outputFormat');
   });
 
-  it('sign should autofill the metadata', async () => {
+  it('sign certificate should autofill the metadata', async () => {
     const payload = {
       profile: 'Default',
       csr: 'mocked-csr',
@@ -357,7 +356,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       validNotAfterOffset: '1',
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
-      outputFormat: SignOutputFormat.PEM,
+      outputFormat: SignCertificateOutputFormat.PEM,
     };
     const response: SignCertificateResponse =
       await client.signCertificate(payload);
@@ -387,7 +386,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
     expect(isUUID4(response.metadata?.id)).toBeTruthy();
   });
 
-  it('should return mocked sign response (PEM-encoded)', async () => {
+  it('should return mocked sign certificate response (PEM-encoded)', async () => {
     const payload = {
       profile: 'Default',
       csr: 'mocked-csr',
@@ -397,7 +396,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       validNotAfterOffset: '1',
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
-      outputFormat: SignOutputFormat.PEM,
+      outputFormat: SignCertificateOutputFormat.PEM,
     };
     const response: SignCertificateResponse =
       await client.signCertificate(payload);

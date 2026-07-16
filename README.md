@@ -31,7 +31,7 @@ To use the Crypto Broker Library, simply create a client instance and call the f
 ```ts
 import {
   HasOutputFormat,
-  SignOutputFormat,
+  SignCertificateOutputFormat,
   CryptoBrokerClient
 } from "@open-crypto-broker/cryptobroker-client";
 import { randomUUID } from 'crypto';
@@ -50,12 +50,12 @@ const hashResponse = await cryptoLib.hashData({
 });
 console.log(`Hashed response: ${hashResponse.hashValueHex}`);
 
-const signResponse = await cryptoLib.signCertificate({
+const signCertificateResponse = await cryptoLib.signCertificate({
     profile: profile,
     csr: csr,
     caPrivateKey: caPrivateKey,
     caCert: caCert,
-    outputFormat: SignOutputFormat.PEM,
+    outputFormat: SignCertificateOutputFormat.PEM,
     // Optional values
     validNotBefore: Long.fromNumber(Math.floor(new Date().getTime() / 1000)), // now
     validNotAfter: Long.fromNumber(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
@@ -68,7 +68,7 @@ const signResponse = await cryptoLib.signCertificate({
         id: randomUUID(),
     },
 });
-console.log("Certificate signed by CryptoBroker in PEM format\n", signResponse.pem);
+console.log("Certificate signed by CryptoBroker in PEM format\n", signCertificateResponse.pem);
 ```
 
 </details>
