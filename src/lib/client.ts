@@ -16,7 +16,7 @@ import {
   HashOutputFormat,
   HashDataRequest,
   HashDataResponse,
-  SignOutputFormat,
+  SignOutputFormat as SignCertificateOutputFormat,
   SignCertificateRequest,
   SignCertificateResponse,
 } from './proto/messages.js';
@@ -28,7 +28,7 @@ import {
 import {
   validateBenchmarkPayload,
   validateHashPayload,
-  validateSignPayload,
+  validateSignCertificatePayload,
 } from './request_validation.js';
 import type Long from 'long';
 import CircuitBreaker from 'opossum';
@@ -67,7 +67,7 @@ export interface HashPayload {
   outputFormat: HashOutputFormat;
 }
 
-export interface SignPayload {
+export interface SignCertificatePayload {
   profile: string;
   csr: string;
   caPrivateKey: string;
@@ -77,7 +77,7 @@ export interface SignPayload {
   metadata?: Metadata;
   subject?: string;
   crlDistributionPoints?: string[];
-  outputFormat: SignOutputFormat;
+  outputFormat: SignCertificateOutputFormat;
 }
 
 const breakers = new WeakMap<object, Map<string, CircuitBreaker>>();
@@ -250,9 +250,9 @@ export class CryptoBrokerClient {
 
   @WithCircuitBreaker
   async signCertificate(
-    payload: SignPayload,
+    payload: SignCertificatePayload,
   ): Promise<SignCertificateResponse> {
-    validateSignPayload(payload);
+    validateSignCertificatePayload(payload);
     // Prepare the Request
     const req: SignCertificateRequest = {
       profile: payload.profile,
@@ -296,4 +296,4 @@ export class CryptoBrokerClient {
 
 export const VERSION = __VERSION__;
 export const GIT_HASH = __GIT_HASH__;
-export { HashOutputFormat, SignOutputFormat };
+export { HashOutputFormat, SignCertificateOutputFormat };

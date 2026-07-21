@@ -1,11 +1,12 @@
 import { defineConfig } from 'tsdown';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
-const pkgVersion = execSync("/usr/bin/npm pkg get version | tr -d '\"'")
-  .toString()
-  .trim();
+const { version: pkgVersion } = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as { version: string };
 
-const gitHash = execSync('/usr/bin/git rev-parse HEAD').toString().trim();
+const gitHash = execFileSync('git', ['rev-parse', 'HEAD']).toString().trim();
 
 export default defineConfig({
   entry: ['src/client.ts'],
