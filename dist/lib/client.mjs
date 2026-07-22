@@ -3369,7 +3369,7 @@ function isSet(value) {
 //#endregion
 //#region src/lib/request_validation.ts
 const maxProfileNameLen = 64;
-const maxHashInputBytes = 1 << 20;
+const maxHashDataInputBytes = 1 << 20;
 const maxCSRBytes = 65536;
 const maxCAPrivateKeyBytes = 65536;
 const maxCACertBytes = 65536;
@@ -3383,12 +3383,6 @@ const maxTraceFlagsLen = 2;
 const maxTraceStateLen = 512;
 const maxCorrelationIdLen = 128;
 const maxUint64 = BigInt("18446744073709551615");
-let HashOutputFormat$1 = /* @__PURE__ */ function(HashOutputFormat) {
-	HashOutputFormat[HashOutputFormat["HEX"] = 0] = "HEX";
-	HashOutputFormat[HashOutputFormat["RAW"] = 1] = "RAW";
-	HashOutputFormat[HashOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
-	return HashOutputFormat;
-}({});
 function typeError(field, msg) {
 	return /* @__PURE__ */ new TypeError(`${field}: ${msg}`);
 }
@@ -3437,12 +3431,12 @@ function validateBenchmarkPayload(payload) {
 	assertObject(payload, "payload");
 	validateMetadata(payload.metadata);
 }
-function validateHashPayload(payload) {
+function validateHashDataPayload(payload) {
 	assertObject(payload, "payload");
 	assertString(payload.profile, "profile", maxProfileNameLen, true);
-	assertEnumValue(payload.outputFormat, HashOutputFormat$1, "outputFormat");
+	assertEnumValue(payload.outputFormat, HashOutputFormat, "outputFormat");
 	if (!(payload.input instanceof Uint8Array)) throw typeError("input", "must be a Uint8Array");
-	if (payload.input.length > maxHashInputBytes) throw typeError("input", `too large (max ${maxHashInputBytes})`);
+	if (payload.input.length > maxHashDataInputBytes) throw typeError("input", `too large (max ${maxHashDataInputBytes})`);
 	validateMetadata(payload.metadata);
 }
 function validateSignCertificatePayload(payload) {
@@ -3553,7 +3547,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		return this.devClient.Benchmark(req).then((res) => res);
 	}
 	async hashData(payload) {
-		validateHashPayload(payload);
+		validateHashDataPayload(payload);
 		const req = {
 			profile: payload.profile,
 			input: payload.input,
@@ -3594,8 +3588,8 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.3.0";
-const GIT_HASH = "24fb796b4eaa7b8850511316cf67077dcaeab622";
+const GIT_HASH = "120be54a481eb226f07291740b3fa767e2c93ec5";
 //#endregion
-export { CryptoBrokerClient, GIT_HASH, HashOutputFormat, SignOutputFormat as SignCertificateOutputFormat, VERSION };
+export { CryptoBrokerClient, GIT_HASH, HashOutputFormat as HashDataOutputFormat, SignOutputFormat as SignCertificateOutputFormat, VERSION };
 
 //# sourceMappingURL=client.mjs.map

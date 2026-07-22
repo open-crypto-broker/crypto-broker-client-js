@@ -30,7 +30,7 @@ To use the Crypto Broker Library, simply create a client instance and call the f
 
 ```ts
 import {
-  HasOutputFormat,
+  HashDataOutputFormat,
   SignCertificateOutputFormat,
   CryptoBrokerClient
 } from "@open-crypto-broker/cryptobroker-client";
@@ -39,16 +39,16 @@ import Long from 'long';
 
 const cryptoLib = await CryptoBrokerClient.NewLibrary();
 
-const hashResponse = await cryptoLib.hashData({
+const hashDataResponse = await cryptoLib.hashData({
     profile: profile,
     input: Buffer.from(data),
-    outputFormat: HashOutputFormat.HEX,
+    outputFormat: HashDataOutputFormat.HEX,
     // Optional values
     metadata: {
         id : randomUUID(),
     },
 });
-console.log(`Hashed response: ${hashResponse.hashValueHex}`);
+console.log(`Hashed data response: ${hashDataResponse.hashValueHex}`);
 
 const signCertificateResponse = await cryptoLib.signCertificate({
     profile: profile,
@@ -86,13 +86,13 @@ client.CryptoBrokerClient.NewLibrary()
   .then((cryptoLib) => cryptoLib.hashData({
     profile: "Default",
     input: Buffer.from("Hello world"),
-    outputFormat: client.HashOutputFormat.HEX,
+    outputFormat: client.HashDataOutputFormat.HEX,
     // Optional values
     metadata: {
       id: randomUUID(),
     }
   })
-    .then((hashResponse) => console.log(`Response: ${JSON.stringify(hashResponse, 0, 2)}`)));
+    .then((hashDataResponse) => console.log(`Response: ${JSON.stringify(hashDataResponse, 0, 2)}`)));
 ```
 
 </details>

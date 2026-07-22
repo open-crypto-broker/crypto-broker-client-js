@@ -13,7 +13,7 @@ import {
   BenchmarkResponse,
   CryptoGrpcClientImpl,
   CryptoGrpcDevClientImpl,
-  HashOutputFormat,
+  HashOutputFormat as HashDataOutputFormat,
   HashDataRequest,
   HashDataResponse,
   SignOutputFormat as SignCertificateOutputFormat,
@@ -27,7 +27,7 @@ import {
 } from './proto/third_party/grpc/health/v1/health.js';
 import {
   validateBenchmarkPayload,
-  validateHashPayload,
+  validateHashDataPayload,
   validateSignCertificatePayload,
 } from './request_validation.js';
 import type Long from 'long';
@@ -60,11 +60,11 @@ export interface BenchmarkPayload {
   metadata?: Metadata;
 }
 
-export interface HashPayload {
+export interface HashDataPayload {
   profile: string;
   input: Uint8Array;
   metadata?: Metadata;
-  outputFormat: HashOutputFormat;
+  outputFormat: HashDataOutputFormat;
 }
 
 export interface SignCertificatePayload {
@@ -232,8 +232,8 @@ export class CryptoBrokerClient {
   }
 
   @WithCircuitBreaker
-  async hashData(payload: HashPayload): Promise<HashDataResponse> {
-    validateHashPayload(payload);
+  async hashData(payload: HashDataPayload): Promise<HashDataResponse> {
+    validateHashDataPayload(payload);
     const req: HashDataRequest = {
       profile: payload.profile,
       input: payload.input,
@@ -296,4 +296,4 @@ export class CryptoBrokerClient {
 
 export const VERSION = __VERSION__;
 export const GIT_HASH = __GIT_HASH__;
-export { HashOutputFormat, SignCertificateOutputFormat };
+export { HashDataOutputFormat, SignCertificateOutputFormat };
