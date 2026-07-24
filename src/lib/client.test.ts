@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { CryptoBrokerClient, SignCertificateOutputFormat } from './client.js';
+import {
+  CryptoBrokerClient,
+  HashDataOutputFormat,
+  SignCertificateOutputFormat,
+} from './client.js';
 import {
   BenchmarkRequest,
   BenchmarkResponse,
@@ -15,11 +19,6 @@ import {
 } from './proto/third_party/grpc/health/v1/health.js';
 import * as grpc from '@grpc/grpc-js';
 
-enum HashOutputFormat {
-  HEX = 0,
-  RAW = 1,
-  UNRECOGNIZED = -1,
-}
 const isUUID4 = (val: string | undefined) => {
   const regex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -28,6 +27,11 @@ const isUUID4 = (val: string | undefined) => {
 
 // Mock the protobuf client under the hood, returning the same values after doing a gRPC call functions
 jest.mock('./proto/messages.js', () => ({
+  HashOutputFormat: {
+    HEX: 0,
+    RAW: 1,
+    UNRECOGNIZED: -1,
+  },
   SignOutputFormat: {
     DER: 0,
     PEM: 1,
@@ -43,7 +47,7 @@ jest.mock('./proto/messages.js', () => ({
             id: input.metadata?.id || 'empty',
           },
         };
-        if (input.outputFormat === HashOutputFormat.HEX) {
+        if (input.outputFormat === HashDataOutputFormat.HEX) {
           return {
             ...base,
             hashValueHex:
@@ -166,12 +170,12 @@ describe('CryptoBrokerClient', () => {
     );
   });
 
-  it('should return mocked hash response', async () => {
+  it('should return a mocked hash data response', async () => {
     const payload = {
       profile: 'Default',
       input: Buffer.from('Testing Data'),
       metadata: { id: 'mocked-id' },
-      outputFormat: HashOutputFormat.HEX,
+      outputFormat: HashDataOutputFormat.HEX,
     };
     const response: HashDataResponse = await client.hashData(payload);
 
@@ -183,7 +187,7 @@ describe('CryptoBrokerClient', () => {
       metadata: { id: 'mocked-id' },
     });
   });
-  it('should reject invalid hash payloads before making a request', async () => {
+  it('should reject invalid hash data payloads before making a request', async () => {
     await expect(
       client.hashData(undefined as unknown as HashDataRequest),
     ).rejects.toThrow(TypeError);
@@ -191,14 +195,14 @@ describe('CryptoBrokerClient', () => {
       client.hashData({
         profile: '',
         input: Buffer.from('Testing Data'),
-        outputFormat: HashOutputFormat.HEX,
+        outputFormat: HashDataOutputFormat.HEX,
       }),
     ).rejects.toThrow('profile');
     await expect(
       client.hashData({
         profile: 'Default',
         input: 'Testing Data' as unknown as Uint8Array,
-        outputFormat: HashOutputFormat.HEX,
+        outputFormat: HashDataOutputFormat.HEX,
       }),
     ).rejects.toThrow('input');
     await expect(
@@ -215,17 +219,17 @@ describe('CryptoBrokerClient', () => {
             correlationId: '',
           },
         },
-        outputFormat: HashOutputFormat.HEX,
+        outputFormat: HashDataOutputFormat.HEX,
       }),
     ).rejects.toThrow('metadata.traceContext.traceId');
   });
 
-  it('hash should autofill the metadata values', async () => {
+  it('hash data should autofill the metadata values', async () => {
     const payload: HashDataRequest = {
       profile: 'Default',
       input: Buffer.from('Testing Data'),
       metadata: undefined,
-      outputFormat: HashOutputFormat.HEX,
+      outputFormat: HashDataOutputFormat.HEX,
     };
     const response: HashDataResponse = await client.hashData(payload);
 
@@ -495,7 +499,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       profile: 'Default',
       input: Buffer.from('Testing Data'),
       metadata: { id: 'mocked-id' },
-      outputFormat: HashOutputFormat.HEX,
+      outputFormat: HashDataOutputFormat.HEX,
     };
 
     // the first request should succeed and the circuit remains closed

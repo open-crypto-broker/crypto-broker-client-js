@@ -1,13 +1,16 @@
 import type {
   BenchmarkPayload,
-  HashPayload,
+  HashDataPayload,
   Metadata,
   SignCertificatePayload,
 } from './client.js';
-import { SignOutputFormat as SignCertificateOutputFormat } from './proto/messages.js';
+import {
+  HashOutputFormat as HashDataOutputFormat,
+  SignOutputFormat as SignCertificateOutputFormat,
+} from './proto/messages.js';
 
 const maxProfileNameLen = 64;
-const maxHashInputBytes = 1 << 20;
+const maxHashDataInputBytes = 1 << 20;
 const maxCSRBytes = 64 << 10;
 const maxCAPrivateKeyBytes = 64 << 10;
 const maxCACertBytes = 64 << 10;
@@ -21,12 +24,6 @@ const maxTraceFlagsLen = 2;
 const maxTraceStateLen = 512;
 const maxCorrelationIdLen = 128;
 const maxUint64 = BigInt('18446744073709551615');
-
-export enum HashOutputFormat {
-  HEX = 0,
-  RAW = 1,
-  UNRECOGNIZED = -1,
-}
 
 function typeError(field: string, msg: string): TypeError {
   return new TypeError(`${field}: ${msg}`);
@@ -155,18 +152,18 @@ export function validateBenchmarkPayload(
   validateMetadata(payload.metadata as Metadata | undefined);
 }
 
-export function validateHashPayload(
+export function validateHashDataPayload(
   payload: unknown,
-): asserts payload is HashPayload {
+): asserts payload is HashDataPayload {
   assertObject(payload, 'payload');
   assertString(payload.profile, 'profile', maxProfileNameLen, true);
-  assertEnumValue(payload.outputFormat, HashOutputFormat, 'outputFormat');
+  assertEnumValue(payload.outputFormat, HashDataOutputFormat, 'outputFormat');
 
   if (!(payload.input instanceof Uint8Array)) {
     throw typeError('input', 'must be a Uint8Array');
   }
-  if (payload.input.length > maxHashInputBytes) {
-    throw typeError('input', `too large (max ${maxHashInputBytes})`);
+  if (payload.input.length > maxHashDataInputBytes) {
+    throw typeError('input', `too large (max ${maxHashDataInputBytes})`);
   }
 
   validateMetadata(payload.metadata as Metadata | undefined);

@@ -746,7 +746,7 @@ interface Metadata {
 interface BenchmarkPayload {
   metadata?: Metadata;
 }
-interface HashPayload {
+interface HashDataPayload {
   profile: string;
   input: Uint8Array;
   metadata?: Metadata;
@@ -774,12 +774,12 @@ declare class CryptoBrokerClient {
   constructor(opts?: CreateCryptoBrokerClientParams);
   static NewLibrary(opts?: CreateCryptoBrokerClientParams): Promise<CryptoBrokerClient>;
   benchmarkData(payload: BenchmarkPayload): Promise<BenchmarkResponse>;
-  hashData(payload: HashPayload): Promise<HashDataResponse>;
+  hashData(payload: HashDataPayload): Promise<HashDataResponse>;
   signCertificate(payload: SignCertificatePayload): Promise<SignCertificateResponse>;
   healthData(): Promise<HealthCheckResponse>;
 }
 declare const VERSION: any;
 declare const GIT_HASH: any;
 //#endregion
-export { BenchmarkPayload, ConnectOptions, CryptoBrokerClient, GIT_HASH, HashOutputFormat, HashPayload, Metadata, SignOutputFormat as SignCertificateOutputFormat, SignCertificatePayload, TraceContext, VERSION };
+export { BenchmarkPayload, ConnectOptions, CryptoBrokerClient, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataPayload, Metadata, SignOutputFormat as SignCertificateOutputFormat, SignCertificatePayload, TraceContext, VERSION };
 //# sourceMappingURL=client.d.mts.map
