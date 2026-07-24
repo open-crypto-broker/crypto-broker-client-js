@@ -3,6 +3,33 @@
 The list of commits in this changelog is automatically generated in the release process.
 The commits follow the Conventional Commit specification.
 
+## [0.4.0] - 2026-07-24
+
+### 🚀 Features
+
+- [**breaking**] Protobuf hash sign (#82)
+- Input validations and fixes (#81)
+- Added configurable initial retry (#77)
+- Circuit breaker tests and configuration updates (#75)
+
+### 🐛 Bug Fixes
+
+- Limit create-github-app-token permissions (#79)
+
+### 🚜 Refactor
+
+- Rename hash API references to hash data (#84)
+- Rename sign API references to sign certificate (#83)
+
+### 📚 Documentation
+
+- Added documentation for retry policy and circuit breaker options (#76)
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to v0.4.0
+- Bump version to v0.4.0-rc.0
+
 ## [0.3.0] - 2026-06-08
 
 ### 🚀 Features
