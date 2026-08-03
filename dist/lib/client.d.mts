@@ -1,5 +1,5 @@
+import "reflect-metadata";
 import * as grpc from "@grpc/grpc-js";
-
 //#region src/lib/conf/circuitbreaker_config.d.ts
 interface CircuitBreakerConfig {
   enabled: boolean;
@@ -685,9 +685,9 @@ declare const HashDataResponse: MessageFns$1<HashDataResponse>;
 declare const SignCertificateResponse: MessageFns$1<SignCertificateResponse>;
 declare const BenchmarkResponse: MessageFns$1<BenchmarkResponse>;
 type Builtin$1 = Date | Function | Uint8Array | string | number | boolean | undefined;
-type DeepPartial$1<T> = T extends Builtin$1 ? T : T extends Long ? string | number | Long : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial$1<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial$1<U>> : T extends {} ? { [K in keyof T]?: DeepPartial$1<T[K]> } : Partial<T>;
+type DeepPartial$1<T> = T extends Builtin$1 ? T : T extends Long ? string | number | Long : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial$1<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial$1<U>> : T extends {} ? { [K in keyof T]?: DeepPartial$1<T[K]>; } : Partial<T>;
 type KeysOfUnion$1<T> = T extends T ? keyof T : never;
-type Exact$1<P, I extends P> = P extends Builtin$1 ? P : P & { [K in keyof P]: Exact$1<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion$1<P>>]: never };
+type Exact$1<P, I extends P> = P extends Builtin$1 ? P : P & { [K in keyof P]: Exact$1<P[K], I[K]>; } & { [K in Exclude<keyof I, KeysOfUnion$1<P>>]: never; };
 interface MessageFns$1<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
@@ -711,9 +711,9 @@ declare enum HealthCheckResponse_ServingStatus {
 }
 declare const HealthCheckResponse: MessageFns<HealthCheckResponse>;
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-type DeepPartial<T> = T extends Builtin ? T : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> } : Partial<T>;
+type DeepPartial<T> = T extends Builtin ? T : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]>; } : Partial<T>;
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-type Exact<P, I extends P> = P extends Builtin ? P : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+type Exact<P, I extends P> = P extends Builtin ? P : P & { [K in keyof P]: Exact<P[K], I[K]>; } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never; };
 interface MessageFns<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
