@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 	}
 	return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp(target, "default", {
 	value: mod,
 	enumerable: true
 }) : target, mod));
@@ -3228,7 +3228,7 @@ const HealthListRequest = {
 		const message = createBaseHealthListRequest();
 		while (reader.pos < end) {
 			const tag = reader.uint32();
-			switch (tag >>> 3) {}
+			tag >>> 3;
 			if ((tag & 7) === 4 || tag === 0) break;
 			reader.skip(tag & 7);
 		}
@@ -3482,7 +3482,7 @@ function validateSignCertificatePayload(payload) {
 	validateMetadata(payload.metadata);
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.137.0/helpers/esm/decorate.js
+//#region \0@oxc-project+runtime@0.142.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
 	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3611,7 +3611,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.3.0";
-const GIT_HASH = "120be54a481eb226f07291740b3fa767e2c93ec5";
+const GIT_HASH = "db974f736ad66cdec149e1d4bb1e21e4cfcf120f";
 //#endregion
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.GIT_HASH = GIT_HASH;
