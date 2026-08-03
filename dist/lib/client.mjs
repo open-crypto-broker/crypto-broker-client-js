@@ -3205,7 +3205,7 @@ const HealthListRequest = {
 		const message = createBaseHealthListRequest();
 		while (reader.pos < end) {
 			const tag = reader.uint32();
-			switch (tag >>> 3) {}
+			tag >>> 3;
 			if ((tag & 7) === 4 || tag === 0) break;
 			reader.skip(tag & 7);
 		}
@@ -3471,7 +3471,7 @@ function validateSignPayload(payload) {
 	validateMetadata(payload.metadata);
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.137.0/helpers/esm/decorate.js
+//#region \0@oxc-project+runtime@0.142.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
 	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3600,7 +3600,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.3.0";
-const GIT_HASH = "ae0f506b02a2982d770dfc07b4f5c09e49b2243a";
+const GIT_HASH = "3958c6a5cb9a5d7f67c14515acbef12dc4157d7a";
 //#endregion
 export { CryptoBrokerClient, GIT_HASH, HashOutputFormat, SignOutputFormat, VERSION };
 
