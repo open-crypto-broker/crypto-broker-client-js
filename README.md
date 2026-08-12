@@ -57,8 +57,8 @@ const signCertificateResponse = await cryptoLib.signCertificate({
     caCert: caCert,
     outputFormat: SignCertificateOutputFormat.PEM,
     // Optional values
-    validNotBefore: Long.fromNumber(Math.floor(new Date().getTime() / 1000)), // now
-    validNotAfter: Long.fromNumber(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
+    validNotBefore: BigInt(Math.floor(new Date().getTime() / 1000)), // now
+    validNotAfter: BigInt(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
     subject: "CN=MyCert,O=SAP,ST=BA,C=DE",
     crlDistributionPoints: [
         'http://example.com/crls/list1.crl',

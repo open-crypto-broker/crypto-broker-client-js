@@ -6,7 +6,6 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
 var __copyProps = (to, from, except, desc) => {
 	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
 		key = keys[i];
@@ -860,1482 +859,8 @@ function assertFloat32(arg) {
 	} else if (typeof arg != "number") throw new Error("invalid float32: " + typeof arg);
 	if (Number.isFinite(arg) && (arg > 34028234663852886e22 || arg < -34028234663852886e22)) throw new Error("invalid float32: " + arg);
 }
-/**
-* @license
-* Copyright 2009 The Closure Library Authors
-* Copyright 2020 Daniel Wirtz / The long.js Authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-* SPDX-License-Identifier: Apache-2.0
-*/
 //#endregion
 //#region src/lib/proto/messages.ts
-const Long = (/* @__PURE__ */ __commonJSMin(((exports, module) => {
-	(function(global, factory) {
-		function preferDefault(exports$1) {
-			return exports$1.default || exports$1;
-		}
-		if (typeof define === "function" && define.amd) define([], function() {
-			var exports$2 = {};
-			factory(exports$2);
-			return preferDefault(exports$2);
-		});
-		else if (typeof exports === "object") {
-			factory(exports);
-			if (typeof module === "object") module.exports = preferDefault(exports);
-		} else (function() {
-			var exports$3 = {};
-			factory(exports$3);
-			global.Long = preferDefault(exports$3);
-		})();
-	})(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : exports, function(_exports) {
-		"use strict";
-		Object.defineProperty(_exports, "__esModule", { value: true });
-		_exports.default = void 0;
-		var wasm = null;
-		try {
-			wasm = new WebAssembly.Instance(new WebAssembly.Module(new Uint8Array([
-				0,
-				97,
-				115,
-				109,
-				1,
-				0,
-				0,
-				0,
-				1,
-				13,
-				2,
-				96,
-				0,
-				1,
-				127,
-				96,
-				4,
-				127,
-				127,
-				127,
-				127,
-				1,
-				127,
-				3,
-				7,
-				6,
-				0,
-				1,
-				1,
-				1,
-				1,
-				1,
-				6,
-				6,
-				1,
-				127,
-				1,
-				65,
-				0,
-				11,
-				7,
-				50,
-				6,
-				3,
-				109,
-				117,
-				108,
-				0,
-				1,
-				5,
-				100,
-				105,
-				118,
-				95,
-				115,
-				0,
-				2,
-				5,
-				100,
-				105,
-				118,
-				95,
-				117,
-				0,
-				3,
-				5,
-				114,
-				101,
-				109,
-				95,
-				115,
-				0,
-				4,
-				5,
-				114,
-				101,
-				109,
-				95,
-				117,
-				0,
-				5,
-				8,
-				103,
-				101,
-				116,
-				95,
-				104,
-				105,
-				103,
-				104,
-				0,
-				0,
-				10,
-				191,
-				1,
-				6,
-				4,
-				0,
-				35,
-				0,
-				11,
-				36,
-				1,
-				1,
-				126,
-				32,
-				0,
-				173,
-				32,
-				1,
-				173,
-				66,
-				32,
-				134,
-				132,
-				32,
-				2,
-				173,
-				32,
-				3,
-				173,
-				66,
-				32,
-				134,
-				132,
-				126,
-				34,
-				4,
-				66,
-				32,
-				135,
-				167,
-				36,
-				0,
-				32,
-				4,
-				167,
-				11,
-				36,
-				1,
-				1,
-				126,
-				32,
-				0,
-				173,
-				32,
-				1,
-				173,
-				66,
-				32,
-				134,
-				132,
-				32,
-				2,
-				173,
-				32,
-				3,
-				173,
-				66,
-				32,
-				134,
-				132,
-				127,
-				34,
-				4,
-				66,
-				32,
-				135,
-				167,
-				36,
-				0,
-				32,
-				4,
-				167,
-				11,
-				36,
-				1,
-				1,
-				126,
-				32,
-				0,
-				173,
-				32,
-				1,
-				173,
-				66,
-				32,
-				134,
-				132,
-				32,
-				2,
-				173,
-				32,
-				3,
-				173,
-				66,
-				32,
-				134,
-				132,
-				128,
-				34,
-				4,
-				66,
-				32,
-				135,
-				167,
-				36,
-				0,
-				32,
-				4,
-				167,
-				11,
-				36,
-				1,
-				1,
-				126,
-				32,
-				0,
-				173,
-				32,
-				1,
-				173,
-				66,
-				32,
-				134,
-				132,
-				32,
-				2,
-				173,
-				32,
-				3,
-				173,
-				66,
-				32,
-				134,
-				132,
-				129,
-				34,
-				4,
-				66,
-				32,
-				135,
-				167,
-				36,
-				0,
-				32,
-				4,
-				167,
-				11,
-				36,
-				1,
-				1,
-				126,
-				32,
-				0,
-				173,
-				32,
-				1,
-				173,
-				66,
-				32,
-				134,
-				132,
-				32,
-				2,
-				173,
-				32,
-				3,
-				173,
-				66,
-				32,
-				134,
-				132,
-				130,
-				34,
-				4,
-				66,
-				32,
-				135,
-				167,
-				36,
-				0,
-				32,
-				4,
-				167,
-				11
-			])), {}).exports;
-		} catch {}
-		/**
-		* Constructs a 64 bit two's-complement integer, given its low and high 32 bit values as *signed* integers.
-		*  See the from* functions below for more convenient ways of constructing Longs.
-		* @exports Long
-		* @class A Long class for representing a 64 bit two's-complement integer value.
-		* @param {number} low The low (signed) 32 bits of the long
-		* @param {number} high The high (signed) 32 bits of the long
-		* @param {boolean=} unsigned Whether unsigned or not, defaults to signed
-		* @constructor
-		*/
-		function Long(low, high, unsigned) {
-			/**
-			* The low 32 bits as a signed value.
-			* @type {number}
-			*/
-			this.low = low | 0;
-			/**
-			* The high 32 bits as a signed value.
-			* @type {number}
-			*/
-			this.high = high | 0;
-			/**
-			* Whether unsigned or not.
-			* @type {boolean}
-			*/
-			this.unsigned = !!unsigned;
-		}
-		/**
-		* An indicator used to reliably determine if an object is a Long or not.
-		* @type {boolean}
-		* @const
-		* @private
-		*/
-		Long.prototype.__isLong__;
-		Object.defineProperty(Long.prototype, "__isLong__", { value: true });
-		/**
-		* @function
-		* @param {*} obj Object
-		* @returns {boolean}
-		* @inner
-		*/
-		function isLong(obj) {
-			return (obj && obj["__isLong__"]) === true;
-		}
-		/**
-		* @function
-		* @param {*} value number
-		* @returns {number}
-		* @inner
-		*/
-		function ctz32(value) {
-			var c = Math.clz32(value & -value);
-			return value ? 31 - c : c;
-		}
-		/**
-		* Tests if the specified object is a Long.
-		* @function
-		* @param {*} obj Object
-		* @returns {boolean}
-		*/
-		Long.isLong = isLong;
-		/**
-		* A cache of the Long representations of small integer values.
-		* @type {!Object}
-		* @inner
-		*/
-		var INT_CACHE = {};
-		/**
-		* A cache of the Long representations of small unsigned integer values.
-		* @type {!Object}
-		* @inner
-		*/
-		var UINT_CACHE = {};
-		/**
-		* @param {number} value
-		* @param {boolean=} unsigned
-		* @returns {!Long}
-		* @inner
-		*/
-		function fromInt(value, unsigned) {
-			var obj, cachedObj, cache;
-			if (unsigned) {
-				value >>>= 0;
-				if (cache = 0 <= value && value < 256) {
-					cachedObj = UINT_CACHE[value];
-					if (cachedObj) return cachedObj;
-				}
-				obj = fromBits(value, 0, true);
-				if (cache) UINT_CACHE[value] = obj;
-				return obj;
-			} else {
-				value |= 0;
-				if (cache = -128 <= value && value < 128) {
-					cachedObj = INT_CACHE[value];
-					if (cachedObj) return cachedObj;
-				}
-				obj = fromBits(value, value < 0 ? -1 : 0, false);
-				if (cache) INT_CACHE[value] = obj;
-				return obj;
-			}
-		}
-		/**
-		* Returns a Long representing the given 32 bit integer value.
-		* @function
-		* @param {number} value The 32 bit integer in question
-		* @param {boolean=} unsigned Whether unsigned or not, defaults to signed
-		* @returns {!Long} The corresponding Long value
-		*/
-		Long.fromInt = fromInt;
-		/**
-		* @param {number} value
-		* @param {boolean=} unsigned
-		* @returns {!Long}
-		* @inner
-		*/
-		function fromNumber(value, unsigned) {
-			if (isNaN(value)) return unsigned ? UZERO : ZERO;
-			if (unsigned) {
-				if (value < 0) return UZERO;
-				if (value >= TWO_PWR_64_DBL) return MAX_UNSIGNED_VALUE;
-			} else {
-				if (value <= -TWO_PWR_63_DBL) return MIN_VALUE;
-				if (value + 1 >= TWO_PWR_63_DBL) return MAX_VALUE;
-			}
-			if (value < 0) return fromNumber(-value, unsigned).neg();
-			return fromBits(value % TWO_PWR_32_DBL | 0, value / TWO_PWR_32_DBL | 0, unsigned);
-		}
-		/**
-		* Returns a Long representing the given value, provided that it is a finite number. Otherwise, zero is returned.
-		* @function
-		* @param {number} value The number in question
-		* @param {boolean=} unsigned Whether unsigned or not, defaults to signed
-		* @returns {!Long} The corresponding Long value
-		*/
-		Long.fromNumber = fromNumber;
-		/**
-		* @param {number} lowBits
-		* @param {number} highBits
-		* @param {boolean=} unsigned
-		* @returns {!Long}
-		* @inner
-		*/
-		function fromBits(lowBits, highBits, unsigned) {
-			return new Long(lowBits, highBits, unsigned);
-		}
-		/**
-		* Returns a Long representing the 64 bit integer that comes by concatenating the given low and high bits. Each is
-		*  assumed to use 32 bits.
-		* @function
-		* @param {number} lowBits The low 32 bits
-		* @param {number} highBits The high 32 bits
-		* @param {boolean=} unsigned Whether unsigned or not, defaults to signed
-		* @returns {!Long} The corresponding Long value
-		*/
-		Long.fromBits = fromBits;
-		/**
-		* @function
-		* @param {number} base
-		* @param {number} exponent
-		* @returns {number}
-		* @inner
-		*/
-		var pow_dbl = Math.pow;
-		/**
-		* @param {string} str
-		* @param {(boolean|number)=} unsigned
-		* @param {number=} radix
-		* @returns {!Long}
-		* @inner
-		*/
-		function fromString(str, unsigned, radix) {
-			if (str.length === 0) throw Error("empty string");
-			if (typeof unsigned === "number") {
-				radix = unsigned;
-				unsigned = false;
-			} else unsigned = !!unsigned;
-			if (str === "NaN" || str === "Infinity" || str === "+Infinity" || str === "-Infinity") return unsigned ? UZERO : ZERO;
-			radix = radix || 10;
-			if (radix < 2 || 36 < radix) throw RangeError("radix");
-			var p;
-			if ((p = str.indexOf("-")) > 0) throw Error("interior hyphen");
-			else if (p === 0) return fromString(str.substring(1), unsigned, radix).neg();
-			var radixToPower = fromNumber(pow_dbl(radix, 8));
-			var result = ZERO;
-			for (var i = 0; i < str.length; i += 8) {
-				var size = Math.min(8, str.length - i), value = parseInt(str.substring(i, i + size), radix);
-				if (size < 8) {
-					var power = fromNumber(pow_dbl(radix, size));
-					result = result.mul(power).add(fromNumber(value));
-				} else {
-					result = result.mul(radixToPower);
-					result = result.add(fromNumber(value));
-				}
-			}
-			result.unsigned = unsigned;
-			return result;
-		}
-		/**
-		* Returns a Long representation of the given string, written using the specified radix.
-		* @function
-		* @param {string} str The textual representation of the Long
-		* @param {(boolean|number)=} unsigned Whether unsigned or not, defaults to signed
-		* @param {number=} radix The radix in which the text is written (2-36), defaults to 10
-		* @returns {!Long} The corresponding Long value
-		*/
-		Long.fromString = fromString;
-		/**
-		* @function
-		* @param {!Long|number|string|!{low: number, high: number, unsigned: boolean}} val
-		* @param {boolean=} unsigned
-		* @returns {!Long}
-		* @inner
-		*/
-		function fromValue(val, unsigned) {
-			if (typeof val === "number") return fromNumber(val, unsigned);
-			if (typeof val === "string") return fromString(val, unsigned);
-			return fromBits(val.low, val.high, typeof unsigned === "boolean" ? unsigned : val.unsigned);
-		}
-		/**
-		* Converts the specified value to a Long using the appropriate from* function for its type.
-		* @function
-		* @param {!Long|number|bigint|string|!{low: number, high: number, unsigned: boolean}} val Value
-		* @param {boolean=} unsigned Whether unsigned or not, defaults to signed
-		* @returns {!Long}
-		*/
-		Long.fromValue = fromValue;
-		/**
-		* @type {number}
-		* @const
-		* @inner
-		*/
-		var TWO_PWR_16_DBL = 65536;
-		/**
-		* @type {number}
-		* @const
-		* @inner
-		*/
-		var TWO_PWR_24_DBL = 1 << 24;
-		/**
-		* @type {number}
-		* @const
-		* @inner
-		*/
-		var TWO_PWR_32_DBL = TWO_PWR_16_DBL * TWO_PWR_16_DBL;
-		/**
-		* @type {number}
-		* @const
-		* @inner
-		*/
-		var TWO_PWR_64_DBL = TWO_PWR_32_DBL * TWO_PWR_32_DBL;
-		/**
-		* @type {number}
-		* @const
-		* @inner
-		*/
-		var TWO_PWR_63_DBL = TWO_PWR_64_DBL / 2;
-		/**
-		* @type {!Long}
-		* @const
-		* @inner
-		*/
-		var TWO_PWR_24 = fromInt(TWO_PWR_24_DBL);
-		/**
-		* @type {!Long}
-		* @inner
-		*/
-		var ZERO = fromInt(0);
-		/**
-		* Signed zero.
-		* @type {!Long}
-		*/
-		Long.ZERO = ZERO;
-		/**
-		* @type {!Long}
-		* @inner
-		*/
-		var UZERO = fromInt(0, true);
-		/**
-		* Unsigned zero.
-		* @type {!Long}
-		*/
-		Long.UZERO = UZERO;
-		/**
-		* @type {!Long}
-		* @inner
-		*/
-		var ONE = fromInt(1);
-		/**
-		* Signed one.
-		* @type {!Long}
-		*/
-		Long.ONE = ONE;
-		/**
-		* @type {!Long}
-		* @inner
-		*/
-		var UONE = fromInt(1, true);
-		/**
-		* Unsigned one.
-		* @type {!Long}
-		*/
-		Long.UONE = UONE;
-		/**
-		* @type {!Long}
-		* @inner
-		*/
-		var NEG_ONE = fromInt(-1);
-		/**
-		* Signed negative one.
-		* @type {!Long}
-		*/
-		Long.NEG_ONE = NEG_ONE;
-		/**
-		* @type {!Long}
-		* @inner
-		*/
-		var MAX_VALUE = fromBits(-1, 2147483647, false);
-		/**
-		* Maximum signed value.
-		* @type {!Long}
-		*/
-		Long.MAX_VALUE = MAX_VALUE;
-		/**
-		* @type {!Long}
-		* @inner
-		*/
-		var MAX_UNSIGNED_VALUE = fromBits(-1, -1, true);
-		/**
-		* Maximum unsigned value.
-		* @type {!Long}
-		*/
-		Long.MAX_UNSIGNED_VALUE = MAX_UNSIGNED_VALUE;
-		/**
-		* @type {!Long}
-		* @inner
-		*/
-		var MIN_VALUE = fromBits(0, -2147483648, false);
-		/**
-		* Minimum signed value.
-		* @type {!Long}
-		*/
-		Long.MIN_VALUE = MIN_VALUE;
-		/**
-		* @alias Long.prototype
-		* @inner
-		*/
-		var LongPrototype = Long.prototype;
-		/**
-		* Converts the Long to a 32 bit integer, assuming it is a 32 bit integer.
-		* @this {!Long}
-		* @returns {number}
-		*/
-		LongPrototype.toInt = function toInt() {
-			return this.unsigned ? this.low >>> 0 : this.low;
-		};
-		/**
-		* Converts the Long to a the nearest floating-point representation of this value (double, 53 bit mantissa).
-		* @this {!Long}
-		* @returns {number}
-		*/
-		LongPrototype.toNumber = function toNumber() {
-			if (this.unsigned) return (this.high >>> 0) * TWO_PWR_32_DBL + (this.low >>> 0);
-			return this.high * TWO_PWR_32_DBL + (this.low >>> 0);
-		};
-		/**
-		* Converts the Long to a string written in the specified radix.
-		* @this {!Long}
-		* @param {number=} radix Radix (2-36), defaults to 10
-		* @returns {string}
-		* @override
-		* @throws {RangeError} If `radix` is out of range
-		*/
-		LongPrototype.toString = function toString(radix) {
-			radix = radix || 10;
-			if (radix < 2 || 36 < radix) throw RangeError("radix");
-			if (this.isZero()) return "0";
-			if (this.isNegative()) if (this.eq(MIN_VALUE)) {
-				var radixLong = fromNumber(radix), div = this.div(radixLong), rem1 = div.mul(radixLong).sub(this);
-				return div.toString(radix) + rem1.toInt().toString(radix);
-			} else return "-" + this.neg().toString(radix);
-			var radixToPower = fromNumber(pow_dbl(radix, 6), this.unsigned), rem = this;
-			var result = "";
-			while (true) {
-				var remDiv = rem.div(radixToPower), digits = (rem.sub(remDiv.mul(radixToPower)).toInt() >>> 0).toString(radix);
-				rem = remDiv;
-				if (rem.isZero()) return digits + result;
-				else {
-					while (digits.length < 6) digits = "0" + digits;
-					result = "" + digits + result;
-				}
-			}
-		};
-		/**
-		* Gets the high 32 bits as a signed integer.
-		* @this {!Long}
-		* @returns {number} Signed high bits
-		*/
-		LongPrototype.getHighBits = function getHighBits() {
-			return this.high;
-		};
-		/**
-		* Gets the high 32 bits as an unsigned integer.
-		* @this {!Long}
-		* @returns {number} Unsigned high bits
-		*/
-		LongPrototype.getHighBitsUnsigned = function getHighBitsUnsigned() {
-			return this.high >>> 0;
-		};
-		/**
-		* Gets the low 32 bits as a signed integer.
-		* @this {!Long}
-		* @returns {number} Signed low bits
-		*/
-		LongPrototype.getLowBits = function getLowBits() {
-			return this.low;
-		};
-		/**
-		* Gets the low 32 bits as an unsigned integer.
-		* @this {!Long}
-		* @returns {number} Unsigned low bits
-		*/
-		LongPrototype.getLowBitsUnsigned = function getLowBitsUnsigned() {
-			return this.low >>> 0;
-		};
-		/**
-		* Gets the number of bits needed to represent the absolute value of this Long.
-		* @this {!Long}
-		* @returns {number}
-		*/
-		LongPrototype.getNumBitsAbs = function getNumBitsAbs() {
-			if (this.isNegative()) return this.eq(MIN_VALUE) ? 64 : this.neg().getNumBitsAbs();
-			var val = this.high != 0 ? this.high : this.low;
-			for (var bit = 31; bit > 0; bit--) if ((val & 1 << bit) != 0) break;
-			return this.high != 0 ? bit + 33 : bit + 1;
-		};
-		/**
-		* Tests if this Long can be safely represented as a JavaScript number.
-		* @this {!Long}
-		* @returns {boolean}
-		*/
-		LongPrototype.isSafeInteger = function isSafeInteger() {
-			var top11Bits = this.high >> 21;
-			if (!top11Bits) return true;
-			if (this.unsigned) return false;
-			return top11Bits === -1 && !(this.low === 0 && this.high === -2097152);
-		};
-		/**
-		* Tests if this Long's value equals zero.
-		* @this {!Long}
-		* @returns {boolean}
-		*/
-		LongPrototype.isZero = function isZero() {
-			return this.high === 0 && this.low === 0;
-		};
-		/**
-		* Tests if this Long's value equals zero. This is an alias of {@link Long#isZero}.
-		* @returns {boolean}
-		*/
-		LongPrototype.eqz = LongPrototype.isZero;
-		/**
-		* Tests if this Long's value is negative.
-		* @this {!Long}
-		* @returns {boolean}
-		*/
-		LongPrototype.isNegative = function isNegative() {
-			return !this.unsigned && this.high < 0;
-		};
-		/**
-		* Tests if this Long's value is positive or zero.
-		* @this {!Long}
-		* @returns {boolean}
-		*/
-		LongPrototype.isPositive = function isPositive() {
-			return this.unsigned || this.high >= 0;
-		};
-		/**
-		* Tests if this Long's value is odd.
-		* @this {!Long}
-		* @returns {boolean}
-		*/
-		LongPrototype.isOdd = function isOdd() {
-			return (this.low & 1) === 1;
-		};
-		/**
-		* Tests if this Long's value is even.
-		* @this {!Long}
-		* @returns {boolean}
-		*/
-		LongPrototype.isEven = function isEven() {
-			return (this.low & 1) === 0;
-		};
-		/**
-		* Tests if this Long's value equals the specified's.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.equals = function equals(other) {
-			if (!isLong(other)) other = fromValue(other);
-			if (this.unsigned !== other.unsigned && this.high >>> 31 === 1 && other.high >>> 31 === 1) return false;
-			return this.high === other.high && this.low === other.low;
-		};
-		/**
-		* Tests if this Long's value equals the specified's. This is an alias of {@link Long#equals}.
-		* @function
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.eq = LongPrototype.equals;
-		/**
-		* Tests if this Long's value differs from the specified's.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.notEquals = function notEquals(other) {
-			return !this.eq(other);
-		};
-		/**
-		* Tests if this Long's value differs from the specified's. This is an alias of {@link Long#notEquals}.
-		* @function
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.neq = LongPrototype.notEquals;
-		/**
-		* Tests if this Long's value differs from the specified's. This is an alias of {@link Long#notEquals}.
-		* @function
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.ne = LongPrototype.notEquals;
-		/**
-		* Tests if this Long's value is less than the specified's.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.lessThan = function lessThan(other) {
-			return this.comp(other) < 0;
-		};
-		/**
-		* Tests if this Long's value is less than the specified's. This is an alias of {@link Long#lessThan}.
-		* @function
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.lt = LongPrototype.lessThan;
-		/**
-		* Tests if this Long's value is less than or equal the specified's.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.lessThanOrEqual = function lessThanOrEqual(other) {
-			return this.comp(other) <= 0;
-		};
-		/**
-		* Tests if this Long's value is less than or equal the specified's. This is an alias of {@link Long#lessThanOrEqual}.
-		* @function
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.lte = LongPrototype.lessThanOrEqual;
-		/**
-		* Tests if this Long's value is less than or equal the specified's. This is an alias of {@link Long#lessThanOrEqual}.
-		* @function
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.le = LongPrototype.lessThanOrEqual;
-		/**
-		* Tests if this Long's value is greater than the specified's.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.greaterThan = function greaterThan(other) {
-			return this.comp(other) > 0;
-		};
-		/**
-		* Tests if this Long's value is greater than the specified's. This is an alias of {@link Long#greaterThan}.
-		* @function
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.gt = LongPrototype.greaterThan;
-		/**
-		* Tests if this Long's value is greater than or equal the specified's.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.greaterThanOrEqual = function greaterThanOrEqual(other) {
-			return this.comp(other) >= 0;
-		};
-		/**
-		* Tests if this Long's value is greater than or equal the specified's. This is an alias of {@link Long#greaterThanOrEqual}.
-		* @function
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.gte = LongPrototype.greaterThanOrEqual;
-		/**
-		* Tests if this Long's value is greater than or equal the specified's. This is an alias of {@link Long#greaterThanOrEqual}.
-		* @function
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {boolean}
-		*/
-		LongPrototype.ge = LongPrototype.greaterThanOrEqual;
-		/**
-		* Compares this Long's value with the specified's.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {number} 0 if they are the same, 1 if the this is greater and -1
-		*  if the given one is greater
-		*/
-		LongPrototype.compare = function compare(other) {
-			if (!isLong(other)) other = fromValue(other);
-			if (this.eq(other)) return 0;
-			var thisNeg = this.isNegative(), otherNeg = other.isNegative();
-			if (thisNeg && !otherNeg) return -1;
-			if (!thisNeg && otherNeg) return 1;
-			if (!this.unsigned) return this.sub(other).isNegative() ? -1 : 1;
-			return other.high >>> 0 > this.high >>> 0 || other.high === this.high && other.low >>> 0 > this.low >>> 0 ? -1 : 1;
-		};
-		/**
-		* Compares this Long's value with the specified's. This is an alias of {@link Long#compare}.
-		* @function
-		* @param {!Long|number|bigint|string} other Other value
-		* @returns {number} 0 if they are the same, 1 if the this is greater and -1
-		*  if the given one is greater
-		*/
-		LongPrototype.comp = LongPrototype.compare;
-		/**
-		* Negates this Long's value.
-		* @this {!Long}
-		* @returns {!Long} Negated Long
-		*/
-		LongPrototype.negate = function negate() {
-			if (!this.unsigned && this.eq(MIN_VALUE)) return MIN_VALUE;
-			return this.not().add(ONE);
-		};
-		/**
-		* Negates this Long's value. This is an alias of {@link Long#negate}.
-		* @function
-		* @returns {!Long} Negated Long
-		*/
-		LongPrototype.neg = LongPrototype.negate;
-		/**
-		* Returns the sum of this and the specified Long.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} addend Addend
-		* @returns {!Long} Sum
-		*/
-		LongPrototype.add = function add(addend) {
-			if (!isLong(addend)) addend = fromValue(addend);
-			var a48 = this.high >>> 16;
-			var a32 = this.high & 65535;
-			var a16 = this.low >>> 16;
-			var a00 = this.low & 65535;
-			var b48 = addend.high >>> 16;
-			var b32 = addend.high & 65535;
-			var b16 = addend.low >>> 16;
-			var b00 = addend.low & 65535;
-			var c48 = 0, c32 = 0, c16 = 0, c00 = 0;
-			c00 += a00 + b00;
-			c16 += c00 >>> 16;
-			c00 &= 65535;
-			c16 += a16 + b16;
-			c32 += c16 >>> 16;
-			c16 &= 65535;
-			c32 += a32 + b32;
-			c48 += c32 >>> 16;
-			c32 &= 65535;
-			c48 += a48 + b48;
-			c48 &= 65535;
-			return fromBits(c16 << 16 | c00, c48 << 16 | c32, this.unsigned);
-		};
-		/**
-		* Returns the difference of this and the specified Long.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} subtrahend Subtrahend
-		* @returns {!Long} Difference
-		*/
-		LongPrototype.subtract = function subtract(subtrahend) {
-			if (!isLong(subtrahend)) subtrahend = fromValue(subtrahend);
-			return this.add(subtrahend.neg());
-		};
-		/**
-		* Returns the difference of this and the specified Long. This is an alias of {@link Long#subtract}.
-		* @function
-		* @param {!Long|number|bigint|string} subtrahend Subtrahend
-		* @returns {!Long} Difference
-		*/
-		LongPrototype.sub = LongPrototype.subtract;
-		/**
-		* Returns the product of this and the specified Long.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} multiplier Multiplier
-		* @returns {!Long} Product
-		*/
-		LongPrototype.multiply = function multiply(multiplier) {
-			if (this.isZero()) return this;
-			if (!isLong(multiplier)) multiplier = fromValue(multiplier);
-			if (wasm) return fromBits(wasm["mul"](this.low, this.high, multiplier.low, multiplier.high), wasm["get_high"](), this.unsigned);
-			if (multiplier.isZero()) return this.unsigned ? UZERO : ZERO;
-			if (this.eq(MIN_VALUE)) return multiplier.isOdd() ? MIN_VALUE : ZERO;
-			if (multiplier.eq(MIN_VALUE)) return this.isOdd() ? MIN_VALUE : ZERO;
-			if (this.isNegative()) if (multiplier.isNegative()) return this.neg().mul(multiplier.neg());
-			else return this.neg().mul(multiplier).neg();
-			else if (multiplier.isNegative()) return this.mul(multiplier.neg()).neg();
-			if (this.lt(TWO_PWR_24) && multiplier.lt(TWO_PWR_24)) return fromNumber(this.toNumber() * multiplier.toNumber(), this.unsigned);
-			var a48 = this.high >>> 16;
-			var a32 = this.high & 65535;
-			var a16 = this.low >>> 16;
-			var a00 = this.low & 65535;
-			var b48 = multiplier.high >>> 16;
-			var b32 = multiplier.high & 65535;
-			var b16 = multiplier.low >>> 16;
-			var b00 = multiplier.low & 65535;
-			var c48 = 0, c32 = 0, c16 = 0, c00 = 0;
-			c00 += a00 * b00;
-			c16 += c00 >>> 16;
-			c00 &= 65535;
-			c16 += a16 * b00;
-			c32 += c16 >>> 16;
-			c16 &= 65535;
-			c16 += a00 * b16;
-			c32 += c16 >>> 16;
-			c16 &= 65535;
-			c32 += a32 * b00;
-			c48 += c32 >>> 16;
-			c32 &= 65535;
-			c32 += a16 * b16;
-			c48 += c32 >>> 16;
-			c32 &= 65535;
-			c32 += a00 * b32;
-			c48 += c32 >>> 16;
-			c32 &= 65535;
-			c48 += a48 * b00 + a32 * b16 + a16 * b32 + a00 * b48;
-			c48 &= 65535;
-			return fromBits(c16 << 16 | c00, c48 << 16 | c32, this.unsigned);
-		};
-		/**
-		* Returns the product of this and the specified Long. This is an alias of {@link Long#multiply}.
-		* @function
-		* @param {!Long|number|bigint|string} multiplier Multiplier
-		* @returns {!Long} Product
-		*/
-		LongPrototype.mul = LongPrototype.multiply;
-		/**
-		* Returns this Long divided by the specified. The result is signed if this Long is signed or
-		*  unsigned if this Long is unsigned.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} divisor Divisor
-		* @returns {!Long} Quotient
-		*/
-		LongPrototype.divide = function divide(divisor) {
-			if (!isLong(divisor)) divisor = fromValue(divisor);
-			if (divisor.isZero()) throw Error("division by zero");
-			if (wasm) {
-				if (!this.unsigned && this.high === -2147483648 && divisor.low === -1 && divisor.high === -1) return this;
-				return fromBits((this.unsigned ? wasm["div_u"] : wasm["div_s"])(this.low, this.high, divisor.low, divisor.high), wasm["get_high"](), this.unsigned);
-			}
-			if (this.isZero()) return this.unsigned ? UZERO : ZERO;
-			var approx, rem, res;
-			if (!this.unsigned) {
-				if (this.eq(MIN_VALUE)) if (divisor.eq(ONE) || divisor.eq(NEG_ONE)) return MIN_VALUE;
-				else if (divisor.eq(MIN_VALUE)) return ONE;
-				else {
-					approx = this.shr(1).div(divisor).shl(1);
-					if (approx.eq(ZERO)) return divisor.isNegative() ? ONE : NEG_ONE;
-					else {
-						rem = this.sub(divisor.mul(approx));
-						res = approx.add(rem.div(divisor));
-						return res;
-					}
-				}
-				else if (divisor.eq(MIN_VALUE)) return this.unsigned ? UZERO : ZERO;
-				if (this.isNegative()) {
-					if (divisor.isNegative()) return this.neg().div(divisor.neg());
-					return this.neg().div(divisor).neg();
-				} else if (divisor.isNegative()) return this.div(divisor.neg()).neg();
-				res = ZERO;
-			} else {
-				if (!divisor.unsigned) divisor = divisor.toUnsigned();
-				if (divisor.gt(this)) return UZERO;
-				if (divisor.gt(this.shru(1))) return UONE;
-				res = UZERO;
-			}
-			rem = this;
-			while (rem.gte(divisor)) {
-				approx = Math.max(1, Math.floor(rem.toNumber() / divisor.toNumber()));
-				var log2 = Math.ceil(Math.log(approx) / Math.LN2), delta = log2 <= 48 ? 1 : pow_dbl(2, log2 - 48), approxRes = fromNumber(approx), approxRem = approxRes.mul(divisor);
-				while (approxRem.isNegative() || approxRem.gt(rem)) {
-					approx -= delta;
-					approxRes = fromNumber(approx, this.unsigned);
-					approxRem = approxRes.mul(divisor);
-				}
-				if (approxRes.isZero()) approxRes = ONE;
-				res = res.add(approxRes);
-				rem = rem.sub(approxRem);
-			}
-			return res;
-		};
-		/**
-		* Returns this Long divided by the specified. This is an alias of {@link Long#divide}.
-		* @function
-		* @param {!Long|number|bigint|string} divisor Divisor
-		* @returns {!Long} Quotient
-		*/
-		LongPrototype.div = LongPrototype.divide;
-		/**
-		* Returns this Long modulo the specified.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} divisor Divisor
-		* @returns {!Long} Remainder
-		*/
-		LongPrototype.modulo = function modulo(divisor) {
-			if (!isLong(divisor)) divisor = fromValue(divisor);
-			if (wasm) return fromBits((this.unsigned ? wasm["rem_u"] : wasm["rem_s"])(this.low, this.high, divisor.low, divisor.high), wasm["get_high"](), this.unsigned);
-			return this.sub(this.div(divisor).mul(divisor));
-		};
-		/**
-		* Returns this Long modulo the specified. This is an alias of {@link Long#modulo}.
-		* @function
-		* @param {!Long|number|bigint|string} divisor Divisor
-		* @returns {!Long} Remainder
-		*/
-		LongPrototype.mod = LongPrototype.modulo;
-		/**
-		* Returns this Long modulo the specified. This is an alias of {@link Long#modulo}.
-		* @function
-		* @param {!Long|number|bigint|string} divisor Divisor
-		* @returns {!Long} Remainder
-		*/
-		LongPrototype.rem = LongPrototype.modulo;
-		/**
-		* Returns the bitwise NOT of this Long.
-		* @this {!Long}
-		* @returns {!Long}
-		*/
-		LongPrototype.not = function not() {
-			return fromBits(~this.low, ~this.high, this.unsigned);
-		};
-		/**
-		* Returns count leading zeros of this Long.
-		* @this {!Long}
-		* @returns {!number}
-		*/
-		LongPrototype.countLeadingZeros = function countLeadingZeros() {
-			return this.high ? Math.clz32(this.high) : Math.clz32(this.low) + 32;
-		};
-		/**
-		* Returns count leading zeros. This is an alias of {@link Long#countLeadingZeros}.
-		* @function
-		* @param {!Long}
-		* @returns {!number}
-		*/
-		LongPrototype.clz = LongPrototype.countLeadingZeros;
-		/**
-		* Returns count trailing zeros of this Long.
-		* @this {!Long}
-		* @returns {!number}
-		*/
-		LongPrototype.countTrailingZeros = function countTrailingZeros() {
-			return this.low ? ctz32(this.low) : ctz32(this.high) + 32;
-		};
-		/**
-		* Returns count trailing zeros. This is an alias of {@link Long#countTrailingZeros}.
-		* @function
-		* @param {!Long}
-		* @returns {!number}
-		*/
-		LongPrototype.ctz = LongPrototype.countTrailingZeros;
-		/**
-		* Returns the bitwise AND of this Long and the specified.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} other Other Long
-		* @returns {!Long}
-		*/
-		LongPrototype.and = function and(other) {
-			if (!isLong(other)) other = fromValue(other);
-			return fromBits(this.low & other.low, this.high & other.high, this.unsigned);
-		};
-		/**
-		* Returns the bitwise OR of this Long and the specified.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} other Other Long
-		* @returns {!Long}
-		*/
-		LongPrototype.or = function or(other) {
-			if (!isLong(other)) other = fromValue(other);
-			return fromBits(this.low | other.low, this.high | other.high, this.unsigned);
-		};
-		/**
-		* Returns the bitwise XOR of this Long and the given one.
-		* @this {!Long}
-		* @param {!Long|number|bigint|string} other Other Long
-		* @returns {!Long}
-		*/
-		LongPrototype.xor = function xor(other) {
-			if (!isLong(other)) other = fromValue(other);
-			return fromBits(this.low ^ other.low, this.high ^ other.high, this.unsigned);
-		};
-		/**
-		* Returns this Long with bits shifted to the left by the given amount.
-		* @this {!Long}
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Shifted Long
-		*/
-		LongPrototype.shiftLeft = function shiftLeft(numBits) {
-			if (isLong(numBits)) numBits = numBits.toInt();
-			if ((numBits &= 63) === 0) return this;
-			else if (numBits < 32) return fromBits(this.low << numBits, this.high << numBits | this.low >>> 32 - numBits, this.unsigned);
-			else return fromBits(0, this.low << numBits - 32, this.unsigned);
-		};
-		/**
-		* Returns this Long with bits shifted to the left by the given amount. This is an alias of {@link Long#shiftLeft}.
-		* @function
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Shifted Long
-		*/
-		LongPrototype.shl = LongPrototype.shiftLeft;
-		/**
-		* Returns this Long with bits arithmetically shifted to the right by the given amount.
-		* @this {!Long}
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Shifted Long
-		*/
-		LongPrototype.shiftRight = function shiftRight(numBits) {
-			if (isLong(numBits)) numBits = numBits.toInt();
-			if ((numBits &= 63) === 0) return this;
-			else if (numBits < 32) return fromBits(this.low >>> numBits | this.high << 32 - numBits, this.high >> numBits, this.unsigned);
-			else return fromBits(this.high >> numBits - 32, this.high >= 0 ? 0 : -1, this.unsigned);
-		};
-		/**
-		* Returns this Long with bits arithmetically shifted to the right by the given amount. This is an alias of {@link Long#shiftRight}.
-		* @function
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Shifted Long
-		*/
-		LongPrototype.shr = LongPrototype.shiftRight;
-		/**
-		* Returns this Long with bits logically shifted to the right by the given amount.
-		* @this {!Long}
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Shifted Long
-		*/
-		LongPrototype.shiftRightUnsigned = function shiftRightUnsigned(numBits) {
-			if (isLong(numBits)) numBits = numBits.toInt();
-			if ((numBits &= 63) === 0) return this;
-			if (numBits < 32) return fromBits(this.low >>> numBits | this.high << 32 - numBits, this.high >>> numBits, this.unsigned);
-			if (numBits === 32) return fromBits(this.high, 0, this.unsigned);
-			return fromBits(this.high >>> numBits - 32, 0, this.unsigned);
-		};
-		/**
-		* Returns this Long with bits logically shifted to the right by the given amount. This is an alias of {@link Long#shiftRightUnsigned}.
-		* @function
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Shifted Long
-		*/
-		LongPrototype.shru = LongPrototype.shiftRightUnsigned;
-		/**
-		* Returns this Long with bits logically shifted to the right by the given amount. This is an alias of {@link Long#shiftRightUnsigned}.
-		* @function
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Shifted Long
-		*/
-		LongPrototype.shr_u = LongPrototype.shiftRightUnsigned;
-		/**
-		* Returns this Long with bits rotated to the left by the given amount.
-		* @this {!Long}
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Rotated Long
-		*/
-		LongPrototype.rotateLeft = function rotateLeft(numBits) {
-			var b;
-			if (isLong(numBits)) numBits = numBits.toInt();
-			if ((numBits &= 63) === 0) return this;
-			if (numBits === 32) return fromBits(this.high, this.low, this.unsigned);
-			if (numBits < 32) {
-				b = 32 - numBits;
-				return fromBits(this.low << numBits | this.high >>> b, this.high << numBits | this.low >>> b, this.unsigned);
-			}
-			numBits -= 32;
-			b = 32 - numBits;
-			return fromBits(this.high << numBits | this.low >>> b, this.low << numBits | this.high >>> b, this.unsigned);
-		};
-		/**
-		* Returns this Long with bits rotated to the left by the given amount. This is an alias of {@link Long#rotateLeft}.
-		* @function
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Rotated Long
-		*/
-		LongPrototype.rotl = LongPrototype.rotateLeft;
-		/**
-		* Returns this Long with bits rotated to the right by the given amount.
-		* @this {!Long}
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Rotated Long
-		*/
-		LongPrototype.rotateRight = function rotateRight(numBits) {
-			var b;
-			if (isLong(numBits)) numBits = numBits.toInt();
-			if ((numBits &= 63) === 0) return this;
-			if (numBits === 32) return fromBits(this.high, this.low, this.unsigned);
-			if (numBits < 32) {
-				b = 32 - numBits;
-				return fromBits(this.high << b | this.low >>> numBits, this.low << b | this.high >>> numBits, this.unsigned);
-			}
-			numBits -= 32;
-			b = 32 - numBits;
-			return fromBits(this.low << b | this.high >>> numBits, this.high << b | this.low >>> numBits, this.unsigned);
-		};
-		/**
-		* Returns this Long with bits rotated to the right by the given amount. This is an alias of {@link Long#rotateRight}.
-		* @function
-		* @param {number|!Long} numBits Number of bits
-		* @returns {!Long} Rotated Long
-		*/
-		LongPrototype.rotr = LongPrototype.rotateRight;
-		/**
-		* Converts this Long to signed.
-		* @this {!Long}
-		* @returns {!Long} Signed long
-		*/
-		LongPrototype.toSigned = function toSigned() {
-			if (!this.unsigned) return this;
-			return fromBits(this.low, this.high, false);
-		};
-		/**
-		* Converts this Long to unsigned.
-		* @this {!Long}
-		* @returns {!Long} Unsigned long
-		*/
-		LongPrototype.toUnsigned = function toUnsigned() {
-			if (this.unsigned) return this;
-			return fromBits(this.low, this.high, true);
-		};
-		/**
-		* Converts this Long to its byte representation.
-		* @param {boolean=} le Whether little or big endian, defaults to big endian
-		* @this {!Long}
-		* @returns {!Array.<number>} Byte representation
-		*/
-		LongPrototype.toBytes = function toBytes(le) {
-			return le ? this.toBytesLE() : this.toBytesBE();
-		};
-		/**
-		* Converts this Long to its little endian byte representation.
-		* @this {!Long}
-		* @returns {!Array.<number>} Little endian byte representation
-		*/
-		LongPrototype.toBytesLE = function toBytesLE() {
-			var hi = this.high, lo = this.low;
-			return [
-				lo & 255,
-				lo >>> 8 & 255,
-				lo >>> 16 & 255,
-				lo >>> 24,
-				hi & 255,
-				hi >>> 8 & 255,
-				hi >>> 16 & 255,
-				hi >>> 24
-			];
-		};
-		/**
-		* Converts this Long to its big endian byte representation.
-		* @this {!Long}
-		* @returns {!Array.<number>} Big endian byte representation
-		*/
-		LongPrototype.toBytesBE = function toBytesBE() {
-			var hi = this.high, lo = this.low;
-			return [
-				hi >>> 24,
-				hi >>> 16 & 255,
-				hi >>> 8 & 255,
-				hi & 255,
-				lo >>> 24,
-				lo >>> 16 & 255,
-				lo >>> 8 & 255,
-				lo & 255
-			];
-		};
-		/**
-		* Creates a Long from its byte representation.
-		* @param {!Array.<number>} bytes Byte representation
-		* @param {boolean=} unsigned Whether unsigned or not, defaults to signed
-		* @param {boolean=} le Whether little or big endian, defaults to big endian
-		* @returns {Long} The corresponding Long value
-		*/
-		Long.fromBytes = function fromBytes(bytes, unsigned, le) {
-			return le ? Long.fromBytesLE(bytes, unsigned) : Long.fromBytesBE(bytes, unsigned);
-		};
-		/**
-		* Creates a Long from its little endian byte representation.
-		* @param {!Array.<number>} bytes Little endian byte representation
-		* @param {boolean=} unsigned Whether unsigned or not, defaults to signed
-		* @returns {Long} The corresponding Long value
-		*/
-		Long.fromBytesLE = function fromBytesLE(bytes, unsigned) {
-			return new Long(bytes[0] | bytes[1] << 8 | bytes[2] << 16 | bytes[3] << 24, bytes[4] | bytes[5] << 8 | bytes[6] << 16 | bytes[7] << 24, unsigned);
-		};
-		/**
-		* Creates a Long from its big endian byte representation.
-		* @param {!Array.<number>} bytes Big endian byte representation
-		* @param {boolean=} unsigned Whether unsigned or not, defaults to signed
-		* @returns {Long} The corresponding Long value
-		*/
-		Long.fromBytesBE = function fromBytesBE(bytes, unsigned) {
-			return new Long(bytes[4] << 24 | bytes[5] << 16 | bytes[6] << 8 | bytes[7], bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3], unsigned);
-		};
-		if (typeof BigInt === "function") {
-			/**
-			* Returns a Long representing the given big integer.
-			* @function
-			* @param {number} value The big integer value
-			* @param {boolean=} unsigned Whether unsigned or not, defaults to signed
-			* @returns {!Long} The corresponding Long value
-			*/
-			Long.fromBigInt = function fromBigInt(value, unsigned) {
-				return fromBits(Number(BigInt.asIntN(32, value)), Number(BigInt.asIntN(32, value >> BigInt(32))), unsigned);
-			};
-			Long.fromValue = function fromValueWithBigInt(value, unsigned) {
-				if (typeof value === "bigint") return Long.fromBigInt(value, unsigned);
-				return fromValue(value, unsigned);
-			};
-			/**
-			* Converts the Long to its big integer representation.
-			* @this {!Long}
-			* @returns {bigint}
-			*/
-			LongPrototype.toBigInt = function toBigInt() {
-				var lowBigInt = BigInt(this.low >>> 0);
-				return BigInt(this.unsigned ? this.high >>> 0 : this.high) << BigInt(32) | lowBigInt;
-			};
-		}
-		_exports.default = Long;
-	});
-})))();
 /** Output formats */
 let HashOutputFormat = /* @__PURE__ */ function(HashOutputFormat) {
 	HashOutputFormat[HashOutputFormat["HEX"] = 0] = "HEX";
@@ -2518,6 +1043,253 @@ const TraceContext = {
 		return message;
 	}
 };
+function createBaseKeySource() {
+	return {
+		keyId: void 0,
+		rawKey: void 0
+	};
+}
+const KeySource = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.keyId !== void 0) writer.uint32(10).string(message.keyId);
+		if (message.rawKey !== void 0) writer.uint32(18).bytes(message.rawKey);
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseKeySource();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.keyId = reader.string();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.rawKey = reader.bytes();
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			keyId: isSet$1(object.keyId) ? globalThis.String(object.keyId) : void 0,
+			rawKey: isSet$1(object.rawKey) ? bytesFromBase64(object.rawKey) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.keyId !== void 0) obj.keyId = message.keyId;
+		if (message.rawKey !== void 0) obj.rawKey = base64FromBytes(message.rawKey);
+		return obj;
+	},
+	create(base) {
+		return KeySource.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseKeySource();
+		message.keyId = object.keyId ?? void 0;
+		message.rawKey = object.rawKey ?? void 0;
+		return message;
+	}
+};
+function createBaseEncryptMetadata() {
+	return {
+		nonce: void 0,
+		aad: void 0
+	};
+}
+const EncryptMetadata = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.nonce !== void 0) writer.uint32(10).bytes(message.nonce);
+		if (message.aad !== void 0) writer.uint32(18).bytes(message.aad);
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseEncryptMetadata();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.nonce = reader.bytes();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.aad = reader.bytes();
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : void 0,
+			aad: isSet$1(object.aad) ? bytesFromBase64(object.aad) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.nonce !== void 0) obj.nonce = base64FromBytes(message.nonce);
+		if (message.aad !== void 0) obj.aad = base64FromBytes(message.aad);
+		return obj;
+	},
+	create(base) {
+		return EncryptMetadata.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseEncryptMetadata();
+		message.nonce = object.nonce ?? void 0;
+		message.aad = object.aad ?? void 0;
+		return message;
+	}
+};
+function createBaseCipherMetadata() {
+	return {
+		keyId: void 0,
+		nonce: void 0,
+		aad: void 0,
+		tag: void 0
+	};
+}
+const CipherMetadata = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.keyId !== void 0) writer.uint32(10).string(message.keyId);
+		if (message.nonce !== void 0) writer.uint32(18).bytes(message.nonce);
+		if (message.aad !== void 0) writer.uint32(26).bytes(message.aad);
+		if (message.tag !== void 0) writer.uint32(34).bytes(message.tag);
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseCipherMetadata();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.keyId = reader.string();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.nonce = reader.bytes();
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.aad = reader.bytes();
+					continue;
+				case 4:
+					if (tag !== 34) break;
+					message.tag = reader.bytes();
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			keyId: isSet$1(object.keyId) ? globalThis.String(object.keyId) : void 0,
+			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : void 0,
+			aad: isSet$1(object.aad) ? bytesFromBase64(object.aad) : void 0,
+			tag: isSet$1(object.tag) ? bytesFromBase64(object.tag) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.keyId !== void 0) obj.keyId = message.keyId;
+		if (message.nonce !== void 0) obj.nonce = base64FromBytes(message.nonce);
+		if (message.aad !== void 0) obj.aad = base64FromBytes(message.aad);
+		if (message.tag !== void 0) obj.tag = base64FromBytes(message.tag);
+		return obj;
+	},
+	create(base) {
+		return CipherMetadata.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseCipherMetadata();
+		message.keyId = object.keyId ?? void 0;
+		message.nonce = object.nonce ?? void 0;
+		message.aad = object.aad ?? void 0;
+		message.tag = object.tag ?? void 0;
+		return message;
+	}
+};
+function createBaseDecryptMetadata() {
+	return {
+		nonce: void 0,
+		aad: void 0,
+		tag: void 0
+	};
+}
+const DecryptMetadata = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.nonce !== void 0) writer.uint32(10).bytes(message.nonce);
+		if (message.aad !== void 0) writer.uint32(18).bytes(message.aad);
+		if (message.tag !== void 0) writer.uint32(26).bytes(message.tag);
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseDecryptMetadata();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.nonce = reader.bytes();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.aad = reader.bytes();
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.tag = reader.bytes();
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : void 0,
+			aad: isSet$1(object.aad) ? bytesFromBase64(object.aad) : void 0,
+			tag: isSet$1(object.tag) ? bytesFromBase64(object.tag) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.nonce !== void 0) obj.nonce = base64FromBytes(message.nonce);
+		if (message.aad !== void 0) obj.aad = base64FromBytes(message.aad);
+		if (message.tag !== void 0) obj.tag = base64FromBytes(message.tag);
+		return obj;
+	},
+	create(base) {
+		return DecryptMetadata.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseDecryptMetadata();
+		message.nonce = object.nonce ?? void 0;
+		message.aad = object.aad ?? void 0;
+		message.tag = object.tag ?? void 0;
+		return message;
+	}
+};
 function createBaseHashDataRequest() {
 	return {
 		profile: "",
@@ -2685,8 +1457,14 @@ const SignCertificateRequest = {
 		if (message.caPrivateKey !== "") writer.uint32(26).string(message.caPrivateKey);
 		if (message.caCert !== "") writer.uint32(34).string(message.caCert);
 		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(42).fork()).join();
-		if (message.validNotBefore !== void 0) writer.uint32(48).uint64(message.validNotBefore.toString());
-		if (message.validNotAfter !== void 0) writer.uint32(56).uint64(message.validNotAfter.toString());
+		if (message.validNotBefore !== void 0) {
+			if (BigInt.asUintN(64, message.validNotBefore) !== message.validNotBefore) throw new globalThis.Error("value provided for field message.validNotBefore of type uint64 too large");
+			writer.uint32(48).uint64(message.validNotBefore);
+		}
+		if (message.validNotAfter !== void 0) {
+			if (BigInt.asUintN(64, message.validNotAfter) !== message.validNotAfter) throw new globalThis.Error("value provided for field message.validNotAfter of type uint64 too large");
+			writer.uint32(56).uint64(message.validNotAfter);
+		}
 		if (message.subject !== void 0) writer.uint32(66).string(message.subject);
 		for (const v of message.crlDistributionPoints) writer.uint32(74).string(v);
 		if (message.outputFormat !== 0) writer.uint32(80).int32(message.outputFormat);
@@ -2721,11 +1499,11 @@ const SignCertificateRequest = {
 					continue;
 				case 6:
 					if (tag !== 48) break;
-					message.validNotBefore = Long.fromString(reader.uint64().toString(), true);
+					message.validNotBefore = reader.uint64();
 					continue;
 				case 7:
 					if (tag !== 56) break;
-					message.validNotAfter = Long.fromString(reader.uint64().toString(), true);
+					message.validNotAfter = reader.uint64();
 					continue;
 				case 8:
 					if (tag !== 66) break;
@@ -2752,8 +1530,8 @@ const SignCertificateRequest = {
 			caPrivateKey: isSet$1(object.caPrivateKey) ? globalThis.String(object.caPrivateKey) : "",
 			caCert: isSet$1(object.caCert) ? globalThis.String(object.caCert) : "",
 			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
-			validNotBefore: isSet$1(object.validNotBefore) ? Long.fromValue(object.validNotBefore) : void 0,
-			validNotAfter: isSet$1(object.validNotAfter) ? Long.fromValue(object.validNotAfter) : void 0,
+			validNotBefore: isSet$1(object.validNotBefore) ? BigInt(object.validNotBefore) : void 0,
+			validNotAfter: isSet$1(object.validNotAfter) ? BigInt(object.validNotAfter) : void 0,
 			subject: isSet$1(object.subject) ? globalThis.String(object.subject) : void 0,
 			crlDistributionPoints: globalThis.Array.isArray(object?.crlDistributionPoints) ? object.crlDistributionPoints.map((e) => globalThis.String(e)) : [],
 			outputFormat: isSet$1(object.outputFormat) ? signOutputFormatFromJSON(object.outputFormat) : 0
@@ -2766,8 +1544,8 @@ const SignCertificateRequest = {
 		if (message.caPrivateKey !== "") obj.caPrivateKey = message.caPrivateKey;
 		if (message.caCert !== "") obj.caCert = message.caCert;
 		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
-		if (message.validNotBefore !== void 0) obj.validNotBefore = (message.validNotBefore || Long.UZERO).toString();
-		if (message.validNotAfter !== void 0) obj.validNotAfter = (message.validNotAfter || Long.UZERO).toString();
+		if (message.validNotBefore !== void 0) obj.validNotBefore = message.validNotBefore.toString();
+		if (message.validNotAfter !== void 0) obj.validNotAfter = message.validNotAfter.toString();
 		if (message.subject !== void 0) obj.subject = message.subject;
 		if (message.crlDistributionPoints?.length) obj.crlDistributionPoints = message.crlDistributionPoints;
 		if (message.outputFormat !== 0) obj.outputFormat = signOutputFormatToJSON(message.outputFormat);
@@ -2783,8 +1561,8 @@ const SignCertificateRequest = {
 		message.caPrivateKey = object.caPrivateKey ?? "";
 		message.caCert = object.caCert ?? "";
 		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
-		message.validNotBefore = object.validNotBefore !== void 0 && object.validNotBefore !== null ? Long.fromValue(object.validNotBefore) : void 0;
-		message.validNotAfter = object.validNotAfter !== void 0 && object.validNotAfter !== null ? Long.fromValue(object.validNotAfter) : void 0;
+		message.validNotBefore = object.validNotBefore !== void 0 && object.validNotBefore !== null ? BigInt(object.validNotBefore) : void 0;
+		message.validNotAfter = object.validNotAfter !== void 0 && object.validNotAfter !== null ? BigInt(object.validNotAfter) : void 0;
 		message.subject = object.subject ?? void 0;
 		message.crlDistributionPoints = object.crlDistributionPoints?.map((e) => e) || [];
 		message.outputFormat = object.outputFormat ?? 0;
@@ -2852,6 +1630,289 @@ const SignCertificateResponse = {
 		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		message.pem = object.pem ?? void 0;
 		message.der = object.der ?? void 0;
+		return message;
+	}
+};
+function createBaseEncryptDataRequest() {
+	return {
+		profile: "",
+		keySource: void 0,
+		plaintext: /* @__PURE__ */ new Uint8Array(0),
+		encryptMetadata: void 0,
+		metadata: void 0
+	};
+}
+const EncryptDataRequest = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.profile !== "") writer.uint32(10).string(message.profile);
+		if (message.keySource !== void 0) KeySource.encode(message.keySource, writer.uint32(18).fork()).join();
+		if (message.plaintext.length !== 0) writer.uint32(26).bytes(message.plaintext);
+		if (message.encryptMetadata !== void 0) EncryptMetadata.encode(message.encryptMetadata, writer.uint32(34).fork()).join();
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(42).fork()).join();
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseEncryptDataRequest();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.profile = reader.string();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.keySource = KeySource.decode(reader, reader.uint32());
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.plaintext = reader.bytes();
+					continue;
+				case 4:
+					if (tag !== 34) break;
+					message.encryptMetadata = EncryptMetadata.decode(reader, reader.uint32());
+					continue;
+				case 5:
+					if (tag !== 42) break;
+					message.metadata = Metadata.decode(reader, reader.uint32());
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
+			keySource: isSet$1(object.keySource) ? KeySource.fromJSON(object.keySource) : void 0,
+			plaintext: isSet$1(object.plaintext) ? bytesFromBase64(object.plaintext) : /* @__PURE__ */ new Uint8Array(0),
+			encryptMetadata: isSet$1(object.encryptMetadata) ? EncryptMetadata.fromJSON(object.encryptMetadata) : void 0,
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.profile !== "") obj.profile = message.profile;
+		if (message.keySource !== void 0) obj.keySource = KeySource.toJSON(message.keySource);
+		if (message.plaintext.length !== 0) obj.plaintext = base64FromBytes(message.plaintext);
+		if (message.encryptMetadata !== void 0) obj.encryptMetadata = EncryptMetadata.toJSON(message.encryptMetadata);
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
+		return obj;
+	},
+	create(base) {
+		return EncryptDataRequest.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseEncryptDataRequest();
+		message.profile = object.profile ?? "";
+		message.keySource = object.keySource !== void 0 && object.keySource !== null ? KeySource.fromPartial(object.keySource) : void 0;
+		message.plaintext = object.plaintext ?? /* @__PURE__ */ new Uint8Array(0);
+		message.encryptMetadata = object.encryptMetadata !== void 0 && object.encryptMetadata !== null ? EncryptMetadata.fromPartial(object.encryptMetadata) : void 0;
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
+		return message;
+	}
+};
+function createBaseEncryptDataResponse() {
+	return {
+		ciphertext: /* @__PURE__ */ new Uint8Array(0),
+		cipherMetadata: void 0,
+		metadata: void 0
+	};
+}
+const EncryptDataResponse = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.ciphertext.length !== 0) writer.uint32(10).bytes(message.ciphertext);
+		if (message.cipherMetadata !== void 0) CipherMetadata.encode(message.cipherMetadata, writer.uint32(18).fork()).join();
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseEncryptDataResponse();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.ciphertext = reader.bytes();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.cipherMetadata = CipherMetadata.decode(reader, reader.uint32());
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.metadata = Metadata.decode(reader, reader.uint32());
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			ciphertext: isSet$1(object.ciphertext) ? bytesFromBase64(object.ciphertext) : /* @__PURE__ */ new Uint8Array(0),
+			cipherMetadata: isSet$1(object.cipherMetadata) ? CipherMetadata.fromJSON(object.cipherMetadata) : void 0,
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.ciphertext.length !== 0) obj.ciphertext = base64FromBytes(message.ciphertext);
+		if (message.cipherMetadata !== void 0) obj.cipherMetadata = CipherMetadata.toJSON(message.cipherMetadata);
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
+		return obj;
+	},
+	create(base) {
+		return EncryptDataResponse.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseEncryptDataResponse();
+		message.ciphertext = object.ciphertext ?? /* @__PURE__ */ new Uint8Array(0);
+		message.cipherMetadata = object.cipherMetadata !== void 0 && object.cipherMetadata !== null ? CipherMetadata.fromPartial(object.cipherMetadata) : void 0;
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
+		return message;
+	}
+};
+function createBaseDecryptDataRequest() {
+	return {
+		profile: "",
+		keySource: void 0,
+		ciphertext: /* @__PURE__ */ new Uint8Array(0),
+		decryptMetadata: void 0,
+		metadata: void 0
+	};
+}
+const DecryptDataRequest = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.profile !== "") writer.uint32(10).string(message.profile);
+		if (message.keySource !== void 0) KeySource.encode(message.keySource, writer.uint32(18).fork()).join();
+		if (message.ciphertext.length !== 0) writer.uint32(26).bytes(message.ciphertext);
+		if (message.decryptMetadata !== void 0) DecryptMetadata.encode(message.decryptMetadata, writer.uint32(34).fork()).join();
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(42).fork()).join();
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseDecryptDataRequest();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.profile = reader.string();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.keySource = KeySource.decode(reader, reader.uint32());
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.ciphertext = reader.bytes();
+					continue;
+				case 4:
+					if (tag !== 34) break;
+					message.decryptMetadata = DecryptMetadata.decode(reader, reader.uint32());
+					continue;
+				case 5:
+					if (tag !== 42) break;
+					message.metadata = Metadata.decode(reader, reader.uint32());
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
+			keySource: isSet$1(object.keySource) ? KeySource.fromJSON(object.keySource) : void 0,
+			ciphertext: isSet$1(object.ciphertext) ? bytesFromBase64(object.ciphertext) : /* @__PURE__ */ new Uint8Array(0),
+			decryptMetadata: isSet$1(object.decryptMetadata) ? DecryptMetadata.fromJSON(object.decryptMetadata) : void 0,
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.profile !== "") obj.profile = message.profile;
+		if (message.keySource !== void 0) obj.keySource = KeySource.toJSON(message.keySource);
+		if (message.ciphertext.length !== 0) obj.ciphertext = base64FromBytes(message.ciphertext);
+		if (message.decryptMetadata !== void 0) obj.decryptMetadata = DecryptMetadata.toJSON(message.decryptMetadata);
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
+		return obj;
+	},
+	create(base) {
+		return DecryptDataRequest.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseDecryptDataRequest();
+		message.profile = object.profile ?? "";
+		message.keySource = object.keySource !== void 0 && object.keySource !== null ? KeySource.fromPartial(object.keySource) : void 0;
+		message.ciphertext = object.ciphertext ?? /* @__PURE__ */ new Uint8Array(0);
+		message.decryptMetadata = object.decryptMetadata !== void 0 && object.decryptMetadata !== null ? DecryptMetadata.fromPartial(object.decryptMetadata) : void 0;
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
+		return message;
+	}
+};
+function createBaseDecryptDataResponse() {
+	return {
+		plaintext: /* @__PURE__ */ new Uint8Array(0),
+		metadata: void 0
+	};
+}
+const DecryptDataResponse = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.plaintext.length !== 0) writer.uint32(10).bytes(message.plaintext);
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(18).fork()).join();
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseDecryptDataResponse();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.plaintext = reader.bytes();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.metadata = Metadata.decode(reader, reader.uint32());
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			plaintext: isSet$1(object.plaintext) ? bytesFromBase64(object.plaintext) : /* @__PURE__ */ new Uint8Array(0),
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.plaintext.length !== 0) obj.plaintext = base64FromBytes(message.plaintext);
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
+		return obj;
+	},
+	create(base) {
+		return DecryptDataResponse.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseDecryptDataResponse();
+		message.plaintext = object.plaintext ?? /* @__PURE__ */ new Uint8Array(0);
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		return message;
 	}
 };
@@ -3057,6 +2118,8 @@ var CryptoGrpcClientImpl = class {
 		this.rpc = rpc;
 		this.HashData = this.HashData.bind(this);
 		this.SignCertificate = this.SignCertificate.bind(this);
+		this.EncryptData = this.EncryptData.bind(this);
+		this.DecryptData = this.DecryptData.bind(this);
 	}
 	HashData(request) {
 		const data = HashDataRequest.encode(request).finish();
@@ -3065,6 +2128,14 @@ var CryptoGrpcClientImpl = class {
 	SignCertificate(request) {
 		const data = SignCertificateRequest.encode(request).finish();
 		return this.rpc.request(this.service, "SignCertificate", data).then((data) => SignCertificateResponse.decode(new BinaryReader(data)));
+	}
+	EncryptData(request) {
+		const data = EncryptDataRequest.encode(request).finish();
+		return this.rpc.request(this.service, "EncryptData", data).then((data) => EncryptDataResponse.decode(new BinaryReader(data)));
+	}
+	DecryptData(request) {
+		const data = DecryptDataRequest.encode(request).finish();
+		return this.rpc.request(this.service, "DecryptData", data).then((data) => DecryptDataResponse.decode(new BinaryReader(data)));
 	}
 };
 var CryptoGrpcDevClientImpl = class {
@@ -3434,9 +2505,15 @@ function assertEnumValue(value, enumType, field) {
 }
 function assertOptionalUint64(value, field) {
 	if (value === void 0) return;
-	if (!isRecord(value) || typeof value.toString !== "function") throw typeError(field, "must be a Long-compatible uint64 value");
-	const asString = value.toString();
-	if (!/^\d+$/.test(asString) || BigInt(asString) > maxUint64) throw typeError(field, "must be a uint64 value");
+	if (typeof value === "bigint") {
+		if (value < 0n || value > maxUint64) throw typeError(field, "must be a uint64-compatible value");
+		return;
+	}
+	if (typeof value === "number") {
+		if (!Number.isSafeInteger(value) || value < 0 || value > Number.MAX_SAFE_INTEGER) throw typeError(field, "must be a uint64-compatible value");
+		return;
+	}
+	throw typeError(field, "must be a uint64-compatible value");
 }
 function validateMetadata(metadata) {
 	if (metadata === void 0) return;
@@ -3482,7 +2559,7 @@ function validateSignCertificatePayload(payload) {
 	validateMetadata(payload.metadata);
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.142.0/helpers/esm/decorate.js
+//#region \0@oxc-project+runtime@0.144.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
 	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3610,8 +2687,8 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
-const VERSION = "0.4.0";
-const GIT_HASH = "e858d7c840261c13c8cac5f91cd8365f432ffcb1";
+const VERSION = "0.4.1";
+const GIT_HASH = "0c92f3ea8392c4fe016d575b23f7f1bdb15f5a77";
 //#endregion
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.GIT_HASH = GIT_HASH;
