@@ -35,7 +35,6 @@ import {
   CryptoBrokerClient
 } from "@open-crypto-broker/cryptobroker-client";
 import { randomUUID } from 'crypto';
-import Long from 'long';
 
 const cryptoLib = await CryptoBrokerClient.NewLibrary();
 
@@ -79,7 +78,6 @@ console.log("Certificate signed by CryptoBroker in PEM format\n", signCertificat
 
 ```js
 const client = require("@open-crypto-broker/cryptobroker-client");
-const long = require('long');
 const crypto = require('crypto');
 
 client.CryptoBrokerClient.NewLibrary()
