@@ -2445,6 +2445,7 @@ const maxCACertBytes = 65536;
 const maxSubjectLen = 1024;
 const maxCRLDistributionPoints = 16;
 const maxCRLDistributionPointLen = 2048;
+const maxKeyIdLen = 1024;
 const maxMetadataIdLen = 128;
 const maxTraceIdLen = 32;
 const maxSpanIdLen = 16;
@@ -2490,6 +2491,13 @@ function assertOptionalUint64(value, field) {
 	}
 	throw typeError(field, "must be a uint64-compatible value");
 }
+function assertUint8Array(value, field) {
+	if (!(value instanceof Uint8Array)) throw typeError(field, "must be Uint8Array");
+}
+function assertOptionalUint8Array(value, field) {
+	if (value === void 0) return;
+	assertUint8Array(value, field);
+}
 function validateMetadata(metadata) {
 	if (metadata === void 0) return;
 	assertObject(metadata, "metadata");
@@ -2532,6 +2540,31 @@ function validateSignCertificatePayload(payload) {
 		});
 	}
 	validateMetadata(payload.metadata);
+}
+function validateEncryptDataPayload(payload) {
+	assertObject(payload, "payload");
+	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	assertObject(payload.keySource, "keySource");
+	assertOptionalString(payload.keySource.keyId, "keySource.keyId", maxKeyIdLen);
+	assertOptionalUint8Array(payload.keySource.rawKey, "keySource.rawKey");
+	assertUint8Array(payload.plaintext, "plaintext");
+	assertObject(payload.encryptMetadata, "encryptMetadata");
+	assertOptionalUint8Array(payload.encryptMetadata.nonce, "encryptMetadata.nonce");
+	assertOptionalUint8Array(payload.encryptMetadata.aad, "encryptMetadata.aad");
+	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("payload.keySource", "missing key source - either keyId or rawKey must be provided");
+}
+function validateDecryptDataPayload(payload) {
+	assertObject(payload, "payload");
+	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	assertObject(payload.keySource, "keySource");
+	assertOptionalString(payload.keySource.keyId, "keySource.keyId", maxKeyIdLen);
+	assertOptionalUint8Array(payload.keySource.rawKey, "keySource.rawKey");
+	assertUint8Array(payload.ciphertext, "ciphertext");
+	assertObject(payload.decryptMetadata, "decryptMetadata");
+	assertOptionalUint8Array(payload.decryptMetadata.nonce, "decryptMetadata.nonce");
+	assertOptionalUint8Array(payload.decryptMetadata.aad, "decryptMetadata.aad");
+	assertOptionalUint8Array(payload.decryptMetadata.tag, "decryptMetadata.tag");
+	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("payload.keySource", "missing key source - either keyId or rawKey must be provided");
 }
 //#endregion
 //#region \0@oxc-project+runtime@0.144.0/helpers/esm/decorate.js
@@ -2653,6 +2686,34 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		};
 		return this.client.SignCertificate(req).then((res) => res);
 	}
+	async encryptData(payload) {
+		validateEncryptDataPayload(payload);
+		const req = {
+			profile: payload.profile,
+			keySource: payload.keySource,
+			plaintext: payload.plaintext,
+			encryptMetadata: payload.encryptMetadata,
+			metadata: {
+				id: payload.metadata?.id || randomUUID(),
+				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
+			}
+		};
+		return this.client.EncryptData(req).then((res) => res);
+	}
+	async decryptData(payload) {
+		validateDecryptDataPayload(payload);
+		const req = {
+			profile: payload.profile,
+			keySource: payload.keySource,
+			ciphertext: payload.ciphertext,
+			decryptMetadata: payload.decryptMetadata,
+			metadata: {
+				id: payload.metadata?.id || randomUUID(),
+				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
+			}
+		};
+		return this.client.DecryptData(req).then((res) => res);
+	}
 	async healthData() {
 		const req = { service: "" };
 		const status_unknown = { status: 0 };
@@ -2661,9 +2722,11 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 };
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
+__decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "encryptData", null);
+__decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "decryptData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
-const VERSION = "0.4.1";
-const GIT_HASH = "0c92f3ea8392c4fe016d575b23f7f1bdb15f5a77";
+const VERSION = "0.4.2";
+const GIT_HASH = "27218697d48335d776bebfa3970820faccfbb0cf";
 //#endregion
 export { CryptoBrokerClient, GIT_HASH, HashOutputFormat as HashDataOutputFormat, SignOutputFormat as SignCertificateOutputFormat, VERSION };
 

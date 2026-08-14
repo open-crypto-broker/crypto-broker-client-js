@@ -1,5 +1,7 @@
 import type {
   BenchmarkPayload,
+  EncryptDataPayload,
+  DecryptDataPayload,
   HashDataPayload,
   Metadata,
   SignCertificatePayload,
@@ -17,6 +19,7 @@ const maxCACertBytes = 64 << 10;
 const maxSubjectLen = 1024;
 const maxCRLDistributionPoints = 16;
 const maxCRLDistributionPointLen = 2048;
+const maxKeyIdLen = 1024;
 const maxMetadataIdLen = 128;
 const maxTraceIdLen = 32;
 const maxSpanIdLen = 16;
@@ -92,7 +95,7 @@ function assertEnumValue<E extends Record<string, string | number>>(
   }
 }
 
-function assertOptionalUint64(value: unknown, field: string): void {
+function assertOptionalUint64(value: unknown, field: string) {
   if (value === undefined) {
     return;
   }
@@ -116,6 +119,24 @@ function assertOptionalUint64(value: unknown, field: string): void {
   }
 
   throw typeError(field, 'must be a uint64-compatible value');
+}
+
+function assertUint8Array(
+  value: unknown,
+  field: string,
+): asserts value is Uint8Array {
+  if (!(value instanceof Uint8Array)) {
+    throw typeError(field, 'must be Uint8Array');
+  }
+}
+function assertOptionalUint8Array(
+  value: unknown,
+  field: string,
+): asserts value is Uint8Array {
+  if (value === undefined) {
+    return;
+  }
+  assertUint8Array(value, field);
 }
 
 function validateMetadata(metadata: unknown): void {
@@ -222,4 +243,58 @@ export function validateSignCertificatePayload(
   }
 
   validateMetadata(payload.metadata as Metadata | undefined);
+}
+
+export function validateEncryptDataPayload(
+  payload: unknown,
+): asserts payload is EncryptDataPayload {
+  assertObject(payload, 'payload');
+  assertString(payload.profile, 'profile', maxProfileNameLen, true);
+  assertObject(payload.keySource, 'keySource');
+  assertOptionalString(payload.keySource.keyId, 'keySource.keyId', maxKeyIdLen);
+  assertOptionalUint8Array(payload.keySource.rawKey, 'keySource.rawKey');
+  assertUint8Array(payload.plaintext, 'plaintext');
+  assertObject(payload.encryptMetadata, 'encryptMetadata');
+  assertOptionalUint8Array(
+    payload.encryptMetadata.nonce,
+    'encryptMetadata.nonce',
+  );
+  assertOptionalUint8Array(payload.encryptMetadata.aad, 'encryptMetadata.aad');
+
+  if (
+    payload.keySource.keyId === undefined &&
+    payload.keySource.rawKey === undefined
+  ) {
+    throw typeError(
+      'payload.keySource',
+      'missing key source - either keyId or rawKey must be provided',
+    );
+  }
+}
+export function validateDecryptDataPayload(
+  payload: unknown,
+): asserts payload is DecryptDataPayload {
+  assertObject(payload, 'payload');
+  assertString(payload.profile, 'profile', maxProfileNameLen, true);
+  assertObject(payload.keySource, 'keySource');
+  assertOptionalString(payload.keySource.keyId, 'keySource.keyId', maxKeyIdLen);
+  assertOptionalUint8Array(payload.keySource.rawKey, 'keySource.rawKey');
+  assertUint8Array(payload.ciphertext, 'ciphertext');
+  assertObject(payload.decryptMetadata, 'decryptMetadata');
+  assertOptionalUint8Array(
+    payload.decryptMetadata.nonce,
+    'decryptMetadata.nonce',
+  );
+  assertOptionalUint8Array(payload.decryptMetadata.aad, 'decryptMetadata.aad');
+  assertOptionalUint8Array(payload.decryptMetadata.tag, 'decryptMetadata.tag');
+
+  if (
+    payload.keySource.keyId === undefined &&
+    payload.keySource.rawKey === undefined
+  ) {
+    throw typeError(
+      'payload.keySource',
+      'missing key source - either keyId or rawKey must be provided',
+    );
+  }
 }
