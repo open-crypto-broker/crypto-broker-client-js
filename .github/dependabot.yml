@@ -13,3 +13,11 @@ updates:
           - "patch"
     cooldown:
       default-days: 7
+  - package-ecosystem: "gitsubmodule" # zizmor: ignore[dependabot-cooldown]
+    # Look for the .gitmodules file in the root of the repository to find submodules.
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore(submodule)"
