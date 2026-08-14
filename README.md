@@ -35,7 +35,6 @@ import {
   CryptoBrokerClient
 } from "@open-crypto-broker/cryptobroker-client";
 import { randomUUID } from 'crypto';
-import Long from 'long';
 
 const cryptoLib = await CryptoBrokerClient.NewLibrary();
 
@@ -57,8 +56,8 @@ const signCertificateResponse = await cryptoLib.signCertificate({
     caCert: caCert,
     outputFormat: SignCertificateOutputFormat.PEM,
     // Optional values
-    validNotBefore: Long.fromNumber(Math.floor(new Date().getTime() / 1000)), // now
-    validNotAfter: Long.fromNumber(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
+    validNotBefore: BigInt(Math.floor(new Date().getTime() / 1000)), // now
+    validNotAfter: BigInt(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
     subject: "CN=MyCert,O=SAP,ST=BA,C=DE",
     crlDistributionPoints: [
         'http://example.com/crls/list1.crl',
@@ -79,7 +78,6 @@ console.log("Certificate signed by CryptoBroker in PEM format\n", signCertificat
 
 ```js
 const client = require("@open-crypto-broker/cryptobroker-client");
-const long = require('long');
 const crypto = require('crypto');
 
 client.CryptoBrokerClient.NewLibrary()

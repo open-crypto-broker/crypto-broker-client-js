@@ -30,7 +30,6 @@ import {
   validateHashDataPayload,
   validateSignCertificatePayload,
 } from './request_validation.js';
-import type Long from 'long';
 import CircuitBreaker from 'opossum';
 
 export interface ConnectOptions {
@@ -72,8 +71,8 @@ export interface SignCertificatePayload {
   csr: string;
   caPrivateKey: string;
   caCert: string;
-  validNotBefore?: Long;
-  validNotAfter?: Long;
+  validNotBefore?: bigint;
+  validNotAfter?: bigint;
   metadata?: Metadata;
   subject?: string;
   crlDistributionPoints?: string[];

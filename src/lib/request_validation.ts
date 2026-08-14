@@ -97,14 +97,25 @@ function assertOptionalUint64(value: unknown, field: string): void {
     return;
   }
 
-  if (!isRecord(value) || typeof value.toString !== 'function') {
-    throw typeError(field, 'must be a Long-compatible uint64 value');
+  if (typeof value === 'bigint') {
+    if (value < 0n || value > maxUint64) {
+      throw typeError(field, 'must be a uint64-compatible value');
+    }
+    return;
   }
 
-  const asString = value.toString();
-  if (!/^\d+$/.test(asString) || BigInt(asString) > maxUint64) {
-    throw typeError(field, 'must be a uint64 value');
+  if (typeof value === 'number') {
+    if (
+      !Number.isSafeInteger(value) ||
+      value < 0 ||
+      value > Number.MAX_SAFE_INTEGER
+    ) {
+      throw typeError(field, 'must be a uint64-compatible value');
+    }
+    return;
   }
+
+  throw typeError(field, 'must be a uint64-compatible value');
 }
 
 function validateMetadata(metadata: unknown): void {

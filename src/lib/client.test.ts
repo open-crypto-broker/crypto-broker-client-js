@@ -298,8 +298,9 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         csr: 'mocked-csr',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
-        validNotBefore:
-          42 as unknown as SignCertificateRequest['validNotBefore'],
+        validNotBefore: BigInt(
+          '18446744073709551616', // which is maxUint64 + 1
+        ) as unknown as SignCertificateRequest['validNotBefore'],
         outputFormat: SignCertificateOutputFormat.PEM,
       }),
     ).rejects.toThrow('validNotBefore');
