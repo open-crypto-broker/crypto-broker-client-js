@@ -19,7 +19,7 @@
     "clean": "rm -rf dist/*",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "format": "eslint --fix && prettier --write 'src/**/*.{ts,tsx,js,json,md}'",
-    "test": "jest --coverage",
+    "test": "jest --coverage --verbose",
     "prepare": "husky || true"
   },
   "keywords": [
