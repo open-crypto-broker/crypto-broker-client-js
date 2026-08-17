@@ -453,14 +453,14 @@ interface EncryptDataPayload {
   keySource: KeySource;
   plaintext: Uint8Array;
   encryptMetadata?: EncryptMetadata;
-  metadata: Metadata;
+  metadata?: Metadata;
 }
 interface DecryptDataPayload {
   profile: string;
   keySource: KeySource;
   ciphertext: Uint8Array;
   decryptMetadata?: DecryptMetadata;
-  metadata: Metadata;
+  metadata?: Metadata;
 }
 declare class CryptoBrokerClient {
   private client;

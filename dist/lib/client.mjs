@@ -2518,7 +2518,7 @@ function validateHashDataPayload(payload) {
 	assertObject(payload, "payload");
 	assertString(payload.profile, "profile", maxProfileNameLen, true);
 	assertEnumValue(payload.outputFormat, HashOutputFormat, "outputFormat");
-	if (!(payload.input instanceof Uint8Array)) throw typeError("input", "must be a Uint8Array");
+	assertUint8Array(payload.input, "input");
 	if (payload.input.length > maxHashDataInputBytes) throw typeError("input", `too large (max ${maxHashDataInputBytes})`);
 	validateMetadata(payload.metadata);
 }
@@ -2551,7 +2551,8 @@ function validateEncryptDataPayload(payload) {
 	assertObject(payload.encryptMetadata, "encryptMetadata");
 	assertOptionalUint8Array(payload.encryptMetadata.nonce, "encryptMetadata.nonce");
 	assertOptionalUint8Array(payload.encryptMetadata.aad, "encryptMetadata.aad");
-	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("payload.keySource", "missing key source - either keyId or rawKey must be provided");
+	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("keySource", "missing key source - either keyId or rawKey must be provided");
+	validateMetadata(payload.metadata);
 }
 function validateDecryptDataPayload(payload) {
 	assertObject(payload, "payload");
@@ -2564,7 +2565,8 @@ function validateDecryptDataPayload(payload) {
 	assertOptionalUint8Array(payload.decryptMetadata.nonce, "decryptMetadata.nonce");
 	assertOptionalUint8Array(payload.decryptMetadata.aad, "decryptMetadata.aad");
 	assertOptionalUint8Array(payload.decryptMetadata.tag, "decryptMetadata.tag");
-	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("payload.keySource", "missing key source - either keyId or rawKey must be provided");
+	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("keySource", "missing key source - either keyId or rawKey must be provided");
+	validateMetadata(payload.metadata);
 }
 //#endregion
 //#region \0@oxc-project+runtime@0.144.0/helpers/esm/decorate.js
@@ -2726,7 +2728,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "encryptData", nu
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "decryptData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.4.2";
-const GIT_HASH = "27218697d48335d776bebfa3970820faccfbb0cf";
+const GIT_HASH = "4b7159e5190e834dd3b89dfbd69c4420dda558b4";
 //#endregion
 export { CryptoBrokerClient, GIT_HASH, HashOutputFormat as HashDataOutputFormat, SignOutputFormat as SignCertificateOutputFormat, VERSION };
 
