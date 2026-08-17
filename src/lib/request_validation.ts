@@ -190,10 +190,8 @@ export function validateHashDataPayload(
   assertObject(payload, 'payload');
   assertString(payload.profile, 'profile', maxProfileNameLen, true);
   assertEnumValue(payload.outputFormat, HashDataOutputFormat, 'outputFormat');
+  assertUint8Array(payload.input, 'input');
 
-  if (!(payload.input instanceof Uint8Array)) {
-    throw typeError('input', 'must be a Uint8Array');
-  }
   if (payload.input.length > maxHashDataInputBytes) {
     throw typeError('input', `too large (max ${maxHashDataInputBytes})`);
   }
@@ -266,10 +264,12 @@ export function validateEncryptDataPayload(
     payload.keySource.rawKey === undefined
   ) {
     throw typeError(
-      'payload.keySource',
+      'keySource',
       'missing key source - either keyId or rawKey must be provided',
     );
   }
+
+  validateMetadata(payload.metadata as Metadata | undefined);
 }
 export function validateDecryptDataPayload(
   payload: unknown,
@@ -293,8 +293,10 @@ export function validateDecryptDataPayload(
     payload.keySource.rawKey === undefined
   ) {
     throw typeError(
-      'payload.keySource',
+      'keySource',
       'missing key source - either keyId or rawKey must be provided',
     );
   }
+
+  validateMetadata(payload.metadata as Metadata | undefined);
 }
