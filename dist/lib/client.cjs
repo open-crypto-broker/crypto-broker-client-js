@@ -2577,6 +2577,7 @@ function validateEncryptDataPayload(payload) {
 	assertOptionalUint8Array(payload.encryptMetadata.nonce, "encryptMetadata.nonce");
 	assertOptionalUint8Array(payload.encryptMetadata.aad, "encryptMetadata.aad");
 	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("keySource", "missing key source - either keyId or rawKey must be provided");
+	if (payload.keySource.keyId !== void 0 && payload.keySource.rawKey !== void 0) throw typeError("keySource", "too many key sources - either keyId or rawKey must be provided");
 	validateMetadata(payload.metadata);
 }
 function validateDecryptDataPayload(payload) {
@@ -2591,6 +2592,7 @@ function validateDecryptDataPayload(payload) {
 	assertOptionalUint8Array(payload.decryptMetadata.aad, "decryptMetadata.aad");
 	assertOptionalUint8Array(payload.decryptMetadata.tag, "decryptMetadata.tag");
 	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("keySource", "missing key source - either keyId or rawKey must be provided");
+	if (payload.keySource.keyId !== void 0 && payload.keySource.rawKey !== void 0) throw typeError("keySource", "too many key sources - either keyId or rawKey must be provided");
 	validateMetadata(payload.metadata);
 }
 //#endregion
@@ -2753,7 +2755,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "encryptData", nu
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "decryptData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.4.2";
-const GIT_HASH = "4b7159e5190e834dd3b89dfbd69c4420dda558b4";
+const GIT_HASH = "41d96c7d568ffb9f4686192d3fa0c380a4c98dc4";
 //#endregion
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.GIT_HASH = GIT_HASH;

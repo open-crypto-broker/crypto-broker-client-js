@@ -250,6 +250,25 @@ describe('CryptoBrokerClient', () => {
         metadata: { id: 'mocked-id' },
       }),
     ).rejects.toThrow('keySource');
+    await expect(
+      client.decryptData({
+        profile: 'Default',
+        keySource: {
+          keyId: 'mocked-keyID',
+          rawKey: Buffer.from('mocked-rawKey'),
+        },
+        ciphertext: Buffer.from(
+          '71416b876fb0d65c484ec20106af15a36454743b',
+          'hex',
+        ),
+        decryptMetadata: {
+          nonce: Buffer.from('a83f89b37c90f937b8df5011', 'hex'),
+          aad: Buffer.from('36e02c2a81c60eca849739d52dea95f7', 'hex'),
+          tag: Buffer.from('a77b42e960d89683140cae283a87466e', 'hex'),
+        },
+        metadata: { id: 'mocked-id' },
+      }),
+    ).rejects.toThrow('keySource');
   });
 
   it('decrypt data should autofill the metadata values', async () => {

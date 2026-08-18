@@ -268,6 +268,15 @@ export function validateEncryptDataPayload(
       'missing key source - either keyId or rawKey must be provided',
     );
   }
+  if (
+    payload.keySource.keyId !== undefined &&
+    payload.keySource.rawKey !== undefined
+  ) {
+    throw typeError(
+      'keySource',
+      'too many key sources - either keyId or rawKey must be provided',
+    );
+  }
 
   validateMetadata(payload.metadata as Metadata | undefined);
 }
@@ -295,6 +304,15 @@ export function validateDecryptDataPayload(
     throw typeError(
       'keySource',
       'missing key source - either keyId or rawKey must be provided',
+    );
+  }
+  if (
+    payload.keySource.keyId !== undefined &&
+    payload.keySource.rawKey !== undefined
+  ) {
+    throw typeError(
+      'keySource',
+      'too many key sources - either keyId or rawKey must be provided',
     );
   }
 
