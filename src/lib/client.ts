@@ -9,16 +9,28 @@ import {
 } from './conf/circuitbreaker_config.js';
 import { randomUUID } from 'crypto';
 import {
+  // Benchmark
   BenchmarkRequest,
   BenchmarkResponse,
+  // GRPC
   CryptoGrpcClientImpl,
   CryptoGrpcDevClientImpl,
+  // Data Hashing
   HashOutputFormat as HashDataOutputFormat,
   HashDataRequest,
   HashDataResponse,
+  // Certificate Signing
   SignOutputFormat as SignCertificateOutputFormat,
   SignCertificateRequest,
   SignCertificateResponse,
+  // Data en/decryption
+  KeySource,
+  EncryptMetadata,
+  EncryptDataRequest,
+  EncryptDataResponse,
+  DecryptMetadata,
+  DecryptDataRequest,
+  DecryptDataResponse,
 } from './proto/messages.js';
 import {
   HealthCheckRequest,
@@ -29,6 +41,8 @@ import {
   validateBenchmarkPayload,
   validateHashDataPayload,
   validateSignCertificatePayload,
+  validateEncryptDataPayload,
+  validateDecryptDataPayload,
 } from './request_validation.js';
 import CircuitBreaker from 'opossum';
 
@@ -77,6 +91,21 @@ export interface SignCertificatePayload {
   subject?: string;
   crlDistributionPoints?: string[];
   outputFormat: SignCertificateOutputFormat;
+}
+
+export interface EncryptDataPayload {
+  profile: string;
+  keySource: KeySource;
+  plaintext: Uint8Array;
+  encryptMetadata: EncryptMetadata;
+  metadata?: Metadata;
+}
+export interface DecryptDataPayload {
+  profile: string;
+  keySource: KeySource;
+  ciphertext: Uint8Array;
+  decryptMetadata: DecryptMetadata;
+  metadata?: Metadata;
 }
 
 const breakers = new WeakMap<object, Map<string, CircuitBreaker>>();
@@ -274,6 +303,44 @@ export class CryptoBrokerClient {
     return this.client
       .SignCertificate(req)
       .then((res: SignCertificateResponse) => res);
+  }
+
+  @WithCircuitBreaker
+  async encryptData(payload: EncryptDataPayload): Promise<EncryptDataResponse> {
+    validateEncryptDataPayload(payload);
+    const req: EncryptDataRequest = {
+      profile: payload.profile,
+      keySource: payload.keySource,
+      plaintext: payload.plaintext,
+      encryptMetadata: payload.encryptMetadata,
+      metadata: {
+        id: payload.metadata?.id || randomUUID(),
+        ...(payload.metadata?.traceContext !== undefined && {
+          traceContext: payload.metadata?.traceContext,
+        }),
+      },
+    };
+    // Send the Request
+    return this.client.EncryptData(req).then((res: EncryptDataResponse) => res);
+  }
+
+  @WithCircuitBreaker
+  async decryptData(payload: DecryptDataPayload): Promise<DecryptDataResponse> {
+    validateDecryptDataPayload(payload);
+    const req: DecryptDataRequest = {
+      profile: payload.profile,
+      keySource: payload.keySource,
+      ciphertext: payload.ciphertext,
+      decryptMetadata: payload.decryptMetadata,
+      metadata: {
+        id: payload.metadata?.id || randomUUID(),
+        ...(payload.metadata?.traceContext !== undefined && {
+          traceContext: payload.metadata?.traceContext,
+        }),
+      },
+    };
+    // Send the Request
+    return this.client.DecryptData(req).then((res: DecryptDataResponse) => res);
   }
 
   @WithCircuitBreaker

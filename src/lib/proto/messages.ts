@@ -76,10 +76,79 @@ export function signOutputFormatToJSON(object: SignOutputFormat): string {
   }
 }
 
+/** Single source of truth for gRPC message size limits, applied as transport options in the server and clients. */
+export enum MessageSizeLimit {
+  MESSAGE_SIZE_LIMIT_UNSPECIFIED = 0,
+  /** MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES - Max request accepted from client to server (2 MiB). */
+  MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES = 2097152,
+  /** MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES - Max response returned from server to client (1 MiB). */
+  MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES = 1048576,
+  UNRECOGNIZED = -1,
+}
+
+export function messageSizeLimitFromJSON(object: any): MessageSizeLimit {
+  switch (object) {
+    case 0:
+    case 'MESSAGE_SIZE_LIMIT_UNSPECIFIED':
+      return MessageSizeLimit.MESSAGE_SIZE_LIMIT_UNSPECIFIED;
+    case 2097152:
+    case 'MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES':
+      return MessageSizeLimit.MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES;
+    case 1048576:
+    case 'MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES':
+      return MessageSizeLimit.MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES;
+    case -1:
+    case 'UNRECOGNIZED':
+    default:
+      return MessageSizeLimit.UNRECOGNIZED;
+  }
+}
+
+export function messageSizeLimitToJSON(object: MessageSizeLimit): string {
+  switch (object) {
+    case MessageSizeLimit.MESSAGE_SIZE_LIMIT_UNSPECIFIED:
+      return 'MESSAGE_SIZE_LIMIT_UNSPECIFIED';
+    case MessageSizeLimit.MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES:
+      return 'MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES';
+    case MessageSizeLimit.MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES:
+      return 'MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES';
+    case MessageSizeLimit.UNRECOGNIZED:
+    default:
+      return 'UNRECOGNIZED';
+  }
+}
+
 /** Meta-structures shared across other messages and functions */
 export interface Metadata {
   id: string;
+  /** Attached to every response produced with a deprecated profile (see ADR 0013). */
+  deprecation?: DeprecationWarning | undefined;
   traceContext?: TraceContext | undefined;
+}
+
+/**
+ * Self-describing record of how a stored artifact was produced (see ADR 0013).
+ * Persisted by the caller alongside the value so it stays verifiable and
+ * migratable without access to Profiles.yaml.
+ */
+export interface CryptoDescriptor {
+  profile: string;
+  /** The API that produced the artifact, e.g. "HashData", "SignCertificate", "EncryptData". */
+  operation: string;
+  /** The concrete algorithm actually used, e.g. "sha3-512", "aes-gcm". */
+  algorithm: string;
+}
+
+/**
+ * Deprecation signal for a profile scheduled for a rolling migration (see ADR 0013).
+ * replacedBy should point to an equal-or-stronger profile.
+ */
+export interface DeprecationWarning {
+  profile: string;
+  replacedBy?: string | undefined;
+  deprecatedSince?: string | undefined;
+  removeAfter?: string | undefined;
+  reason?: string | undefined;
 }
 
 /** Trace context for manual propagation */
@@ -94,7 +163,9 @@ export interface TraceContext {
 /**
  * Key material source for symmetric encryption/decryption.
  * Exactly one variant is set, governed by the profile:
- * rawKey for caller-managed profiles (no KMS), keyId for broker-managed (KMS-backed) profiles.
+ * rawKey for caller-managed profiles (no KMS), keyId for KMS profiles where the broker
+ * resolves the identifier and retrieves the externally provisioned key. The broker never
+ * creates, imports, or deletes keys; key lifecycle is owned by the KMS/operator.
  */
 export interface KeySource {
   keyId?: string | undefined;
@@ -102,40 +173,37 @@ export interface KeySource {
 }
 
 /**
- * Optional caller-supplied encryption parameters (nonce, AAD).
- * When omitted, the Crypto Broker generates or derives them according to the profile.
+ * Caller-supplied encryption parameters. The nonce is always provided by the caller;
+ * neither the broker nor the KMS generates it, so the caller owns nonce-uniqueness. AAD is optional.
  */
 export interface EncryptMetadata {
-  nonce?: Uint8Array | undefined;
+  nonce: Uint8Array;
   aad?: Uint8Array | undefined;
 }
 
 /**
  * Metadata returned alongside the ciphertext by EncryptData. It encapsulates
- * everything the caller may need besides the ciphertext itself. Each field is
- * optional and populated according to the flow:
- *   - keyId: echoed for KMS-backed profiles (hybrid and KMS-managed flows).
- *   - nonce/aad/tag: returned when the caller must retain them to decrypt later,
- *     i.e. caller-managed flows or the hybrid flow where the broker generated
- *     the nonce. In fully KMS-managed flows the broker stores these itself and
- *     omits them, so cipherMetadata may carry only the keyId.
+ * everything the caller may need besides the ciphertext itself:
+ *   - keyId: echoed for KMS profiles; key material is never returned.
+ *   - nonce/aad: echoed back; the caller supplied them and must retain them to decrypt.
+ *   - tag: the authentication tag the caller must retain to decrypt later.
  */
 export interface CipherMetadata {
   keyId?: string | undefined;
-  nonce?: Uint8Array | undefined;
+  nonce: Uint8Array;
   aad?: Uint8Array | undefined;
   tag?: Uint8Array | undefined;
+  /** Self-describing descriptor persisted alongside the ciphertext (see ADR 0013). */
+  descriptor: CryptoDescriptor | undefined;
 }
 
 /**
  * Caller-supplied parameters for DecryptData. Symmetric to EncryptMetadata.
- * All fields are optional: in KMS-managed flows the broker resolves the required
- * parameters (e.g. a stored nonce) itself, so the caller may omit them. In
- * caller-managed or hybrid flows the caller provides them, typically by echoing
- * back the values from the CipherMetadata receipt returned by EncryptData.
+ * The caller provides the nonce, AAD and tag, typically by echoing back the
+ * values from the CipherMetadata receipt returned by EncryptData.
  */
 export interface DecryptMetadata {
-  nonce?: Uint8Array | undefined;
+  nonce: Uint8Array;
   aad?: Uint8Array | undefined;
   tag?: Uint8Array | undefined;
 }
@@ -149,10 +217,12 @@ export interface HashDataRequest {
 }
 
 export interface HashDataResponse {
+  /** Redundant with descriptor.algorithm; retained for backward compatibility. */
   hashAlgorithm: string;
   metadata: Metadata | undefined;
   hashValueHex?: string | undefined;
   hashValueRaw?: Uint8Array | undefined;
+  descriptor: CryptoDescriptor | undefined;
 }
 
 /** SignCertificate response and request messages */
@@ -174,6 +244,7 @@ export interface SignCertificateResponse {
   metadata: Metadata | undefined;
   pem?: string | undefined;
   der?: Uint8Array | undefined;
+  descriptor: CryptoDescriptor | undefined;
 }
 
 /** EncryptData request and response messages */
@@ -181,7 +252,7 @@ export interface EncryptDataRequest {
   profile: string;
   keySource: KeySource | undefined;
   plaintext: Uint8Array;
-  encryptMetadata?: EncryptMetadata | undefined;
+  encryptMetadata: EncryptMetadata | undefined;
   metadata: Metadata | undefined;
 }
 
@@ -196,7 +267,7 @@ export interface DecryptDataRequest {
   profile: string;
   keySource: KeySource | undefined;
   ciphertext: Uint8Array;
-  decryptMetadata?: DecryptMetadata | undefined;
+  decryptMetadata: DecryptMetadata | undefined;
   metadata: Metadata | undefined;
 }
 
@@ -226,7 +297,7 @@ export interface FakeEndpointResponse {
 }
 
 function createBaseMetadata(): Metadata {
-  return { id: '', traceContext: undefined };
+  return { id: '', deprecation: undefined, traceContext: undefined };
 }
 
 export const Metadata: MessageFns<Metadata> = {
@@ -236,6 +307,12 @@ export const Metadata: MessageFns<Metadata> = {
   ): BinaryWriter {
     if (message.id !== '') {
       writer.uint32(10).string(message.id);
+    }
+    if (message.deprecation !== undefined) {
+      DeprecationWarning.encode(
+        message.deprecation,
+        writer.uint32(18).fork(),
+      ).join();
     }
     if (message.traceContext !== undefined) {
       TraceContext.encode(
@@ -262,6 +339,17 @@ export const Metadata: MessageFns<Metadata> = {
           message.id = reader.string();
           continue;
         }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.deprecation = DeprecationWarning.decode(
+            reader,
+            reader.uint32(),
+          );
+          continue;
+        }
         case 3: {
           if (tag !== 26) {
             break;
@@ -282,6 +370,9 @@ export const Metadata: MessageFns<Metadata> = {
   fromJSON(object: any): Metadata {
     return {
       id: isSet(object.id) ? globalThis.String(object.id) : '',
+      deprecation: isSet(object.deprecation)
+        ? DeprecationWarning.fromJSON(object.deprecation)
+        : undefined,
       traceContext: isSet(object.traceContext)
         ? TraceContext.fromJSON(object.traceContext)
         : undefined,
@@ -292,6 +383,9 @@ export const Metadata: MessageFns<Metadata> = {
     const obj: any = {};
     if (message.id !== '') {
       obj.id = message.id;
+    }
+    if (message.deprecation !== undefined) {
+      obj.deprecation = DeprecationWarning.toJSON(message.deprecation);
     }
     if (message.traceContext !== undefined) {
       obj.traceContext = TraceContext.toJSON(message.traceContext);
@@ -305,10 +399,267 @@ export const Metadata: MessageFns<Metadata> = {
   fromPartial<I extends Exact<DeepPartial<Metadata>, I>>(object: I): Metadata {
     const message = createBaseMetadata();
     message.id = object.id ?? '';
+    message.deprecation =
+      object.deprecation !== undefined && object.deprecation !== null
+        ? DeprecationWarning.fromPartial(object.deprecation)
+        : undefined;
     message.traceContext =
       object.traceContext !== undefined && object.traceContext !== null
         ? TraceContext.fromPartial(object.traceContext)
         : undefined;
+    return message;
+  },
+};
+
+function createBaseCryptoDescriptor(): CryptoDescriptor {
+  return { profile: '', operation: '', algorithm: '' };
+}
+
+export const CryptoDescriptor: MessageFns<CryptoDescriptor> = {
+  encode(
+    message: CryptoDescriptor,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.profile !== '') {
+      writer.uint32(10).string(message.profile);
+    }
+    if (message.operation !== '') {
+      writer.uint32(18).string(message.operation);
+    }
+    if (message.algorithm !== '') {
+      writer.uint32(26).string(message.algorithm);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CryptoDescriptor {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCryptoDescriptor();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.profile = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.operation = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.algorithm = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): CryptoDescriptor {
+    return {
+      profile: isSet(object.profile) ? globalThis.String(object.profile) : '',
+      operation: isSet(object.operation)
+        ? globalThis.String(object.operation)
+        : '',
+      algorithm: isSet(object.algorithm)
+        ? globalThis.String(object.algorithm)
+        : '',
+    };
+  },
+
+  toJSON(message: CryptoDescriptor): unknown {
+    const obj: any = {};
+    if (message.profile !== '') {
+      obj.profile = message.profile;
+    }
+    if (message.operation !== '') {
+      obj.operation = message.operation;
+    }
+    if (message.algorithm !== '') {
+      obj.algorithm = message.algorithm;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<CryptoDescriptor>, I>>(
+    base?: I,
+  ): CryptoDescriptor {
+    return CryptoDescriptor.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CryptoDescriptor>, I>>(
+    object: I,
+  ): CryptoDescriptor {
+    const message = createBaseCryptoDescriptor();
+    message.profile = object.profile ?? '';
+    message.operation = object.operation ?? '';
+    message.algorithm = object.algorithm ?? '';
+    return message;
+  },
+};
+
+function createBaseDeprecationWarning(): DeprecationWarning {
+  return {
+    profile: '',
+    replacedBy: undefined,
+    deprecatedSince: undefined,
+    removeAfter: undefined,
+    reason: undefined,
+  };
+}
+
+export const DeprecationWarning: MessageFns<DeprecationWarning> = {
+  encode(
+    message: DeprecationWarning,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.profile !== '') {
+      writer.uint32(10).string(message.profile);
+    }
+    if (message.replacedBy !== undefined) {
+      writer.uint32(18).string(message.replacedBy);
+    }
+    if (message.deprecatedSince !== undefined) {
+      writer.uint32(26).string(message.deprecatedSince);
+    }
+    if (message.removeAfter !== undefined) {
+      writer.uint32(34).string(message.removeAfter);
+    }
+    if (message.reason !== undefined) {
+      writer.uint32(42).string(message.reason);
+    }
+    return writer;
+  },
+
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): DeprecationWarning {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseDeprecationWarning();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.profile = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.replacedBy = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.deprecatedSince = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.removeAfter = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.reason = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): DeprecationWarning {
+    return {
+      profile: isSet(object.profile) ? globalThis.String(object.profile) : '',
+      replacedBy: isSet(object.replacedBy)
+        ? globalThis.String(object.replacedBy)
+        : undefined,
+      deprecatedSince: isSet(object.deprecatedSince)
+        ? globalThis.String(object.deprecatedSince)
+        : undefined,
+      removeAfter: isSet(object.removeAfter)
+        ? globalThis.String(object.removeAfter)
+        : undefined,
+      reason: isSet(object.reason)
+        ? globalThis.String(object.reason)
+        : undefined,
+    };
+  },
+
+  toJSON(message: DeprecationWarning): unknown {
+    const obj: any = {};
+    if (message.profile !== '') {
+      obj.profile = message.profile;
+    }
+    if (message.replacedBy !== undefined) {
+      obj.replacedBy = message.replacedBy;
+    }
+    if (message.deprecatedSince !== undefined) {
+      obj.deprecatedSince = message.deprecatedSince;
+    }
+    if (message.removeAfter !== undefined) {
+      obj.removeAfter = message.removeAfter;
+    }
+    if (message.reason !== undefined) {
+      obj.reason = message.reason;
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<DeprecationWarning>, I>>(
+    base?: I,
+  ): DeprecationWarning {
+    return DeprecationWarning.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<DeprecationWarning>, I>>(
+    object: I,
+  ): DeprecationWarning {
+    const message = createBaseDeprecationWarning();
+    message.profile = object.profile ?? '';
+    message.replacedBy = object.replacedBy ?? undefined;
+    message.deprecatedSince = object.deprecatedSince ?? undefined;
+    message.removeAfter = object.removeAfter ?? undefined;
+    message.reason = object.reason ?? undefined;
     return message;
   },
 };
@@ -540,7 +891,7 @@ export const KeySource: MessageFns<KeySource> = {
 };
 
 function createBaseEncryptMetadata(): EncryptMetadata {
-  return { nonce: undefined, aad: undefined };
+  return { nonce: new Uint8Array(0), aad: undefined };
 }
 
 export const EncryptMetadata: MessageFns<EncryptMetadata> = {
@@ -548,7 +899,7 @@ export const EncryptMetadata: MessageFns<EncryptMetadata> = {
     message: EncryptMetadata,
     writer: BinaryWriter = new BinaryWriter(),
   ): BinaryWriter {
-    if (message.nonce !== undefined) {
+    if (message.nonce.length !== 0) {
       writer.uint32(10).bytes(message.nonce);
     }
     if (message.aad !== undefined) {
@@ -592,14 +943,16 @@ export const EncryptMetadata: MessageFns<EncryptMetadata> = {
 
   fromJSON(object: any): EncryptMetadata {
     return {
-      nonce: isSet(object.nonce) ? bytesFromBase64(object.nonce) : undefined,
+      nonce: isSet(object.nonce)
+        ? bytesFromBase64(object.nonce)
+        : new Uint8Array(0),
       aad: isSet(object.aad) ? bytesFromBase64(object.aad) : undefined,
     };
   },
 
   toJSON(message: EncryptMetadata): unknown {
     const obj: any = {};
-    if (message.nonce !== undefined) {
+    if (message.nonce.length !== 0) {
       obj.nonce = base64FromBytes(message.nonce);
     }
     if (message.aad !== undefined) {
@@ -617,14 +970,20 @@ export const EncryptMetadata: MessageFns<EncryptMetadata> = {
     object: I,
   ): EncryptMetadata {
     const message = createBaseEncryptMetadata();
-    message.nonce = object.nonce ?? undefined;
+    message.nonce = object.nonce ?? new Uint8Array(0);
     message.aad = object.aad ?? undefined;
     return message;
   },
 };
 
 function createBaseCipherMetadata(): CipherMetadata {
-  return { keyId: undefined, nonce: undefined, aad: undefined, tag: undefined };
+  return {
+    keyId: undefined,
+    nonce: new Uint8Array(0),
+    aad: undefined,
+    tag: undefined,
+    descriptor: undefined,
+  };
 }
 
 export const CipherMetadata: MessageFns<CipherMetadata> = {
@@ -635,7 +994,7 @@ export const CipherMetadata: MessageFns<CipherMetadata> = {
     if (message.keyId !== undefined) {
       writer.uint32(10).string(message.keyId);
     }
-    if (message.nonce !== undefined) {
+    if (message.nonce.length !== 0) {
       writer.uint32(18).bytes(message.nonce);
     }
     if (message.aad !== undefined) {
@@ -643,6 +1002,12 @@ export const CipherMetadata: MessageFns<CipherMetadata> = {
     }
     if (message.tag !== undefined) {
       writer.uint32(34).bytes(message.tag);
+    }
+    if (message.descriptor !== undefined) {
+      CryptoDescriptor.encode(
+        message.descriptor,
+        writer.uint32(42).fork(),
+      ).join();
     }
     return writer;
   },
@@ -687,6 +1052,14 @@ export const CipherMetadata: MessageFns<CipherMetadata> = {
           message.tag = reader.bytes();
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -699,9 +1072,14 @@ export const CipherMetadata: MessageFns<CipherMetadata> = {
   fromJSON(object: any): CipherMetadata {
     return {
       keyId: isSet(object.keyId) ? globalThis.String(object.keyId) : undefined,
-      nonce: isSet(object.nonce) ? bytesFromBase64(object.nonce) : undefined,
+      nonce: isSet(object.nonce)
+        ? bytesFromBase64(object.nonce)
+        : new Uint8Array(0),
       aad: isSet(object.aad) ? bytesFromBase64(object.aad) : undefined,
       tag: isSet(object.tag) ? bytesFromBase64(object.tag) : undefined,
+      descriptor: isSet(object.descriptor)
+        ? CryptoDescriptor.fromJSON(object.descriptor)
+        : undefined,
     };
   },
 
@@ -710,7 +1088,7 @@ export const CipherMetadata: MessageFns<CipherMetadata> = {
     if (message.keyId !== undefined) {
       obj.keyId = message.keyId;
     }
-    if (message.nonce !== undefined) {
+    if (message.nonce.length !== 0) {
       obj.nonce = base64FromBytes(message.nonce);
     }
     if (message.aad !== undefined) {
@@ -718,6 +1096,9 @@ export const CipherMetadata: MessageFns<CipherMetadata> = {
     }
     if (message.tag !== undefined) {
       obj.tag = base64FromBytes(message.tag);
+    }
+    if (message.descriptor !== undefined) {
+      obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
     }
     return obj;
   },
@@ -732,15 +1113,19 @@ export const CipherMetadata: MessageFns<CipherMetadata> = {
   ): CipherMetadata {
     const message = createBaseCipherMetadata();
     message.keyId = object.keyId ?? undefined;
-    message.nonce = object.nonce ?? undefined;
+    message.nonce = object.nonce ?? new Uint8Array(0);
     message.aad = object.aad ?? undefined;
     message.tag = object.tag ?? undefined;
+    message.descriptor =
+      object.descriptor !== undefined && object.descriptor !== null
+        ? CryptoDescriptor.fromPartial(object.descriptor)
+        : undefined;
     return message;
   },
 };
 
 function createBaseDecryptMetadata(): DecryptMetadata {
-  return { nonce: undefined, aad: undefined, tag: undefined };
+  return { nonce: new Uint8Array(0), aad: undefined, tag: undefined };
 }
 
 export const DecryptMetadata: MessageFns<DecryptMetadata> = {
@@ -748,7 +1133,7 @@ export const DecryptMetadata: MessageFns<DecryptMetadata> = {
     message: DecryptMetadata,
     writer: BinaryWriter = new BinaryWriter(),
   ): BinaryWriter {
-    if (message.nonce !== undefined) {
+    if (message.nonce.length !== 0) {
       writer.uint32(10).bytes(message.nonce);
     }
     if (message.aad !== undefined) {
@@ -803,7 +1188,9 @@ export const DecryptMetadata: MessageFns<DecryptMetadata> = {
 
   fromJSON(object: any): DecryptMetadata {
     return {
-      nonce: isSet(object.nonce) ? bytesFromBase64(object.nonce) : undefined,
+      nonce: isSet(object.nonce)
+        ? bytesFromBase64(object.nonce)
+        : new Uint8Array(0),
       aad: isSet(object.aad) ? bytesFromBase64(object.aad) : undefined,
       tag: isSet(object.tag) ? bytesFromBase64(object.tag) : undefined,
     };
@@ -811,7 +1198,7 @@ export const DecryptMetadata: MessageFns<DecryptMetadata> = {
 
   toJSON(message: DecryptMetadata): unknown {
     const obj: any = {};
-    if (message.nonce !== undefined) {
+    if (message.nonce.length !== 0) {
       obj.nonce = base64FromBytes(message.nonce);
     }
     if (message.aad !== undefined) {
@@ -832,7 +1219,7 @@ export const DecryptMetadata: MessageFns<DecryptMetadata> = {
     object: I,
   ): DecryptMetadata {
     const message = createBaseDecryptMetadata();
-    message.nonce = object.nonce ?? undefined;
+    message.nonce = object.nonce ?? new Uint8Array(0);
     message.aad = object.aad ?? undefined;
     message.tag = object.tag ?? undefined;
     return message;
@@ -975,6 +1362,7 @@ function createBaseHashDataResponse(): HashDataResponse {
     metadata: undefined,
     hashValueHex: undefined,
     hashValueRaw: undefined,
+    descriptor: undefined,
   };
 }
 
@@ -994,6 +1382,12 @@ export const HashDataResponse: MessageFns<HashDataResponse> = {
     }
     if (message.hashValueRaw !== undefined) {
       writer.uint32(42).bytes(message.hashValueRaw);
+    }
+    if (message.descriptor !== undefined) {
+      CryptoDescriptor.encode(
+        message.descriptor,
+        writer.uint32(50).fork(),
+      ).join();
     }
     return writer;
   },
@@ -1038,6 +1432,14 @@ export const HashDataResponse: MessageFns<HashDataResponse> = {
           message.hashValueRaw = reader.bytes();
           continue;
         }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1061,6 +1463,9 @@ export const HashDataResponse: MessageFns<HashDataResponse> = {
       hashValueRaw: isSet(object.hashValueRaw)
         ? bytesFromBase64(object.hashValueRaw)
         : undefined,
+      descriptor: isSet(object.descriptor)
+        ? CryptoDescriptor.fromJSON(object.descriptor)
+        : undefined,
     };
   },
 
@@ -1077,6 +1482,9 @@ export const HashDataResponse: MessageFns<HashDataResponse> = {
     }
     if (message.hashValueRaw !== undefined) {
       obj.hashValueRaw = base64FromBytes(message.hashValueRaw);
+    }
+    if (message.descriptor !== undefined) {
+      obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
     }
     return obj;
   },
@@ -1097,6 +1505,10 @@ export const HashDataResponse: MessageFns<HashDataResponse> = {
         : undefined;
     message.hashValueHex = object.hashValueHex ?? undefined;
     message.hashValueRaw = object.hashValueRaw ?? undefined;
+    message.descriptor =
+      object.descriptor !== undefined && object.descriptor !== null
+        ? CryptoDescriptor.fromPartial(object.descriptor)
+        : undefined;
     return message;
   },
 };
@@ -1366,7 +1778,12 @@ export const SignCertificateRequest: MessageFns<SignCertificateRequest> = {
 };
 
 function createBaseSignCertificateResponse(): SignCertificateResponse {
-  return { metadata: undefined, pem: undefined, der: undefined };
+  return {
+    metadata: undefined,
+    pem: undefined,
+    der: undefined,
+    descriptor: undefined,
+  };
 }
 
 export const SignCertificateResponse: MessageFns<SignCertificateResponse> = {
@@ -1382,6 +1799,12 @@ export const SignCertificateResponse: MessageFns<SignCertificateResponse> = {
     }
     if (message.der !== undefined) {
       writer.uint32(34).bytes(message.der);
+    }
+    if (message.descriptor !== undefined) {
+      CryptoDescriptor.encode(
+        message.descriptor,
+        writer.uint32(42).fork(),
+      ).join();
     }
     return writer;
   },
@@ -1421,6 +1844,14 @@ export const SignCertificateResponse: MessageFns<SignCertificateResponse> = {
           message.der = reader.bytes();
           continue;
         }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -1437,6 +1868,9 @@ export const SignCertificateResponse: MessageFns<SignCertificateResponse> = {
         : undefined,
       pem: isSet(object.pem) ? globalThis.String(object.pem) : undefined,
       der: isSet(object.der) ? bytesFromBase64(object.der) : undefined,
+      descriptor: isSet(object.descriptor)
+        ? CryptoDescriptor.fromJSON(object.descriptor)
+        : undefined,
     };
   },
 
@@ -1450,6 +1884,9 @@ export const SignCertificateResponse: MessageFns<SignCertificateResponse> = {
     }
     if (message.der !== undefined) {
       obj.der = base64FromBytes(message.der);
+    }
+    if (message.descriptor !== undefined) {
+      obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
     }
     return obj;
   },
@@ -1469,6 +1906,10 @@ export const SignCertificateResponse: MessageFns<SignCertificateResponse> = {
         : undefined;
     message.pem = object.pem ?? undefined;
     message.der = object.der ?? undefined;
+    message.descriptor =
+      object.descriptor !== undefined && object.descriptor !== null
+        ? CryptoDescriptor.fromPartial(object.descriptor)
+        : undefined;
     return message;
   },
 };

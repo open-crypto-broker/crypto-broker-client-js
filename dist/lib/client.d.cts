@@ -277,7 +277,32 @@ declare enum SignOutputFormat {
 /** Meta-structures shared across other messages and functions */
 interface Metadata$1 {
   id: string;
+  /** Attached to every response produced with a deprecated profile (see ADR 0013). */
+  deprecation?: DeprecationWarning | undefined;
   traceContext?: TraceContext$1 | undefined;
+}
+/**
+ * Self-describing record of how a stored artifact was produced (see ADR 0013).
+ * Persisted by the caller alongside the value so it stays verifiable and
+ * migratable without access to Profiles.yaml.
+ */
+interface CryptoDescriptor {
+  profile: string;
+  /** The API that produced the artifact, e.g. "HashData", "SignCertificate", "EncryptData". */
+  operation: string;
+  /** The concrete algorithm actually used, e.g. "sha3-512", "aes-gcm". */
+  algorithm: string;
+}
+/**
+ * Deprecation signal for a profile scheduled for a rolling migration (see ADR 0013).
+ * replacedBy should point to an equal-or-stronger profile.
+ */
+interface DeprecationWarning {
+  profile: string;
+  replacedBy?: string | undefined;
+  deprecatedSince?: string | undefined;
+  removeAfter?: string | undefined;
+  reason?: string | undefined;
 }
 /** Trace context for manual propagation */
 interface TraceContext$1 {
@@ -287,26 +312,90 @@ interface TraceContext$1 {
   traceState: string;
   correlationId: string;
 }
+/**
+ * Key material source for symmetric encryption/decryption.
+ * Exactly one variant is set, governed by the profile:
+ * rawKey for caller-managed profiles (no KMS), keyId for KMS profiles where the broker
+ * resolves the identifier and retrieves the externally provisioned key. The broker never
+ * creates, imports, or deletes keys; key lifecycle is owned by the KMS/operator.
+ */
+interface KeySource {
+  keyId?: string | undefined;
+  rawKey?: Uint8Array | undefined;
+}
+/**
+ * Caller-supplied encryption parameters. The nonce is always provided by the caller;
+ * neither the broker nor the KMS generates it, so the caller owns nonce-uniqueness. AAD is optional.
+ */
+interface EncryptMetadata {
+  nonce: Uint8Array;
+  aad?: Uint8Array | undefined;
+}
+/**
+ * Metadata returned alongside the ciphertext by EncryptData. It encapsulates
+ * everything the caller may need besides the ciphertext itself:
+ *   - keyId: echoed for KMS profiles; key material is never returned.
+ *   - nonce/aad: echoed back; the caller supplied them and must retain them to decrypt.
+ *   - tag: the authentication tag the caller must retain to decrypt later.
+ */
+interface CipherMetadata {
+  keyId?: string | undefined;
+  nonce: Uint8Array;
+  aad?: Uint8Array | undefined;
+  tag?: Uint8Array | undefined;
+  /** Self-describing descriptor persisted alongside the ciphertext (see ADR 0013). */
+  descriptor: CryptoDescriptor | undefined;
+}
+/**
+ * Caller-supplied parameters for DecryptData. Symmetric to EncryptMetadata.
+ * The caller provides the nonce, AAD and tag, typically by echoing back the
+ * values from the CipherMetadata receipt returned by EncryptData.
+ */
+interface DecryptMetadata {
+  nonce: Uint8Array;
+  aad?: Uint8Array | undefined;
+  tag?: Uint8Array | undefined;
+}
 interface HashDataResponse {
+  /** Redundant with descriptor.algorithm; retained for backward compatibility. */
   hashAlgorithm: string;
   metadata: Metadata$1 | undefined;
   hashValueHex?: string | undefined;
   hashValueRaw?: Uint8Array | undefined;
+  descriptor: CryptoDescriptor | undefined;
 }
 /** Response to a SignCertificate Request */
 interface SignCertificateResponse {
   metadata: Metadata$1 | undefined;
   pem?: string | undefined;
   der?: Uint8Array | undefined;
+  descriptor: CryptoDescriptor | undefined;
+}
+interface EncryptDataResponse {
+  ciphertext: Uint8Array;
+  cipherMetadata: CipherMetadata | undefined;
+  metadata: Metadata$1 | undefined;
+}
+interface DecryptDataResponse {
+  plaintext: Uint8Array;
+  metadata: Metadata$1 | undefined;
 }
 interface BenchmarkResponse {
   benchmarkResults: string;
   metadata: Metadata$1 | undefined;
 }
 declare const Metadata$1: MessageFns$1<Metadata$1>;
+declare const CryptoDescriptor: MessageFns$1<CryptoDescriptor>;
+declare const DeprecationWarning: MessageFns$1<DeprecationWarning>;
 declare const TraceContext$1: MessageFns$1<TraceContext$1>;
+declare const KeySource: MessageFns$1<KeySource>;
+declare const EncryptMetadata: MessageFns$1<EncryptMetadata>;
+declare const CipherMetadata: MessageFns$1<CipherMetadata>;
+declare const DecryptMetadata: MessageFns$1<DecryptMetadata>;
 declare const HashDataResponse: MessageFns$1<HashDataResponse>;
 declare const SignCertificateResponse: MessageFns$1<SignCertificateResponse>;
+declare const EncryptDataResponse: MessageFns$1<EncryptDataResponse>;
+declare const DecryptDataResponse: MessageFns$1<DecryptDataResponse>;
 declare const BenchmarkResponse: MessageFns$1<BenchmarkResponse>;
 type Builtin$1 = Date | Function | Uint8Array | string | number | boolean | bigint | undefined;
 type DeepPartial$1<T> = T extends bigint ? string | number | bigint : T extends Builtin$1 ? T : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial$1<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial$1<U>> : T extends {} ? { [K in keyof T]?: DeepPartial$1<T[K]>; } : Partial<T>;
@@ -388,6 +477,20 @@ interface SignCertificatePayload {
   crlDistributionPoints?: string[];
   outputFormat: SignOutputFormat;
 }
+interface EncryptDataPayload {
+  profile: string;
+  keySource: KeySource;
+  plaintext: Uint8Array;
+  encryptMetadata: EncryptMetadata;
+  metadata?: Metadata;
+}
+interface DecryptDataPayload {
+  profile: string;
+  keySource: KeySource;
+  ciphertext: Uint8Array;
+  decryptMetadata: DecryptMetadata;
+  metadata?: Metadata;
+}
 declare class CryptoBrokerClient {
   private client;
   private healthClient;
@@ -400,10 +503,12 @@ declare class CryptoBrokerClient {
   benchmarkData(payload: BenchmarkPayload): Promise<BenchmarkResponse>;
   hashData(payload: HashDataPayload): Promise<HashDataResponse>;
   signCertificate(payload: SignCertificatePayload): Promise<SignCertificateResponse>;
+  encryptData(payload: EncryptDataPayload): Promise<EncryptDataResponse>;
+  decryptData(payload: DecryptDataPayload): Promise<DecryptDataResponse>;
   healthData(): Promise<HealthCheckResponse>;
 }
 declare const VERSION: any;
 declare const GIT_HASH: any;
 //#endregion
-export { BenchmarkPayload, ConnectOptions, CryptoBrokerClient, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataPayload, Metadata, SignOutputFormat as SignCertificateOutputFormat, SignCertificatePayload, TraceContext, VERSION };
+export { BenchmarkPayload, ConnectOptions, CryptoBrokerClient, DecryptDataPayload, EncryptDataPayload, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataPayload, Metadata, SignOutputFormat as SignCertificateOutputFormat, SignCertificatePayload, TraceContext, VERSION };
 //# sourceMappingURL=client.d.cts.map

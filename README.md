@@ -26,7 +26,7 @@ To use the Crypto Broker Library, simply create a client instance and call the f
 
 <details open>
 
-<summary>TypeScript Example</summary>
+<summary>TypeScript Examples</summary>
 
 ```ts
 import {
@@ -47,15 +47,15 @@ const hashDataResponse = await cryptoLib.hashData({
         id : randomUUID(),
     },
 });
-console.log(`Hashed data response: ${hashDataResponse.hashValueHex}`);
+console.log(`Hashed Data response: ${hashDataResponse.hashValueHex}`);
 
 const signCertificateResponse = await cryptoLib.signCertificate({
     profile: profile,
     csr: csr,
     caPrivateKey: caPrivateKey,
     caCert: caCert,
-    outputFormat: SignCertificateOutputFormat.PEM,
     // Optional values
+    outputFormat: SignCertificateOutputFormat.PEM,
     validNotBefore: BigInt(Math.floor(new Date().getTime() / 1000)), // now
     validNotAfter: BigInt(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
     subject: "CN=MyCert,O=SAP,ST=BA,C=DE",
@@ -67,7 +67,45 @@ const signCertificateResponse = await cryptoLib.signCertificate({
         id: randomUUID(),
     },
 });
-console.log("Certificate signed by CryptoBroker in PEM format\n", signCertificateResponse.pem);
+console.log("Certificate signed by CryptoBroker in PEM format:\n", signCertificateResponse.pem);
+
+const encryptDataResponse = await cryptoLib.encryptData({
+  profile: profile,
+  keySource: {
+    rawKey: Buffer.from('...', 'hex'),
+  },
+  plaintext: toEncrypt,
+  // Optional values
+  encryptMetadata: {
+    nonce: Buffer.from('this-should-be-random-and-never-be-reused'),
+    aad: Buffer.from('42 is the answer'),
+  },
+  metadata: {
+    id : randomUUID(),
+  },
+});
+console.log(`Encrypted Data by CryptoBroker: ${encryptDataResponse.ciphertext}`);
+console.log(`Nonce: ${encryptDataResponse.cipherMetadata.nonce}`);
+console.log(`AAD: ${encryptDataResponse.cipherMetadata.aad}`);
+console.log(`Tag: ${encryptDataResponse.cipherMetadata.tag}`);
+
+const decryptDataResponse = await cryptoLib.decryptData({
+  profile: profile,
+  keySource: {
+    keyId: myKMSKeyId, 
+  },
+  ciphertext: Buffer.from(toDecrypt),
+  // Optional values
+  decryptMetadata: {
+    nonce: Buffer.from('...', 'hex'),
+    aad: Buffer.from('...'),
+    tag: Buffer.from('...', 'hex'),
+  },
+  metadata: {
+    id : randomUUID(),
+  },
+});
+console.log(`Decrypted Data by CryptoBroker: ${decryptDataResponse.plaintext}`);
 ```
 
 </details>
@@ -84,8 +122,8 @@ client.CryptoBrokerClient.NewLibrary()
   .then((cryptoLib) => cryptoLib.hashData({
     profile: "Default",
     input: Buffer.from("Hello world"),
-    outputFormat: client.HashDataOutputFormat.HEX,
     // Optional values
+    outputFormat: client.HashDataOutputFormat.HEX,
     metadata: {
       id: randomUUID(),
     }
