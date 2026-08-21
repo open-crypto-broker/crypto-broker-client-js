@@ -277,7 +277,32 @@ declare enum SignOutputFormat {
 /** Meta-structures shared across other messages and functions */
 interface Metadata$1 {
   id: string;
+  /** Attached to every response produced with a deprecated profile (see ADR 0013). */
+  deprecation?: DeprecationWarning | undefined;
   traceContext?: TraceContext$1 | undefined;
+}
+/**
+ * Self-describing record of how a stored artifact was produced (see ADR 0013).
+ * Persisted by the caller alongside the value so it stays verifiable and
+ * migratable without access to Profiles.yaml.
+ */
+interface CryptoDescriptor {
+  profile: string;
+  /** The API that produced the artifact, e.g. "HashData", "SignCertificate", "EncryptData". */
+  operation: string;
+  /** The concrete algorithm actually used, e.g. "sha3-512", "aes-gcm". */
+  algorithm: string;
+}
+/**
+ * Deprecation signal for a profile scheduled for a rolling migration (see ADR 0013).
+ * replacedBy should point to an equal-or-stronger profile.
+ */
+interface DeprecationWarning {
+  profile: string;
+  replacedBy?: string | undefined;
+  deprecatedSince?: string | undefined;
+  removeAfter?: string | undefined;
+  reason?: string | undefined;
 }
 /** Trace context for manual propagation */
 interface TraceContext$1 {
@@ -290,59 +315,61 @@ interface TraceContext$1 {
 /**
  * Key material source for symmetric encryption/decryption.
  * Exactly one variant is set, governed by the profile:
- * rawKey for caller-managed profiles (no KMS), keyId for broker-managed (KMS-backed) profiles.
+ * rawKey for caller-managed profiles (no KMS), keyId for KMS profiles where the broker
+ * resolves the identifier and retrieves the externally provisioned key. The broker never
+ * creates, imports, or deletes keys; key lifecycle is owned by the KMS/operator.
  */
 interface KeySource {
   keyId?: string | undefined;
   rawKey?: Uint8Array | undefined;
 }
 /**
- * Optional caller-supplied encryption parameters (nonce, AAD).
- * When omitted, the Crypto Broker generates or derives them according to the profile.
+ * Caller-supplied encryption parameters. The nonce is always provided by the caller;
+ * neither the broker nor the KMS generates it, so the caller owns nonce-uniqueness. AAD is optional.
  */
 interface EncryptMetadata {
-  nonce?: Uint8Array | undefined;
+  nonce: Uint8Array;
   aad?: Uint8Array | undefined;
 }
 /**
  * Metadata returned alongside the ciphertext by EncryptData. It encapsulates
- * everything the caller may need besides the ciphertext itself. Each field is
- * optional and populated according to the flow:
- *   - keyId: echoed for KMS-backed profiles (hybrid and KMS-managed flows).
- *   - nonce/aad/tag: returned when the caller must retain them to decrypt later,
- *     i.e. caller-managed flows or the hybrid flow where the broker generated
- *     the nonce. In fully KMS-managed flows the broker stores these itself and
- *     omits them, so cipherMetadata may carry only the keyId.
+ * everything the caller may need besides the ciphertext itself:
+ *   - keyId: echoed for KMS profiles; key material is never returned.
+ *   - nonce/aad: echoed back; the caller supplied them and must retain them to decrypt.
+ *   - tag: the authentication tag the caller must retain to decrypt later.
  */
 interface CipherMetadata {
   keyId?: string | undefined;
-  nonce?: Uint8Array | undefined;
+  nonce: Uint8Array;
   aad?: Uint8Array | undefined;
   tag?: Uint8Array | undefined;
+  /** Self-describing descriptor persisted alongside the ciphertext (see ADR 0013). */
+  descriptor: CryptoDescriptor | undefined;
 }
 /**
  * Caller-supplied parameters for DecryptData. Symmetric to EncryptMetadata.
- * All fields are optional: in KMS-managed flows the broker resolves the required
- * parameters (e.g. a stored nonce) itself, so the caller may omit them. In
- * caller-managed or hybrid flows the caller provides them, typically by echoing
- * back the values from the CipherMetadata receipt returned by EncryptData.
+ * The caller provides the nonce, AAD and tag, typically by echoing back the
+ * values from the CipherMetadata receipt returned by EncryptData.
  */
 interface DecryptMetadata {
-  nonce?: Uint8Array | undefined;
+  nonce: Uint8Array;
   aad?: Uint8Array | undefined;
   tag?: Uint8Array | undefined;
 }
 interface HashDataResponse {
+  /** Redundant with descriptor.algorithm; retained for backward compatibility. */
   hashAlgorithm: string;
   metadata: Metadata$1 | undefined;
   hashValueHex?: string | undefined;
   hashValueRaw?: Uint8Array | undefined;
+  descriptor: CryptoDescriptor | undefined;
 }
 /** Response to a SignCertificate Request */
 interface SignCertificateResponse {
   metadata: Metadata$1 | undefined;
   pem?: string | undefined;
   der?: Uint8Array | undefined;
+  descriptor: CryptoDescriptor | undefined;
 }
 interface EncryptDataResponse {
   ciphertext: Uint8Array;
@@ -358,6 +385,8 @@ interface BenchmarkResponse {
   metadata: Metadata$1 | undefined;
 }
 declare const Metadata$1: MessageFns$1<Metadata$1>;
+declare const CryptoDescriptor: MessageFns$1<CryptoDescriptor>;
+declare const DeprecationWarning: MessageFns$1<DeprecationWarning>;
 declare const TraceContext$1: MessageFns$1<TraceContext$1>;
 declare const KeySource: MessageFns$1<KeySource>;
 declare const EncryptMetadata: MessageFns$1<EncryptMetadata>;
@@ -452,14 +481,14 @@ interface EncryptDataPayload {
   profile: string;
   keySource: KeySource;
   plaintext: Uint8Array;
-  encryptMetadata?: EncryptMetadata;
+  encryptMetadata: EncryptMetadata;
   metadata?: Metadata;
 }
 interface DecryptDataPayload {
   profile: string;
   keySource: KeySource;
   ciphertext: Uint8Array;
-  decryptMetadata?: DecryptMetadata;
+  decryptMetadata: DecryptMetadata;
   metadata?: Metadata;
 }
 declare class CryptoBrokerClient {

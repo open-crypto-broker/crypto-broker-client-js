@@ -59,6 +59,11 @@ describe('CryptoBrokerClient', () => {
       metadata: { id: 'mocked-id' },
       hashAlgorithm: 'mocked-algorithm',
       hashValueHex: 'mocked-value',
+      descriptor: {
+        profile: 'Default',
+        operation: 'SignCertificate',
+        algorithm: 'ecdsa384-sha3-512',
+      },
     };
     (CryptoGrpcClientImpl as jest.Mock).mockImplementationOnce(() => ({
       HashData: jest

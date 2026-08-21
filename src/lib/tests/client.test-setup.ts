@@ -34,6 +34,11 @@ jest.mock('src/lib/proto/messages.js', () => ({
       .mockImplementation(async (input) => {
         const base = {
           hashAlgorithm: 'sha3-512',
+          descriptor: {
+            profile: 'Default',
+            operation: 'HashData',
+            algorithm: 'sha3-512',
+          },
           metadata: {
             id: input.metadata?.id || 'empty',
           },
@@ -55,6 +60,11 @@ jest.mock('src/lib/proto/messages.js', () => ({
       .fn<(input: SignCertificateRequest) => Promise<SignCertificateResponse>>()
       .mockImplementation(async (input) => {
         const base = {
+          descriptor: {
+            profile: 'Default',
+            operation: 'SignCertificate',
+            algorithm: 'ecdsa384-sha3-512',
+          },
           metadata: {
             id: input.metadata?.id || 'empty',
           },
@@ -97,6 +107,11 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
             nonce: Buffer.from('a83f89b37c90f937b8df5011', 'hex'),
             aad: Buffer.from('36e02c2a81c60eca849739d52dea95f7', 'hex'),
             tag: Buffer.from('a77b42e960d89683140cae283a87466e', 'hex'),
+            descriptor: {
+              profile: 'Default',
+              operation: 'EncryptData',
+              algorithm: 'aes-gcm',
+            },
           },
           metadata: {
             id: input.metadata?.id || 'empty',

@@ -97,14 +97,14 @@ export interface EncryptDataPayload {
   profile: string;
   keySource: KeySource;
   plaintext: Uint8Array;
-  encryptMetadata?: EncryptMetadata;
+  encryptMetadata: EncryptMetadata;
   metadata?: Metadata;
 }
 export interface DecryptDataPayload {
   profile: string;
   keySource: KeySource;
   ciphertext: Uint8Array;
-  decryptMetadata?: DecryptMetadata;
+  decryptMetadata: DecryptMetadata;
   metadata?: Metadata;
 }
 

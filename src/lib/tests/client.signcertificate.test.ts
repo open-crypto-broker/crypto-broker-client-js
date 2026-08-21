@@ -43,6 +43,11 @@ gBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE
 01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1E
 cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
 -----END CERTIFICATE-----`,
+      descriptor: {
+        profile: 'Default',
+        operation: 'SignCertificate',
+        algorithm: 'ecdsa384-sha3-512',
+      },
       metadata: { id: 'mocked-id' },
     });
   });
@@ -150,6 +155,11 @@ gBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE
 01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1E
 cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
 -----END CERTIFICATE-----`,
+      descriptor: {
+        profile: 'Default',
+        operation: 'SignCertificate',
+        algorithm: 'ecdsa384-sha3-512',
+      },
     });
 
     // assert that the metadata was correctly autofilled
@@ -190,6 +200,11 @@ gBT3KuJBMgQEcYrmI1TyGOb0P2/P3zAKBggqhkjOPQQDBANnADBkAjAkfToWryrE
 01PNlWEad7iBIwHvm5MvXZOeQV6rLbWD0XhVGaSDDbzLspHZhWaTDr0CMFaUxu1E
 cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
 -----END CERTIFICATE-----`,
+      descriptor: {
+        profile: 'Default',
+        operation: 'SignCertificate',
+        algorithm: 'ecdsa384-sha3-512',
+      },
     });
 
     // assert that the metadata was correctly autofilled

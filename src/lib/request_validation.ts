@@ -253,10 +253,7 @@ export function validateEncryptDataPayload(
   assertOptionalUint8Array(payload.keySource.rawKey, 'keySource.rawKey');
   assertUint8Array(payload.plaintext, 'plaintext');
   assertObject(payload.encryptMetadata, 'encryptMetadata');
-  assertOptionalUint8Array(
-    payload.encryptMetadata.nonce,
-    'encryptMetadata.nonce',
-  );
+  assertUint8Array(payload.encryptMetadata.nonce, 'encryptMetadata.nonce');
   assertOptionalUint8Array(payload.encryptMetadata.aad, 'encryptMetadata.aad');
 
   if (
@@ -290,10 +287,7 @@ export function validateDecryptDataPayload(
   assertOptionalUint8Array(payload.keySource.rawKey, 'keySource.rawKey');
   assertUint8Array(payload.ciphertext, 'ciphertext');
   assertObject(payload.decryptMetadata, 'decryptMetadata');
-  assertOptionalUint8Array(
-    payload.decryptMetadata.nonce,
-    'decryptMetadata.nonce',
-  );
+  assertUint8Array(payload.decryptMetadata.nonce, 'decryptMetadata.nonce');
   assertOptionalUint8Array(payload.decryptMetadata.aad, 'decryptMetadata.aad');
   assertOptionalUint8Array(payload.decryptMetadata.tag, 'decryptMetadata.tag');
 

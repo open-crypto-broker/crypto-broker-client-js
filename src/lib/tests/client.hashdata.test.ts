@@ -28,6 +28,11 @@ describe('CryptoBrokerClient', () => {
       hashValueHex:
         '217a621302950213819fcb88a904b3e59735de83d366112dd4b817103b097d334a3a283a0fbc20aaf5b9fafc2f3d1d685e1ea812c7686840d389a99c9dfb168f',
       hashAlgorithm: 'sha3-512',
+      descriptor: {
+        profile: 'Default',
+        operation: 'HashData',
+        algorithm: 'sha3-512',
+      },
       metadata: { id: 'mocked-id' },
     });
   });
@@ -82,6 +87,11 @@ describe('CryptoBrokerClient', () => {
       hashValueHex:
         '217a621302950213819fcb88a904b3e59735de83d366112dd4b817103b097d334a3a283a0fbc20aaf5b9fafc2f3d1d685e1ea812c7686840d389a99c9dfb168f',
       hashAlgorithm: 'sha3-512',
+      descriptor: {
+        profile: 'Default',
+        operation: 'HashData',
+        algorithm: 'sha3-512',
+      },
     });
 
     // assert that the metadata was correctly autofilled

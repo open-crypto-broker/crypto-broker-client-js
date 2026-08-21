@@ -38,6 +38,11 @@ describe('CryptoBrokerClient', () => {
         nonce: Buffer.from('a83f89b37c90f937b8df5011', 'hex'),
         aad: Buffer.from('36e02c2a81c60eca849739d52dea95f7', 'hex'),
         tag: Buffer.from('a77b42e960d89683140cae283a87466e', 'hex'),
+        descriptor: {
+          profile: 'Default',
+          operation: 'EncryptData',
+          algorithm: 'aes-gcm',
+        },
       },
       metadata: { id: 'mocked-id' },
     });
@@ -136,6 +141,11 @@ describe('CryptoBrokerClient', () => {
         nonce: Buffer.from('a83f89b37c90f937b8df5011', 'hex'),
         aad: Buffer.from('36e02c2a81c60eca849739d52dea95f7', 'hex'),
         tag: Buffer.from('a77b42e960d89683140cae283a87466e', 'hex'),
+        descriptor: {
+          profile: 'Default',
+          operation: 'EncryptData',
+          algorithm: 'aes-gcm',
+        },
       },
     });
 
