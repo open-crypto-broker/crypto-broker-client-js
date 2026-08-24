@@ -46,6 +46,13 @@ import {
 } from './request_validation.js';
 import CircuitBreaker from 'opossum';
 
+export {
+  DecryptDataResponse,
+  EncryptDataResponse,
+  HashDataResponse,
+  SignCertificateResponse,
+};
+
 export interface ConnectOptions {
   retryAmount: number;
 }
