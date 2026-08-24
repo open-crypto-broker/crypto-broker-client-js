@@ -835,52 +835,64 @@ function assertFloat32(arg) {
 	if (Number.isFinite(arg) && (arg > 34028234663852886e22 || arg < -34028234663852886e22)) throw new Error("invalid float32: " + arg);
 }
 //#endregion
-//#region src/lib/proto/messages.ts
+//#region src/lib/proto/messages.js
 /** Output formats */
-let HashOutputFormat = /* @__PURE__ */ function(HashOutputFormat) {
+var HashOutputFormat;
+(function(HashOutputFormat) {
 	HashOutputFormat[HashOutputFormat["HEX"] = 0] = "HEX";
 	HashOutputFormat[HashOutputFormat["RAW"] = 1] = "RAW";
 	HashOutputFormat[HashOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
-	return HashOutputFormat;
-}({});
+})(HashOutputFormat || (HashOutputFormat = {}));
 function hashOutputFormatFromJSON(object) {
 	switch (object) {
 		case 0:
-		case "HEX": return 0;
+		case "HEX": return HashOutputFormat.HEX;
 		case 1:
-		case "RAW": return 1;
-		default: return -1;
+		case "RAW": return HashOutputFormat.RAW;
+		default: return HashOutputFormat.UNRECOGNIZED;
 	}
 }
 function hashOutputFormatToJSON(object) {
 	switch (object) {
-		case 0: return "HEX";
-		case 1: return "RAW";
+		case HashOutputFormat.HEX: return "HEX";
+		case HashOutputFormat.RAW: return "RAW";
+		case HashOutputFormat.UNRECOGNIZED:
 		default: return "UNRECOGNIZED";
 	}
 }
-let SignOutputFormat = /* @__PURE__ */ function(SignOutputFormat) {
+var SignOutputFormat;
+(function(SignOutputFormat) {
 	SignOutputFormat[SignOutputFormat["DER"] = 0] = "DER";
 	SignOutputFormat[SignOutputFormat["PEM"] = 1] = "PEM";
 	SignOutputFormat[SignOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
-	return SignOutputFormat;
-}({});
+})(SignOutputFormat || (SignOutputFormat = {}));
 function signOutputFormatFromJSON(object) {
 	switch (object) {
 		case 0:
-		case "DER": return 0;
+		case "DER": return SignOutputFormat.DER;
 		case 1:
-		case "PEM": return 1;
-		default: return -1;
+		case "PEM": return SignOutputFormat.PEM;
+		default: return SignOutputFormat.UNRECOGNIZED;
 	}
 }
 function signOutputFormatToJSON(object) {
 	switch (object) {
-		case 0: return "DER";
-		case 1: return "PEM";
+		case SignOutputFormat.DER: return "DER";
+		case SignOutputFormat.PEM: return "PEM";
+		case SignOutputFormat.UNRECOGNIZED:
 		default: return "UNRECOGNIZED";
 	}
 }
+/** Single source of truth for gRPC message size limits, applied as transport options in the server and clients. */
+var MessageSizeLimit;
+(function(MessageSizeLimit) {
+	MessageSizeLimit[MessageSizeLimit["MESSAGE_SIZE_LIMIT_UNSPECIFIED"] = 0] = "MESSAGE_SIZE_LIMIT_UNSPECIFIED";
+	/** MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES - Max request accepted from client to server (2 MiB). */
+	MessageSizeLimit[MessageSizeLimit["MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES"] = 2097152] = "MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES";
+	/** MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES - Max response returned from server to client (1 MiB). */
+	MessageSizeLimit[MessageSizeLimit["MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES"] = 1048576] = "MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES";
+	MessageSizeLimit[MessageSizeLimit["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
+})(MessageSizeLimit || (MessageSizeLimit = {}));
 function createBaseMetadata() {
 	return {
 		id: "",
@@ -2912,8 +2924,8 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "encryptData", nu
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "decryptData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.4.2";
-const GIT_HASH = "0268cbfd70829cbbbd001de30c6c6078d3a9a89e";
+const GIT_HASH = "08492a14e39b569f54303498e9c75c9060939b97";
 //#endregion
-export { CryptoBrokerClient, GIT_HASH, HashOutputFormat as HashDataOutputFormat, SignOutputFormat as SignCertificateOutputFormat, VERSION };
+export { CryptoBrokerClient, DecryptDataResponse, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataResponse, SignOutputFormat as SignCertificateOutputFormat, SignCertificateResponse, VERSION };
 
 //# sourceMappingURL=client.mjs.map

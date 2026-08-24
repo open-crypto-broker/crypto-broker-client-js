@@ -75,7 +75,7 @@ function assertOptionalString(
 
 function enumKeysToStringArray<E extends Record<string, string | number>>(
   enumType: E,
-) {
+): string[] {
   return Object.keys(enumType)
     .filter((key) => isNaN(Number(key)))
     .filter((key) => key !== 'UNRECOGNIZED'); // do not accept -1
@@ -132,7 +132,7 @@ function assertUint8Array(
 function assertOptionalUint8Array(
   value: unknown,
   field: string,
-): asserts value is Uint8Array {
+): asserts value is Uint8Array | undefined {
   if (value === undefined) {
     return;
   }

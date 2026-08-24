@@ -509,5 +509,5 @@ declare class CryptoBrokerClient {
 declare const VERSION: any;
 declare const GIT_HASH: any;
 //#endregion
-export { BenchmarkPayload, ConnectOptions, CryptoBrokerClient, DecryptDataPayload, EncryptDataPayload, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataPayload, Metadata, SignOutputFormat as SignCertificateOutputFormat, SignCertificatePayload, TraceContext, VERSION };
+export { BenchmarkPayload, ConnectOptions, CryptoBrokerClient, DecryptDataPayload, DecryptDataResponse, EncryptDataPayload, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataPayload, HashDataResponse, Metadata, SignOutputFormat as SignCertificateOutputFormat, SignCertificatePayload, SignCertificateResponse, TraceContext, VERSION };
 //# sourceMappingURL=client.d.cts.map
