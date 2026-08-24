@@ -79,9 +79,9 @@ const encryptDataResponse: EncryptDataResponse = await cryptoLib.encryptData({
     rawKey: Buffer.from('...', 'hex'),
   },
   plaintext: toEncrypt,
-  // Optional values
   encryptMetadata: {
     nonce: Buffer.from('this-should-be-random-and-never-be-reused'),
+    // Optional values
     aad: Buffer.from('42 is the answer'),
   },
   metadata: {
@@ -99,11 +99,11 @@ const decryptDataResponse: DecryptDataResponse = await cryptoLib.decryptData({
     keyId: myKMSKeyId, 
   },
   ciphertext: Buffer.from(toDecrypt),
-  // Optional values
   decryptMetadata: {
     nonce: Buffer.from('...', 'hex'),
-    aad: Buffer.from('...'),
     tag: Buffer.from('...', 'hex'),
+    // Optional values
+    aad: Buffer.from('...'),
   },
   metadata: {
     id : randomUUID(),
