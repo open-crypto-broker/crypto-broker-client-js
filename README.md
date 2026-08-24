@@ -31,14 +31,18 @@ To use the Crypto Broker Library, simply create a client instance and call the f
 ```ts
 import {
   HashDataOutputFormat,
+  HashDataResponse,
   SignCertificateOutputFormat,
+  SignCertificateResponse,
+  EncryptDataResponse,
+  DecryptDataResponse,
   CryptoBrokerClient
 } from "@open-crypto-broker/cryptobroker-client";
 import { randomUUID } from 'crypto';
 
 const cryptoLib = await CryptoBrokerClient.NewLibrary();
 
-const hashDataResponse = await cryptoLib.hashData({
+const hashDataResponse: HashDataResponse = await cryptoLib.hashData({
     profile: profile,
     input: Buffer.from(data),
     outputFormat: HashDataOutputFormat.HEX,
@@ -49,7 +53,7 @@ const hashDataResponse = await cryptoLib.hashData({
 });
 console.log(`Hashed Data response: ${hashDataResponse.hashValueHex}`);
 
-const signCertificateResponse = await cryptoLib.signCertificate({
+const signCertificateResponse: SignCertificateResponse = await cryptoLib.signCertificate({
     profile: profile,
     csr: csr,
     caPrivateKey: caPrivateKey,
@@ -69,7 +73,7 @@ const signCertificateResponse = await cryptoLib.signCertificate({
 });
 console.log("Certificate signed by CryptoBroker in PEM format:\n", signCertificateResponse.pem);
 
-const encryptDataResponse = await cryptoLib.encryptData({
+const encryptDataResponse: EncryptDataResponse = await cryptoLib.encryptData({
   profile: profile,
   keySource: {
     rawKey: Buffer.from('...', 'hex'),
@@ -89,7 +93,7 @@ console.log(`Nonce: ${encryptDataResponse.cipherMetadata.nonce}`);
 console.log(`AAD: ${encryptDataResponse.cipherMetadata.aad}`);
 console.log(`Tag: ${encryptDataResponse.cipherMetadata.tag}`);
 
-const decryptDataResponse = await cryptoLib.decryptData({
+const decryptDataResponse: DecryptDataResponse = await cryptoLib.decryptData({
   profile: profile,
   keySource: {
     keyId: myKMSKeyId, 
@@ -228,7 +232,7 @@ const options = {
       8,  // RESOURCE_EXHAUSTED
       10, // ABORTED
     ],
-    errorFilter: (error) => { ... }
+    errorFilter: (error) => { /* ... */ }
   },
 }
 const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
