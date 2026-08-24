@@ -54,8 +54,8 @@ const signCertificateResponse = await cryptoLib.signCertificate({
     csr: csr,
     caPrivateKey: caPrivateKey,
     caCert: caCert,
-    // Optional values
     outputFormat: SignCertificateOutputFormat.PEM,
+    // Optional values
     validNotBefore: BigInt(Math.floor(new Date().getTime() / 1000)), // now
     validNotAfter: BigInt(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
     subject: "CN=MyCert,O=SAP,ST=BA,C=DE",
@@ -122,8 +122,8 @@ client.CryptoBrokerClient.NewLibrary()
   .then((cryptoLib) => cryptoLib.hashData({
     profile: "Default",
     input: Buffer.from("Hello world"),
-    // Optional values
     outputFormat: client.HashDataOutputFormat.HEX,
+    // Optional values
     metadata: {
       id: randomUUID(),
     }
