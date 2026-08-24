@@ -343,8 +343,6 @@ interface CipherMetadata {
   nonce: Uint8Array;
   aad?: Uint8Array | undefined;
   tag?: Uint8Array | undefined;
-  /** Self-describing descriptor persisted alongside the ciphertext (see ADR 0013). */
-  descriptor: CryptoDescriptor | undefined;
 }
 /**
  * Caller-supplied parameters for DecryptData. Symmetric to EncryptMetadata.
@@ -375,6 +373,7 @@ interface EncryptDataResponse {
   ciphertext: Uint8Array;
   cipherMetadata: CipherMetadata | undefined;
   metadata: Metadata$1 | undefined;
+  descriptor: CryptoDescriptor | undefined;
 }
 interface DecryptDataResponse {
   plaintext: Uint8Array;

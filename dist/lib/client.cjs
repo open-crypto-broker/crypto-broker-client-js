@@ -1313,8 +1313,7 @@ function createBaseCipherMetadata() {
 		keyId: void 0,
 		nonce: /* @__PURE__ */ new Uint8Array(0),
 		aad: void 0,
-		tag: void 0,
-		descriptor: void 0
+		tag: void 0
 	};
 }
 const CipherMetadata = {
@@ -1323,7 +1322,6 @@ const CipherMetadata = {
 		if (message.nonce.length !== 0) writer.uint32(18).bytes(message.nonce);
 		if (message.aad !== void 0) writer.uint32(26).bytes(message.aad);
 		if (message.tag !== void 0) writer.uint32(34).bytes(message.tag);
-		if (message.descriptor !== void 0) CryptoDescriptor.encode(message.descriptor, writer.uint32(42).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
@@ -1349,10 +1347,6 @@ const CipherMetadata = {
 					if (tag !== 34) break;
 					message.tag = reader.bytes();
 					continue;
-				case 5:
-					if (tag !== 42) break;
-					message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
-					continue;
 			}
 			if ((tag & 7) === 4 || tag === 0) break;
 			reader.skip(tag & 7);
@@ -1364,8 +1358,7 @@ const CipherMetadata = {
 			keyId: isSet$1(object.keyId) ? globalThis.String(object.keyId) : void 0,
 			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : /* @__PURE__ */ new Uint8Array(0),
 			aad: isSet$1(object.aad) ? bytesFromBase64(object.aad) : void 0,
-			tag: isSet$1(object.tag) ? bytesFromBase64(object.tag) : void 0,
-			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0
+			tag: isSet$1(object.tag) ? bytesFromBase64(object.tag) : void 0
 		};
 	},
 	toJSON(message) {
@@ -1374,7 +1367,6 @@ const CipherMetadata = {
 		if (message.nonce.length !== 0) obj.nonce = base64FromBytes(message.nonce);
 		if (message.aad !== void 0) obj.aad = base64FromBytes(message.aad);
 		if (message.tag !== void 0) obj.tag = base64FromBytes(message.tag);
-		if (message.descriptor !== void 0) obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
 		return obj;
 	},
 	create(base) {
@@ -1386,7 +1378,6 @@ const CipherMetadata = {
 		message.nonce = object.nonce ?? /* @__PURE__ */ new Uint8Array(0);
 		message.aad = object.aad ?? void 0;
 		message.tag = object.tag ?? void 0;
-		message.descriptor = object.descriptor !== void 0 && object.descriptor !== null ? CryptoDescriptor.fromPartial(object.descriptor) : void 0;
 		return message;
 	}
 };
@@ -1901,7 +1892,8 @@ function createBaseEncryptDataResponse() {
 	return {
 		ciphertext: /* @__PURE__ */ new Uint8Array(0),
 		cipherMetadata: void 0,
-		metadata: void 0
+		metadata: void 0,
+		descriptor: void 0
 	};
 }
 const EncryptDataResponse = {
@@ -1909,6 +1901,7 @@ const EncryptDataResponse = {
 		if (message.ciphertext.length !== 0) writer.uint32(10).bytes(message.ciphertext);
 		if (message.cipherMetadata !== void 0) CipherMetadata.encode(message.cipherMetadata, writer.uint32(18).fork()).join();
 		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
+		if (message.descriptor !== void 0) CryptoDescriptor.encode(message.descriptor, writer.uint32(34).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
@@ -1930,6 +1923,10 @@ const EncryptDataResponse = {
 					if (tag !== 26) break;
 					message.metadata = Metadata.decode(reader, reader.uint32());
 					continue;
+				case 4:
+					if (tag !== 34) break;
+					message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+					continue;
 			}
 			if ((tag & 7) === 4 || tag === 0) break;
 			reader.skip(tag & 7);
@@ -1940,7 +1937,8 @@ const EncryptDataResponse = {
 		return {
 			ciphertext: isSet$1(object.ciphertext) ? bytesFromBase64(object.ciphertext) : /* @__PURE__ */ new Uint8Array(0),
 			cipherMetadata: isSet$1(object.cipherMetadata) ? CipherMetadata.fromJSON(object.cipherMetadata) : void 0,
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
+			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0
 		};
 	},
 	toJSON(message) {
@@ -1948,6 +1946,7 @@ const EncryptDataResponse = {
 		if (message.ciphertext.length !== 0) obj.ciphertext = base64FromBytes(message.ciphertext);
 		if (message.cipherMetadata !== void 0) obj.cipherMetadata = CipherMetadata.toJSON(message.cipherMetadata);
 		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
+		if (message.descriptor !== void 0) obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
 		return obj;
 	},
 	create(base) {
@@ -1958,6 +1957,7 @@ const EncryptDataResponse = {
 		message.ciphertext = object.ciphertext ?? /* @__PURE__ */ new Uint8Array(0);
 		message.cipherMetadata = object.cipherMetadata !== void 0 && object.cipherMetadata !== null ? CipherMetadata.fromPartial(object.cipherMetadata) : void 0;
 		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
+		message.descriptor = object.descriptor !== void 0 && object.descriptor !== null ? CryptoDescriptor.fromPartial(object.descriptor) : void 0;
 		return message;
 	}
 };
@@ -2937,7 +2937,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "encryptData", nu
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "decryptData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.4.2";
-const GIT_HASH = "57b31bda5af50eac448e7fe73f59e05669421462";
+const GIT_HASH = "0268cbfd70829cbbbd001de30c6c6078d3a9a89e";
 //#endregion
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.GIT_HASH = GIT_HASH;
