@@ -835,61 +835,75 @@ function assertFloat32(arg) {
 	if (Number.isFinite(arg) && (arg > 34028234663852886e22 || arg < -34028234663852886e22)) throw new Error("invalid float32: " + arg);
 }
 //#endregion
-//#region src/lib/proto/messages.ts
+//#region src/lib/proto/messages.js
 /** Output formats */
-let HashOutputFormat = /* @__PURE__ */ function(HashOutputFormat) {
+var HashOutputFormat;
+(function(HashOutputFormat) {
 	HashOutputFormat[HashOutputFormat["HEX"] = 0] = "HEX";
 	HashOutputFormat[HashOutputFormat["RAW"] = 1] = "RAW";
 	HashOutputFormat[HashOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
-	return HashOutputFormat;
-}({});
+})(HashOutputFormat || (HashOutputFormat = {}));
 function hashOutputFormatFromJSON(object) {
 	switch (object) {
 		case 0:
-		case "HEX": return 0;
+		case "HEX": return HashOutputFormat.HEX;
 		case 1:
-		case "RAW": return 1;
-		default: return -1;
+		case "RAW": return HashOutputFormat.RAW;
+		default: return HashOutputFormat.UNRECOGNIZED;
 	}
 }
 function hashOutputFormatToJSON(object) {
 	switch (object) {
-		case 0: return "HEX";
-		case 1: return "RAW";
+		case HashOutputFormat.HEX: return "HEX";
+		case HashOutputFormat.RAW: return "RAW";
+		case HashOutputFormat.UNRECOGNIZED:
 		default: return "UNRECOGNIZED";
 	}
 }
-let SignOutputFormat = /* @__PURE__ */ function(SignOutputFormat) {
+var SignOutputFormat;
+(function(SignOutputFormat) {
 	SignOutputFormat[SignOutputFormat["DER"] = 0] = "DER";
 	SignOutputFormat[SignOutputFormat["PEM"] = 1] = "PEM";
 	SignOutputFormat[SignOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
-	return SignOutputFormat;
-}({});
+})(SignOutputFormat || (SignOutputFormat = {}));
 function signOutputFormatFromJSON(object) {
 	switch (object) {
 		case 0:
-		case "DER": return 0;
+		case "DER": return SignOutputFormat.DER;
 		case 1:
-		case "PEM": return 1;
-		default: return -1;
+		case "PEM": return SignOutputFormat.PEM;
+		default: return SignOutputFormat.UNRECOGNIZED;
 	}
 }
 function signOutputFormatToJSON(object) {
 	switch (object) {
-		case 0: return "DER";
-		case 1: return "PEM";
+		case SignOutputFormat.DER: return "DER";
+		case SignOutputFormat.PEM: return "PEM";
+		case SignOutputFormat.UNRECOGNIZED:
 		default: return "UNRECOGNIZED";
 	}
 }
+/** Single source of truth for gRPC message size limits, applied as transport options in the server and clients. */
+var MessageSizeLimit;
+(function(MessageSizeLimit) {
+	MessageSizeLimit[MessageSizeLimit["MESSAGE_SIZE_LIMIT_UNSPECIFIED"] = 0] = "MESSAGE_SIZE_LIMIT_UNSPECIFIED";
+	/** MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES - Max request accepted from client to server (2 MiB). */
+	MessageSizeLimit[MessageSizeLimit["MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES"] = 2097152] = "MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES";
+	/** MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES - Max response returned from server to client (1 MiB). */
+	MessageSizeLimit[MessageSizeLimit["MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES"] = 1048576] = "MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES";
+	MessageSizeLimit[MessageSizeLimit["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
+})(MessageSizeLimit || (MessageSizeLimit = {}));
 function createBaseMetadata() {
 	return {
 		id: "",
+		deprecation: void 0,
 		traceContext: void 0
 	};
 }
 const Metadata = {
 	encode(message, writer = new BinaryWriter()) {
 		if (message.id !== "") writer.uint32(10).string(message.id);
+		if (message.deprecation !== void 0) DeprecationWarning.encode(message.deprecation, writer.uint32(18).fork()).join();
 		if (message.traceContext !== void 0) TraceContext.encode(message.traceContext, writer.uint32(26).fork()).join();
 		return writer;
 	},
@@ -904,6 +918,10 @@ const Metadata = {
 					if (tag !== 10) break;
 					message.id = reader.string();
 					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.deprecation = DeprecationWarning.decode(reader, reader.uint32());
+					continue;
 				case 3:
 					if (tag !== 26) break;
 					message.traceContext = TraceContext.decode(reader, reader.uint32());
@@ -917,12 +935,14 @@ const Metadata = {
 	fromJSON(object) {
 		return {
 			id: isSet$1(object.id) ? globalThis.String(object.id) : "",
+			deprecation: isSet$1(object.deprecation) ? DeprecationWarning.fromJSON(object.deprecation) : void 0,
 			traceContext: isSet$1(object.traceContext) ? TraceContext.fromJSON(object.traceContext) : void 0
 		};
 	},
 	toJSON(message) {
 		const obj = {};
 		if (message.id !== "") obj.id = message.id;
+		if (message.deprecation !== void 0) obj.deprecation = DeprecationWarning.toJSON(message.deprecation);
 		if (message.traceContext !== void 0) obj.traceContext = TraceContext.toJSON(message.traceContext);
 		return obj;
 	},
@@ -932,7 +952,154 @@ const Metadata = {
 	fromPartial(object) {
 		const message = createBaseMetadata();
 		message.id = object.id ?? "";
+		message.deprecation = object.deprecation !== void 0 && object.deprecation !== null ? DeprecationWarning.fromPartial(object.deprecation) : void 0;
 		message.traceContext = object.traceContext !== void 0 && object.traceContext !== null ? TraceContext.fromPartial(object.traceContext) : void 0;
+		return message;
+	}
+};
+function createBaseCryptoDescriptor() {
+	return {
+		profile: "",
+		operation: "",
+		algorithm: ""
+	};
+}
+const CryptoDescriptor = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.profile !== "") writer.uint32(10).string(message.profile);
+		if (message.operation !== "") writer.uint32(18).string(message.operation);
+		if (message.algorithm !== "") writer.uint32(26).string(message.algorithm);
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseCryptoDescriptor();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.profile = reader.string();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.operation = reader.string();
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.algorithm = reader.string();
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
+			operation: isSet$1(object.operation) ? globalThis.String(object.operation) : "",
+			algorithm: isSet$1(object.algorithm) ? globalThis.String(object.algorithm) : ""
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.profile !== "") obj.profile = message.profile;
+		if (message.operation !== "") obj.operation = message.operation;
+		if (message.algorithm !== "") obj.algorithm = message.algorithm;
+		return obj;
+	},
+	create(base) {
+		return CryptoDescriptor.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseCryptoDescriptor();
+		message.profile = object.profile ?? "";
+		message.operation = object.operation ?? "";
+		message.algorithm = object.algorithm ?? "";
+		return message;
+	}
+};
+function createBaseDeprecationWarning() {
+	return {
+		profile: "",
+		replacedBy: void 0,
+		deprecatedSince: void 0,
+		removeAfter: void 0,
+		reason: void 0
+	};
+}
+const DeprecationWarning = {
+	encode(message, writer = new BinaryWriter()) {
+		if (message.profile !== "") writer.uint32(10).string(message.profile);
+		if (message.replacedBy !== void 0) writer.uint32(18).string(message.replacedBy);
+		if (message.deprecatedSince !== void 0) writer.uint32(26).string(message.deprecatedSince);
+		if (message.removeAfter !== void 0) writer.uint32(34).string(message.removeAfter);
+		if (message.reason !== void 0) writer.uint32(42).string(message.reason);
+		return writer;
+	},
+	decode(input, length) {
+		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+		const end = length === void 0 ? reader.len : reader.pos + length;
+		const message = createBaseDeprecationWarning();
+		while (reader.pos < end) {
+			const tag = reader.uint32();
+			switch (tag >>> 3) {
+				case 1:
+					if (tag !== 10) break;
+					message.profile = reader.string();
+					continue;
+				case 2:
+					if (tag !== 18) break;
+					message.replacedBy = reader.string();
+					continue;
+				case 3:
+					if (tag !== 26) break;
+					message.deprecatedSince = reader.string();
+					continue;
+				case 4:
+					if (tag !== 34) break;
+					message.removeAfter = reader.string();
+					continue;
+				case 5:
+					if (tag !== 42) break;
+					message.reason = reader.string();
+					continue;
+			}
+			if ((tag & 7) === 4 || tag === 0) break;
+			reader.skip(tag & 7);
+		}
+		return message;
+	},
+	fromJSON(object) {
+		return {
+			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
+			replacedBy: isSet$1(object.replacedBy) ? globalThis.String(object.replacedBy) : void 0,
+			deprecatedSince: isSet$1(object.deprecatedSince) ? globalThis.String(object.deprecatedSince) : void 0,
+			removeAfter: isSet$1(object.removeAfter) ? globalThis.String(object.removeAfter) : void 0,
+			reason: isSet$1(object.reason) ? globalThis.String(object.reason) : void 0
+		};
+	},
+	toJSON(message) {
+		const obj = {};
+		if (message.profile !== "") obj.profile = message.profile;
+		if (message.replacedBy !== void 0) obj.replacedBy = message.replacedBy;
+		if (message.deprecatedSince !== void 0) obj.deprecatedSince = message.deprecatedSince;
+		if (message.removeAfter !== void 0) obj.removeAfter = message.removeAfter;
+		if (message.reason !== void 0) obj.reason = message.reason;
+		return obj;
+	},
+	create(base) {
+		return DeprecationWarning.fromPartial(base ?? {});
+	},
+	fromPartial(object) {
+		const message = createBaseDeprecationWarning();
+		message.profile = object.profile ?? "";
+		message.replacedBy = object.replacedBy ?? void 0;
+		message.deprecatedSince = object.deprecatedSince ?? void 0;
+		message.removeAfter = object.removeAfter ?? void 0;
+		message.reason = object.reason ?? void 0;
 		return message;
 	}
 };
@@ -1075,13 +1242,13 @@ const KeySource = {
 };
 function createBaseEncryptMetadata() {
 	return {
-		nonce: void 0,
+		nonce: /* @__PURE__ */ new Uint8Array(0),
 		aad: void 0
 	};
 }
 const EncryptMetadata = {
 	encode(message, writer = new BinaryWriter()) {
-		if (message.nonce !== void 0) writer.uint32(10).bytes(message.nonce);
+		if (message.nonce.length !== 0) writer.uint32(10).bytes(message.nonce);
 		if (message.aad !== void 0) writer.uint32(18).bytes(message.aad);
 		return writer;
 	},
@@ -1108,13 +1275,13 @@ const EncryptMetadata = {
 	},
 	fromJSON(object) {
 		return {
-			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : void 0,
+			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : /* @__PURE__ */ new Uint8Array(0),
 			aad: isSet$1(object.aad) ? bytesFromBase64(object.aad) : void 0
 		};
 	},
 	toJSON(message) {
 		const obj = {};
-		if (message.nonce !== void 0) obj.nonce = base64FromBytes(message.nonce);
+		if (message.nonce.length !== 0) obj.nonce = base64FromBytes(message.nonce);
 		if (message.aad !== void 0) obj.aad = base64FromBytes(message.aad);
 		return obj;
 	},
@@ -1123,7 +1290,7 @@ const EncryptMetadata = {
 	},
 	fromPartial(object) {
 		const message = createBaseEncryptMetadata();
-		message.nonce = object.nonce ?? void 0;
+		message.nonce = object.nonce ?? /* @__PURE__ */ new Uint8Array(0);
 		message.aad = object.aad ?? void 0;
 		return message;
 	}
@@ -1131,7 +1298,7 @@ const EncryptMetadata = {
 function createBaseCipherMetadata() {
 	return {
 		keyId: void 0,
-		nonce: void 0,
+		nonce: /* @__PURE__ */ new Uint8Array(0),
 		aad: void 0,
 		tag: void 0
 	};
@@ -1139,7 +1306,7 @@ function createBaseCipherMetadata() {
 const CipherMetadata = {
 	encode(message, writer = new BinaryWriter()) {
 		if (message.keyId !== void 0) writer.uint32(10).string(message.keyId);
-		if (message.nonce !== void 0) writer.uint32(18).bytes(message.nonce);
+		if (message.nonce.length !== 0) writer.uint32(18).bytes(message.nonce);
 		if (message.aad !== void 0) writer.uint32(26).bytes(message.aad);
 		if (message.tag !== void 0) writer.uint32(34).bytes(message.tag);
 		return writer;
@@ -1176,7 +1343,7 @@ const CipherMetadata = {
 	fromJSON(object) {
 		return {
 			keyId: isSet$1(object.keyId) ? globalThis.String(object.keyId) : void 0,
-			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : void 0,
+			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : /* @__PURE__ */ new Uint8Array(0),
 			aad: isSet$1(object.aad) ? bytesFromBase64(object.aad) : void 0,
 			tag: isSet$1(object.tag) ? bytesFromBase64(object.tag) : void 0
 		};
@@ -1184,7 +1351,7 @@ const CipherMetadata = {
 	toJSON(message) {
 		const obj = {};
 		if (message.keyId !== void 0) obj.keyId = message.keyId;
-		if (message.nonce !== void 0) obj.nonce = base64FromBytes(message.nonce);
+		if (message.nonce.length !== 0) obj.nonce = base64FromBytes(message.nonce);
 		if (message.aad !== void 0) obj.aad = base64FromBytes(message.aad);
 		if (message.tag !== void 0) obj.tag = base64FromBytes(message.tag);
 		return obj;
@@ -1195,7 +1362,7 @@ const CipherMetadata = {
 	fromPartial(object) {
 		const message = createBaseCipherMetadata();
 		message.keyId = object.keyId ?? void 0;
-		message.nonce = object.nonce ?? void 0;
+		message.nonce = object.nonce ?? /* @__PURE__ */ new Uint8Array(0);
 		message.aad = object.aad ?? void 0;
 		message.tag = object.tag ?? void 0;
 		return message;
@@ -1203,14 +1370,14 @@ const CipherMetadata = {
 };
 function createBaseDecryptMetadata() {
 	return {
-		nonce: void 0,
+		nonce: /* @__PURE__ */ new Uint8Array(0),
 		aad: void 0,
 		tag: void 0
 	};
 }
 const DecryptMetadata = {
 	encode(message, writer = new BinaryWriter()) {
-		if (message.nonce !== void 0) writer.uint32(10).bytes(message.nonce);
+		if (message.nonce.length !== 0) writer.uint32(10).bytes(message.nonce);
 		if (message.aad !== void 0) writer.uint32(18).bytes(message.aad);
 		if (message.tag !== void 0) writer.uint32(26).bytes(message.tag);
 		return writer;
@@ -1242,14 +1409,14 @@ const DecryptMetadata = {
 	},
 	fromJSON(object) {
 		return {
-			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : void 0,
+			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : /* @__PURE__ */ new Uint8Array(0),
 			aad: isSet$1(object.aad) ? bytesFromBase64(object.aad) : void 0,
 			tag: isSet$1(object.tag) ? bytesFromBase64(object.tag) : void 0
 		};
 	},
 	toJSON(message) {
 		const obj = {};
-		if (message.nonce !== void 0) obj.nonce = base64FromBytes(message.nonce);
+		if (message.nonce.length !== 0) obj.nonce = base64FromBytes(message.nonce);
 		if (message.aad !== void 0) obj.aad = base64FromBytes(message.aad);
 		if (message.tag !== void 0) obj.tag = base64FromBytes(message.tag);
 		return obj;
@@ -1259,7 +1426,7 @@ const DecryptMetadata = {
 	},
 	fromPartial(object) {
 		const message = createBaseDecryptMetadata();
-		message.nonce = object.nonce ?? void 0;
+		message.nonce = object.nonce ?? /* @__PURE__ */ new Uint8Array(0);
 		message.aad = object.aad ?? void 0;
 		message.tag = object.tag ?? void 0;
 		return message;
@@ -1343,7 +1510,8 @@ function createBaseHashDataResponse() {
 		hashAlgorithm: "",
 		metadata: void 0,
 		hashValueHex: void 0,
-		hashValueRaw: void 0
+		hashValueRaw: void 0,
+		descriptor: void 0
 	};
 }
 const HashDataResponse = {
@@ -1352,6 +1520,7 @@ const HashDataResponse = {
 		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
 		if (message.hashValueHex !== void 0) writer.uint32(34).string(message.hashValueHex);
 		if (message.hashValueRaw !== void 0) writer.uint32(42).bytes(message.hashValueRaw);
+		if (message.descriptor !== void 0) CryptoDescriptor.encode(message.descriptor, writer.uint32(50).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
@@ -1377,6 +1546,10 @@ const HashDataResponse = {
 					if (tag !== 42) break;
 					message.hashValueRaw = reader.bytes();
 					continue;
+				case 6:
+					if (tag !== 50) break;
+					message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+					continue;
 			}
 			if ((tag & 7) === 4 || tag === 0) break;
 			reader.skip(tag & 7);
@@ -1388,7 +1561,8 @@ const HashDataResponse = {
 			hashAlgorithm: isSet$1(object.hashAlgorithm) ? globalThis.String(object.hashAlgorithm) : "",
 			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
 			hashValueHex: isSet$1(object.hashValueHex) ? globalThis.String(object.hashValueHex) : void 0,
-			hashValueRaw: isSet$1(object.hashValueRaw) ? bytesFromBase64(object.hashValueRaw) : void 0
+			hashValueRaw: isSet$1(object.hashValueRaw) ? bytesFromBase64(object.hashValueRaw) : void 0,
+			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0
 		};
 	},
 	toJSON(message) {
@@ -1397,6 +1571,7 @@ const HashDataResponse = {
 		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		if (message.hashValueHex !== void 0) obj.hashValueHex = message.hashValueHex;
 		if (message.hashValueRaw !== void 0) obj.hashValueRaw = base64FromBytes(message.hashValueRaw);
+		if (message.descriptor !== void 0) obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
 		return obj;
 	},
 	create(base) {
@@ -1408,6 +1583,7 @@ const HashDataResponse = {
 		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		message.hashValueHex = object.hashValueHex ?? void 0;
 		message.hashValueRaw = object.hashValueRaw ?? void 0;
+		message.descriptor = object.descriptor !== void 0 && object.descriptor !== null ? CryptoDescriptor.fromPartial(object.descriptor) : void 0;
 		return message;
 	}
 };
@@ -1548,7 +1724,8 @@ function createBaseSignCertificateResponse() {
 	return {
 		metadata: void 0,
 		pem: void 0,
-		der: void 0
+		der: void 0,
+		descriptor: void 0
 	};
 }
 const SignCertificateResponse = {
@@ -1556,6 +1733,7 @@ const SignCertificateResponse = {
 		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(18).fork()).join();
 		if (message.pem !== void 0) writer.uint32(26).string(message.pem);
 		if (message.der !== void 0) writer.uint32(34).bytes(message.der);
+		if (message.descriptor !== void 0) CryptoDescriptor.encode(message.descriptor, writer.uint32(42).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
@@ -1577,6 +1755,10 @@ const SignCertificateResponse = {
 					if (tag !== 34) break;
 					message.der = reader.bytes();
 					continue;
+				case 5:
+					if (tag !== 42) break;
+					message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+					continue;
 			}
 			if ((tag & 7) === 4 || tag === 0) break;
 			reader.skip(tag & 7);
@@ -1587,7 +1769,8 @@ const SignCertificateResponse = {
 		return {
 			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
 			pem: isSet$1(object.pem) ? globalThis.String(object.pem) : void 0,
-			der: isSet$1(object.der) ? bytesFromBase64(object.der) : void 0
+			der: isSet$1(object.der) ? bytesFromBase64(object.der) : void 0,
+			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0
 		};
 	},
 	toJSON(message) {
@@ -1595,6 +1778,7 @@ const SignCertificateResponse = {
 		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		if (message.pem !== void 0) obj.pem = message.pem;
 		if (message.der !== void 0) obj.der = base64FromBytes(message.der);
+		if (message.descriptor !== void 0) obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
 		return obj;
 	},
 	create(base) {
@@ -1605,6 +1789,7 @@ const SignCertificateResponse = {
 		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		message.pem = object.pem ?? void 0;
 		message.der = object.der ?? void 0;
+		message.descriptor = object.descriptor !== void 0 && object.descriptor !== null ? CryptoDescriptor.fromPartial(object.descriptor) : void 0;
 		return message;
 	}
 };
@@ -1694,7 +1879,8 @@ function createBaseEncryptDataResponse() {
 	return {
 		ciphertext: /* @__PURE__ */ new Uint8Array(0),
 		cipherMetadata: void 0,
-		metadata: void 0
+		metadata: void 0,
+		descriptor: void 0
 	};
 }
 const EncryptDataResponse = {
@@ -1702,6 +1888,7 @@ const EncryptDataResponse = {
 		if (message.ciphertext.length !== 0) writer.uint32(10).bytes(message.ciphertext);
 		if (message.cipherMetadata !== void 0) CipherMetadata.encode(message.cipherMetadata, writer.uint32(18).fork()).join();
 		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
+		if (message.descriptor !== void 0) CryptoDescriptor.encode(message.descriptor, writer.uint32(34).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
@@ -1723,6 +1910,10 @@ const EncryptDataResponse = {
 					if (tag !== 26) break;
 					message.metadata = Metadata.decode(reader, reader.uint32());
 					continue;
+				case 4:
+					if (tag !== 34) break;
+					message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+					continue;
 			}
 			if ((tag & 7) === 4 || tag === 0) break;
 			reader.skip(tag & 7);
@@ -1733,7 +1924,8 @@ const EncryptDataResponse = {
 		return {
 			ciphertext: isSet$1(object.ciphertext) ? bytesFromBase64(object.ciphertext) : /* @__PURE__ */ new Uint8Array(0),
 			cipherMetadata: isSet$1(object.cipherMetadata) ? CipherMetadata.fromJSON(object.cipherMetadata) : void 0,
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
+			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0
 		};
 	},
 	toJSON(message) {
@@ -1741,6 +1933,7 @@ const EncryptDataResponse = {
 		if (message.ciphertext.length !== 0) obj.ciphertext = base64FromBytes(message.ciphertext);
 		if (message.cipherMetadata !== void 0) obj.cipherMetadata = CipherMetadata.toJSON(message.cipherMetadata);
 		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
+		if (message.descriptor !== void 0) obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
 		return obj;
 	},
 	create(base) {
@@ -1751,6 +1944,7 @@ const EncryptDataResponse = {
 		message.ciphertext = object.ciphertext ?? /* @__PURE__ */ new Uint8Array(0);
 		message.cipherMetadata = object.cipherMetadata !== void 0 && object.cipherMetadata !== null ? CipherMetadata.fromPartial(object.cipherMetadata) : void 0;
 		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
+		message.descriptor = object.descriptor !== void 0 && object.descriptor !== null ? CryptoDescriptor.fromPartial(object.descriptor) : void 0;
 		return message;
 	}
 };
@@ -2445,6 +2639,7 @@ const maxCACertBytes = 65536;
 const maxSubjectLen = 1024;
 const maxCRLDistributionPoints = 16;
 const maxCRLDistributionPointLen = 2048;
+const maxKeyIdLen = 1024;
 const maxMetadataIdLen = 128;
 const maxTraceIdLen = 32;
 const maxSpanIdLen = 16;
@@ -2490,6 +2685,13 @@ function assertOptionalUint64(value, field) {
 	}
 	throw typeError(field, "must be a uint64-compatible value");
 }
+function assertUint8Array(value, field) {
+	if (!(value instanceof Uint8Array)) throw typeError(field, "must be Uint8Array");
+}
+function assertOptionalUint8Array(value, field) {
+	if (value === void 0) return;
+	assertUint8Array(value, field);
+}
 function validateMetadata(metadata) {
 	if (metadata === void 0) return;
 	assertObject(metadata, "metadata");
@@ -2510,7 +2712,7 @@ function validateHashDataPayload(payload) {
 	assertObject(payload, "payload");
 	assertString(payload.profile, "profile", maxProfileNameLen, true);
 	assertEnumValue(payload.outputFormat, HashOutputFormat, "outputFormat");
-	if (!(payload.input instanceof Uint8Array)) throw typeError("input", "must be a Uint8Array");
+	assertUint8Array(payload.input, "input");
 	if (payload.input.length > maxHashDataInputBytes) throw typeError("input", `too large (max ${maxHashDataInputBytes})`);
 	validateMetadata(payload.metadata);
 }
@@ -2531,6 +2733,35 @@ function validateSignCertificatePayload(payload) {
 			assertString(value, `crlDistributionPoints[${index}]`, maxCRLDistributionPointLen);
 		});
 	}
+	validateMetadata(payload.metadata);
+}
+function validateEncryptDataPayload(payload) {
+	assertObject(payload, "payload");
+	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	assertObject(payload.keySource, "keySource");
+	assertOptionalString(payload.keySource.keyId, "keySource.keyId", maxKeyIdLen);
+	assertOptionalUint8Array(payload.keySource.rawKey, "keySource.rawKey");
+	assertUint8Array(payload.plaintext, "plaintext");
+	assertObject(payload.encryptMetadata, "encryptMetadata");
+	assertUint8Array(payload.encryptMetadata.nonce, "encryptMetadata.nonce");
+	assertOptionalUint8Array(payload.encryptMetadata.aad, "encryptMetadata.aad");
+	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("keySource", "missing key source - either keyId or rawKey must be provided");
+	if (payload.keySource.keyId !== void 0 && payload.keySource.rawKey !== void 0) throw typeError("keySource", "too many key sources - either keyId or rawKey must be provided");
+	validateMetadata(payload.metadata);
+}
+function validateDecryptDataPayload(payload) {
+	assertObject(payload, "payload");
+	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	assertObject(payload.keySource, "keySource");
+	assertOptionalString(payload.keySource.keyId, "keySource.keyId", maxKeyIdLen);
+	assertOptionalUint8Array(payload.keySource.rawKey, "keySource.rawKey");
+	assertUint8Array(payload.ciphertext, "ciphertext");
+	assertObject(payload.decryptMetadata, "decryptMetadata");
+	assertUint8Array(payload.decryptMetadata.nonce, "decryptMetadata.nonce");
+	assertOptionalUint8Array(payload.decryptMetadata.aad, "decryptMetadata.aad");
+	assertOptionalUint8Array(payload.decryptMetadata.tag, "decryptMetadata.tag");
+	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("keySource", "missing key source - either keyId or rawKey must be provided");
+	if (payload.keySource.keyId !== void 0 && payload.keySource.rawKey !== void 0) throw typeError("keySource", "too many key sources - either keyId or rawKey must be provided");
 	validateMetadata(payload.metadata);
 }
 //#endregion
@@ -2653,6 +2884,34 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		};
 		return this.client.SignCertificate(req).then((res) => res);
 	}
+	async encryptData(payload) {
+		validateEncryptDataPayload(payload);
+		const req = {
+			profile: payload.profile,
+			keySource: payload.keySource,
+			plaintext: payload.plaintext,
+			encryptMetadata: payload.encryptMetadata,
+			metadata: {
+				id: payload.metadata?.id || randomUUID(),
+				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
+			}
+		};
+		return this.client.EncryptData(req).then((res) => res);
+	}
+	async decryptData(payload) {
+		validateDecryptDataPayload(payload);
+		const req = {
+			profile: payload.profile,
+			keySource: payload.keySource,
+			ciphertext: payload.ciphertext,
+			decryptMetadata: payload.decryptMetadata,
+			metadata: {
+				id: payload.metadata?.id || randomUUID(),
+				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
+			}
+		};
+		return this.client.DecryptData(req).then((res) => res);
+	}
 	async healthData() {
 		const req = { service: "" };
 		const status_unknown = { status: 0 };
@@ -2661,10 +2920,12 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 };
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
+__decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "encryptData", null);
+__decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "decryptData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
-const VERSION = "0.4.1";
-const GIT_HASH = "0c92f3ea8392c4fe016d575b23f7f1bdb15f5a77";
+const VERSION = "0.4.2";
+const GIT_HASH = "08492a14e39b569f54303498e9c75c9060939b97";
 //#endregion
-export { CryptoBrokerClient, GIT_HASH, HashOutputFormat as HashDataOutputFormat, SignOutputFormat as SignCertificateOutputFormat, VERSION };
+export { CryptoBrokerClient, DecryptDataResponse, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataResponse, SignOutputFormat as SignCertificateOutputFormat, SignCertificateResponse, VERSION };
 
 //# sourceMappingURL=client.mjs.map

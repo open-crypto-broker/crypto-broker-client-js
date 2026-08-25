@@ -21,6 +21,7 @@ export default defineConfig([
     '**/generated/',
     '**/node_modules/',
     'jest.config.ts',
+    'src/lib/proto/',
   ]),
   {
     extends: compat.extends(

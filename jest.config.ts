@@ -2,23 +2,33 @@ import type { Config } from 'jest';
 import { createDefaultEsmPreset } from 'ts-jest';
 
 const config: Config = {
-  ...createDefaultEsmPreset(),
+  ...createDefaultEsmPreset({
+    tsconfig: '<rootDir>/tsconfig.json'
+  }),
   testEnvironment: 'node',
   moduleFileExtensions: ['ts', 'js'],
   extensionsToTreatAsEsm: ['.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   roots: ['<rootDir>/src'],
   transform: {
-    '^.+\\.tsx?$': ['ts-jest', { useESM: true }]
+    '^.+\\.tsx?$': ['ts-jest', {
+      useESM: true,
+    }],
   },
   // Maps js files to ts. This keeps the imports as ".js", but they get translated into ".ts" during testing
   moduleNameMapper: {
     '^src/(.*)\\.js$': '<rootDir>/src/$1.ts',
     '^\\./conf/(.*)\\.js$': '<rootDir>/src/lib/conf/$1.ts',
     '^\\./(client|request_validation|proto/messages|proto/third_party/grpc/health/v1/health)\\.js$': '<rootDir>/src/lib/$1.ts',
+    '^\\.\\./(client|proto/messages|proto/third_party/grpc/health/v1/health)\\.js$': '<rootDir>/src/lib/$1.ts',
+    '^\\./client\\.test-(.*).js$': '<rootDir>/src/lib/tests/client.test-$1.ts',
   },
   coveragePathIgnorePatterns: [
-    "lib/proto/third_party"
+    "lib/proto/third_party",
+    "lib/tests/*",
+  ],
+  setupFiles: [
+    '<rootDir>/src/lib/tests/client.test-setup.ts',
   ],
 };
 

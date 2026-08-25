@@ -26,19 +26,23 @@ To use the Crypto Broker Library, simply create a client instance and call the f
 
 <details open>
 
-<summary>TypeScript Example</summary>
+<summary>TypeScript Examples</summary>
 
 ```ts
 import {
   HashDataOutputFormat,
+  HashDataResponse,
   SignCertificateOutputFormat,
+  SignCertificateResponse,
+  EncryptDataResponse,
+  DecryptDataResponse,
   CryptoBrokerClient
 } from "@open-crypto-broker/cryptobroker-client";
 import { randomUUID } from 'crypto';
 
 const cryptoLib = await CryptoBrokerClient.NewLibrary();
 
-const hashDataResponse = await cryptoLib.hashData({
+const hashDataResponse: HashDataResponse = await cryptoLib.hashData({
     profile: profile,
     input: Buffer.from(data),
     outputFormat: HashDataOutputFormat.HEX,
@@ -47,9 +51,9 @@ const hashDataResponse = await cryptoLib.hashData({
         id : randomUUID(),
     },
 });
-console.log(`Hashed data response: ${hashDataResponse.hashValueHex}`);
+console.log(`Hashed Data response: ${hashDataResponse.hashValueHex}`);
 
-const signCertificateResponse = await cryptoLib.signCertificate({
+const signCertificateResponse: SignCertificateResponse = await cryptoLib.signCertificate({
     profile: profile,
     csr: csr,
     caPrivateKey: caPrivateKey,
@@ -67,7 +71,45 @@ const signCertificateResponse = await cryptoLib.signCertificate({
         id: randomUUID(),
     },
 });
-console.log("Certificate signed by CryptoBroker in PEM format\n", signCertificateResponse.pem);
+console.log("Certificate signed by CryptoBroker in PEM format:\n", signCertificateResponse.pem);
+
+const encryptDataResponse: EncryptDataResponse = await cryptoLib.encryptData({
+  profile: profile,
+  keySource: {
+    rawKey: Buffer.from('...', 'hex'),
+  },
+  plaintext: toEncrypt,
+  encryptMetadata: {
+    nonce: Buffer.from('this-should-be-random-and-never-be-reused'),
+    // Optional values
+    aad: Buffer.from('42 is the answer'),
+  },
+  metadata: {
+    id : randomUUID(),
+  },
+});
+console.log(`Encrypted Data by CryptoBroker: ${encryptDataResponse.ciphertext}`);
+console.log(`Nonce: ${encryptDataResponse.cipherMetadata.nonce}`);
+console.log(`AAD: ${encryptDataResponse.cipherMetadata.aad}`);
+console.log(`Tag: ${encryptDataResponse.cipherMetadata.tag}`);
+
+const decryptDataResponse: DecryptDataResponse = await cryptoLib.decryptData({
+  profile: profile,
+  keySource: {
+    keyId: myKMSKeyId, 
+  },
+  ciphertext: Buffer.from(toDecrypt),
+  decryptMetadata: {
+    nonce: Buffer.from('...', 'hex'),
+    tag: Buffer.from('...', 'hex'),
+    // Optional values
+    aad: Buffer.from('...'),
+  },
+  metadata: {
+    id : randomUUID(),
+  },
+});
+console.log(`Decrypted Data by CryptoBroker: ${decryptDataResponse.plaintext}`);
 ```
 
 </details>
@@ -190,7 +232,7 @@ const options = {
       8,  // RESOURCE_EXHAUSTED
       10, // ABORTED
     ],
-    errorFilter: (error) => { ... }
+    errorFilter: (error) => { /* ... */ }
   },
 }
 const cryptoLib = await CryptoBrokerClient.NewLibrary(options);
