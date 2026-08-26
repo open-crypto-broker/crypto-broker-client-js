@@ -3,6 +3,17 @@
 The list of commits in this changelog is automatically generated in the release process.
 The commits follow the Conventional Commit specification.
 
+## [0.5.0] - 2026-08-26
+
+### 🚀 Features
+
+- Encrypt decrypt data (#93)
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to v0.5.0
+- Bump version to v0.5.0-rc.0
+
 ## [0.4.2] - 2026-08-14
 
 ### 🚀 Features
