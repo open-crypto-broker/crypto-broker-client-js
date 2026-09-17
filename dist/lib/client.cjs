@@ -2829,7 +2829,9 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		this.address = "unix:/tmp/open-crypto-broker/crypto-broker-server.sock";
 		const grpcOptions = {
 			["grpc.service_config"]: JSON.stringify(defaultServiceConfig),
-			...opts.grpcOptions
+			...opts.grpcOptions,
+			["grpc.max_send_message_length"]: MessageSizeLimit.MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES,
+			["grpc.max_receive_message_length"]: MessageSizeLimit.MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES
 		};
 		this.breakerConfig = circuitBreakerConfigFactory(opts.circuitBreakerOptions);
 		this.conn = new _grpc_grpc_js.Client(this.address, _grpc_grpc_js.credentials.createInsecure(), grpcOptions);
@@ -2948,8 +2950,8 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate"
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "encryptData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "decryptData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
-const VERSION = "0.4.2";
-const GIT_HASH = "08492a14e39b569f54303498e9c75c9060939b97";
+const VERSION = "0.5.0";
+const GIT_HASH = "bf32d78f015ce2a6ca245463efd44b929cab63f0";
 //#endregion
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.DecryptDataResponse = DecryptDataResponse;
