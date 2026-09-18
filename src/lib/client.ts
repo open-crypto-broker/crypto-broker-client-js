@@ -31,6 +31,7 @@ import {
   DecryptMetadata,
   DecryptDataRequest,
   DecryptDataResponse,
+  MessageSizeLimit,
 } from './proto/messages.js';
 import {
   HealthCheckRequest,
@@ -166,6 +167,11 @@ export class CryptoBrokerClient {
       // set retry policy via service config
       ['grpc.service_config']: JSON.stringify(defaultServiceConfig),
       ...opts.grpcOptions,
+      // add message limits
+      ['grpc.max_send_message_length']:
+        MessageSizeLimit.MESSAGE_SIZE_LIMIT_MAX_REQUEST_BYTES,
+      ['grpc.max_receive_message_length']:
+        MessageSizeLimit.MESSAGE_SIZE_LIMIT_MAX_RESPONSE_BYTES,
     };
 
     // apply circuit breaker configuration
