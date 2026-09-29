@@ -9,23 +9,32 @@ import type {
 import {
   HashOutputFormat as HashDataOutputFormat,
   SignOutputFormat as SignCertificateOutputFormat,
+  PayloadLimits,
 } from './proto/messages.js';
 
-const maxProfileNameLen = 64;
-const maxHashDataInputBytes = 1 << 20;
-const maxCSRBytes = 64 << 10;
-const maxCAPrivateKeyBytes = 64 << 10;
-const maxCACertBytes = 64 << 10;
-const maxSubjectLen = 1024;
-const maxCRLDistributionPoints = 16;
-const maxCRLDistributionPointLen = 2048;
-const maxKeyIdLen = 1024;
-const maxMetadataIdLen = 128;
-const maxTraceIdLen = 32;
-const maxSpanIdLen = 16;
-const maxTraceFlagsLen = 2;
-const maxTraceStateLen = 512;
-const maxCorrelationIdLen = 128;
+const maxProfileNameLen = PayloadLimits.PAYLOAD_LIMITS_PROFILE_MAX_LEN;
+const maxHashDataInputBytes =
+  PayloadLimits.PAYLOAD_LIMITS_HASH_DATA_INPUT_MAX_LEN;
+const maxCSRBytes = PayloadLimits.PAYLOAD_LIMITS_SIGN_CERTIFICATE_CSR_MAX_LEN;
+const maxCAPrivateKeyBytes =
+  PayloadLimits.PAYLOAD_LIMITS_SIGN_CERTIFICATE_CA_PRIVATE_KEY_MAX_LEN;
+const maxCACertBytes =
+  PayloadLimits.PAYLOAD_LIMITS_SIGN_CERTIFICATE_CA_CERT_MAX_LEN;
+const maxSubjectLen =
+  PayloadLimits.PAYLOAD_LIMITS_SIGN_CERTIFICATE_SUBJECT_MAX_LEN;
+const maxCRLDistributionPoints =
+  PayloadLimits.PAYLOAD_LIMITS_SIGN_CERTIFICATE_DISTRIBUTION_POINTS_MAX;
+const maxCRLDistributionPointLen =
+  PayloadLimits.PAYLOAD_LIMITS_SIGN_CERTIFICATE_DISTRIBUTION_POINT_MAX_LEN;
+const maxKeyIdLen =
+  PayloadLimits.PAYLOAD_LIMITS_ENCRYPT_DECRYPT_DATA_KEYSOURCE_KEY_ID_MAX_LEN;
+const maxMetadataIdLen = PayloadLimits.PAYLOAD_LIMITS_METADATA_ID_MAX_LEN;
+const maxTraceIdLen = PayloadLimits.PAYLOAD_LIMITS_TRACE_ID_MAX_LEN;
+const maxSpanIdLen = PayloadLimits.PAYLOAD_LIMITS_TRACE_SPAN_ID_MAX_LEN;
+const maxTraceFlagsLen = PayloadLimits.PAYLOAD_LIMITS_TRACE_FLAGS_MAX_LEN;
+const maxTraceStateLen = PayloadLimits.PAYLOAD_LIMITS_TRACE_STATE_MAX_LEN;
+const maxCorrelationIdLen =
+  PayloadLimits.PAYLOAD_LIMITS_TRACE_CORRELATION_ID_MAX_LEN;
 const maxUint64 = BigInt('18446744073709551615');
 
 function typeError(field: string, msg: string): TypeError {
