@@ -32,5 +32,8 @@ updates:
       npm-dependencies:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
     commit-message:
       prefix: "chore(packages)"
