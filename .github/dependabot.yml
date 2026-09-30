@@ -25,7 +25,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "wednesday"
+      day: "sunday"
+    cooldown:
+      default-days: 7
     versioning-strategy: "increase"
     open-pull-requests-limit: 1
     groups:
