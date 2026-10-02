@@ -31,6 +31,13 @@ import {
   DecryptMetadata,
   DecryptDataRequest,
   DecryptDataResponse,
+  // Data Signing
+  SignatureFormat,
+  SignKeySource,
+  SignDataRequest,
+  SignDataResponse,
+  VerifyDataRequest,
+  VerifyDataResponse,
   MessageSizeLimit,
 } from './proto/messages.js';
 import {
@@ -44,14 +51,22 @@ import {
   validateSignCertificatePayload,
   validateEncryptDataPayload,
   validateDecryptDataPayload,
+  validateSignDataPayload,
+  validateVerifyDataPayload,
 } from './request_validation.js';
 import CircuitBreaker from 'opossum';
 
 export {
+  // responses
   DecryptDataResponse,
   EncryptDataResponse,
   HashDataResponse,
   SignCertificateResponse,
+  SignDataResponse,
+  // formats
+  HashDataOutputFormat,
+  SignCertificateOutputFormat,
+  SignatureFormat,
 };
 
 export interface ConnectOptions {
@@ -113,6 +128,22 @@ export interface DecryptDataPayload {
   keySource: KeySource;
   ciphertext: Uint8Array;
   decryptMetadata: DecryptMetadata;
+  metadata?: Metadata;
+}
+
+export interface SignDataPayload {
+  profile: string;
+  keySource: SignKeySource;
+  input: Uint8Array;
+  signatureFormat?: SignatureFormat;
+  metadata?: Metadata;
+}
+export interface VerifyDataPayload {
+  profile: string;
+  keySource: SignKeySource;
+  input: Uint8Array;
+  signature: Uint8Array;
+  signatureFormat?: SignatureFormat;
   metadata?: Metadata;
 }
 
@@ -357,6 +388,45 @@ export class CryptoBrokerClient {
   }
 
   @WithCircuitBreaker
+  async signData(payload: SignDataPayload): Promise<SignDataResponse> {
+    validateSignDataPayload(payload);
+    const req: SignDataRequest = {
+      profile: payload.profile,
+      keySource: payload.keySource,
+      input: payload.input,
+      signatureFormat: payload.signatureFormat,
+      metadata: {
+        id: payload.metadata?.id || randomUUID(),
+        ...(payload.metadata?.traceContext !== undefined && {
+          traceContext: payload.metadata?.traceContext,
+        }),
+      },
+    };
+    // Send the Request
+    return this.client.SignData(req).then((res: SignDataResponse) => res);
+  }
+
+  @WithCircuitBreaker
+  async verifyData(payload: VerifyDataPayload): Promise<VerifyDataResponse> {
+    validateVerifyDataPayload(payload);
+    const req: VerifyDataRequest = {
+      profile: payload.profile,
+      keySource: payload.keySource,
+      input: payload.input,
+      signature: payload.signature,
+      signatureFormat: payload.signatureFormat,
+      metadata: {
+        id: payload.metadata?.id || randomUUID(),
+        ...(payload.metadata?.traceContext !== undefined && {
+          traceContext: payload.metadata?.traceContext,
+        }),
+      },
+    };
+    // Send the Request
+    return this.client.VerifyData(req).then((res: VerifyDataResponse) => res);
+  }
+
+  @WithCircuitBreaker
   async healthData(): Promise<HealthCheckResponse> {
     const req: HealthCheckRequest = {
       service: '',
@@ -375,4 +445,3 @@ export class CryptoBrokerClient {
 
 export const VERSION = __VERSION__;
 export const GIT_HASH = __GIT_HASH__;
-export { HashDataOutputFormat, SignCertificateOutputFormat };
