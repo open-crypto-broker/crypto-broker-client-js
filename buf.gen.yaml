@@ -1,0 +1,10 @@
+version: v2
+
+plugins:
+  - local: ./node_modules/.bin/protoc-gen-ts_proto
+    out: src/lib/proto
+    opt:
+      - forceLong=bigint
+
+inputs:
+  - directory: protobuf
