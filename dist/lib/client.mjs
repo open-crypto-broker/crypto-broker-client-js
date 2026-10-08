@@ -47,69 +47,50 @@ const circuitBreakerConfigFactory = (override) => {
 /**
 * Read a 64 bit varint as two JS numbers.
 *
-* Returns tuple:
-* [0]: low bits
-* [1]: high bits
+* Stores the low and high words on the reader.
 *
 * Copyright 2008 Google Inc.  All rights reserved.
 *
 * See https://github.com/protocolbuffers/protobuf/blob/8a71927d74a4ce34efe2d8769fda198f52d20d12/js/experimental/runtime/kernel/buffer_decoder.js#L175
 */
 function varint64read() {
-	let lowBits = 0;
-	let highBits = 0;
+	const buf = this.buf;
+	let pos = this.pos;
+	let lo = 0;
+	let hi = 0;
 	for (let shift = 0; shift < 28; shift += 7) {
-		let b = this.buf[this.pos++];
-		lowBits |= (b & 127) << shift;
+		const b = buf[pos++];
+		lo |= (b & 127) << shift;
 		if ((b & 128) == 0) {
+			this.pos = pos;
 			this.assertBounds();
-			return [lowBits, highBits];
+			this.varint64Lo = lo;
+			this.varint64Hi = hi;
+			return;
 		}
 	}
-	let middleByte = this.buf[this.pos++];
-	lowBits |= (middleByte & 15) << 28;
-	highBits = (middleByte & 112) >> 4;
+	const middleByte = buf[pos++];
+	lo |= (middleByte & 15) << 28;
+	hi = (middleByte & 112) >> 4;
 	if ((middleByte & 128) == 0) {
+		this.pos = pos;
 		this.assertBounds();
-		return [lowBits, highBits];
+		this.varint64Lo = lo;
+		this.varint64Hi = hi;
+		return;
 	}
 	for (let shift = 3; shift <= 31; shift += 7) {
-		let b = this.buf[this.pos++];
-		highBits |= (b & 127) << shift;
+		const b = buf[pos++];
+		hi |= (b & 127) << shift;
 		if ((b & 128) == 0) {
+			this.pos = pos;
 			this.assertBounds();
-			return [lowBits, highBits];
+			this.varint64Lo = lo;
+			this.varint64Hi = hi;
+			return;
 		}
 	}
 	throw new Error("invalid varint");
-}
-/**
-* Write a 64 bit varint, given as two JS numbers, to the given bytes array.
-*
-* Copyright 2008 Google Inc.  All rights reserved.
-*
-* See https://github.com/protocolbuffers/protobuf/blob/8a71927d74a4ce34efe2d8769fda198f52d20d12/js/experimental/runtime/kernel/writer.js#L344
-*/
-function varint64write(lo, hi, bytes) {
-	for (let i = 0; i < 28; i = i + 7) {
-		const shift = lo >>> i;
-		const hasNext = !(shift >>> 7 == 0 && hi == 0);
-		const byte = (hasNext ? shift | 128 : shift) & 255;
-		bytes.push(byte);
-		if (!hasNext) return;
-	}
-	const splitBits = lo >>> 28 & 15 | (hi & 7) << 4;
-	const hasMoreBits = !(hi >> 3 == 0);
-	bytes.push((hasMoreBits ? splitBits | 128 : splitBits) & 255);
-	if (!hasMoreBits) return;
-	for (let i = 3; i < 31; i = i + 7) {
-		const shift = hi >>> i;
-		const hasNext = !(shift >>> 7 == 0);
-		const byte = (hasNext ? shift | 128 : shift) & 255;
-		bytes.push(byte);
-		if (!hasNext) return;
-	}
-	bytes.push(hi >>> 31 & 1);
 }
 const TWO_PWR_32_DBL = 4294967296;
 /**
@@ -213,61 +194,39 @@ const decimalFrom1e7WithLeadingZeros = (digit1e7) => {
 	return "0000000".slice(partial.length) + partial;
 };
 /**
-* Write a 32 bit varint, signed or unsigned. Same as `varint64write(0, value, bytes)`
-*
-* Copyright 2008 Google Inc.  All rights reserved.
-*
-* See https://github.com/protocolbuffers/protobuf/blob/1b18833f4f2a2f681f4e4a25cdf3b0a43115ec26/js/binary/encoder.js#L144
-*/
-function varint32write(value, bytes) {
-	if (value >= 0) {
-		while (value > 127) {
-			bytes.push(value & 127 | 128);
-			value = value >>> 7;
-		}
-		bytes.push(value);
-	} else {
-		for (let i = 0; i < 9; i++) {
-			bytes.push(value & 127 | 128);
-			value = value >> 7;
-		}
-		bytes.push(1);
-	}
-}
-/**
 * Read an unsigned 32 bit varint.
 *
 * See https://github.com/protocolbuffers/protobuf/blob/8a71927d74a4ce34efe2d8769fda198f52d20d12/js/experimental/runtime/kernel/buffer_decoder.js#L220
 */
 function varint32read() {
 	let b = this.buf[this.pos++];
-	let result = b & 127;
-	if ((b & 128) == 0) {
+	if ((b & 128) === 0) {
 		this.assertBounds();
-		return result;
+		return b;
 	}
+	let result = b & 127;
 	b = this.buf[this.pos++];
 	result |= (b & 127) << 7;
-	if ((b & 128) == 0) {
+	if ((b & 128) === 0) {
 		this.assertBounds();
 		return result;
 	}
 	b = this.buf[this.pos++];
 	result |= (b & 127) << 14;
-	if ((b & 128) == 0) {
+	if ((b & 128) === 0) {
 		this.assertBounds();
 		return result;
 	}
 	b = this.buf[this.pos++];
 	result |= (b & 127) << 21;
-	if ((b & 128) == 0) {
+	if ((b & 128) === 0) {
 		this.assertBounds();
 		return result;
 	}
 	b = this.buf[this.pos++];
 	result |= (b & 15) << 28;
 	for (let readBytes = 5; (b & 128) !== 0 && readBytes < 10; readBytes++) b = this.buf[this.pos++];
-	if ((b & 128) != 0) throw new Error("invalid varint");
+	if ((b & 128) !== 0) throw new Error("invalid varint");
 	this.assertBounds();
 	return result >>> 0;
 }
@@ -362,22 +321,49 @@ function assertUInt64String(value) {
 }
 //#endregion
 //#region node_modules/@bufbuild/protobuf/dist/esm/wire/text-encoding.js
-const symbol = Symbol.for("@bufbuild/protobuf/text-encoding");
+let te;
+/**
+* Protobuf-ES requires the Text Encoding API to convert UTF-8 from and to
+* binary. This WHATWG API is widely available, but it is not part of the
+* ECMAScript standard. This function used to be the way to supply an
+* implementation on runtimes that do not provide one.
+*
+* It only configures the copy of the library it is imported from. To provide
+* the encoding API for every copy of Protobuf-ES in an isolate, install
+* `TextEncoder` (with the methods `encode` and optionally `encodeInto`) and
+* `TextDecoder` (with the `fatal: true` constructor argument and the `decode`
+* method) on `globalThis`.
+*
+* Providing `encodeUtf8Into` is optional for backwards compatibility. If it
+* is omitted, we emulate it with a wrapper that calls `encodeUtf8`.
+*
+* Note that the Text Encoding API does not provide a way to validate UTF-8.
+* Our implementation uses String.prototype.isWellFormed, and falls back
+* to use encodeURIComponent().
+*
+* @deprecated Install `TextEncoder` and `TextDecoder` on `globalThis` instead.
+*/
+function configureTextEncoding(textEncoding) {
+	var _a;
+	te = Object.assign(Object.assign({}, textEncoding), { encodeUtf8Into: (_a = textEncoding.encodeUtf8Into) !== null && _a !== void 0 ? _a : emulateEncodeInto(textEncoding.encodeUtf8.bind(textEncoding)) });
+}
 function getTextEncoding() {
-	if (globalThis[symbol] == void 0) {
-		const te = new globalThis.TextEncoder();
-		const td = new globalThis.TextDecoder();
-		let tdStrict;
-		globalThis[symbol] = {
+	if (!te) {
+		const globals = globalThis;
+		if (!globals.TextEncoder || !globals.TextDecoder) throw new Error("encoding API missing: install TextEncoder and TextDecoder on globalThis");
+		const textEncoder = new globals.TextEncoder();
+		const textDecoder = new globals.TextDecoder();
+		let textDecoderStrict;
+		const config = {
 			encodeUtf8(text) {
-				return te.encode(text);
+				return textEncoder.encode(text);
 			},
 			decodeUtf8(bytes, strict) {
 				if (strict) {
-					if (tdStrict === void 0) tdStrict = new globalThis.TextDecoder("utf-8", { fatal: true });
-					return tdStrict.decode(bytes);
+					if (!textDecoderStrict) textDecoderStrict = new globals.TextDecoder("utf-8", { fatal: true });
+					return textDecoderStrict.decode(bytes);
 				}
-				return td.decode(bytes);
+				return textDecoder.decode(bytes);
 			},
 			checkUtf8(text) {
 				try {
@@ -387,8 +373,26 @@ function getTextEncoding() {
 				}
 			}
 		};
+		if (textEncoder.encodeInto) config.encodeUtf8Into = textEncoder.encodeInto.bind(textEncoder);
+		const nativeStringIsWellFormed = String.prototype.isWellFormed;
+		if (nativeStringIsWellFormed) config.checkUtf8 = (text) => {
+			return nativeStringIsWellFormed.call(text);
+		};
+		configureTextEncoding(config);
 	}
-	return globalThis[symbol];
+	return te;
+}
+/**
+* Simplistic polyfill for encodeUtf8Into.
+*
+* @private
+*/
+function emulateEncodeInto(encodeUtf8) {
+	return (text, dest) => {
+		const bytes = encodeUtf8(text);
+		dest.set(bytes);
+		return { written: bytes.byteLength };
+	};
 }
 //#endregion
 //#region node_modules/@bufbuild/protobuf/dist/esm/wire/binary-encoding.js
@@ -435,33 +439,47 @@ var WireType;
 	WireType[WireType["Bit32"] = 5] = "Bit32";
 })(WireType || (WireType = {}));
 var BinaryWriter = class {
-	constructor(encodeUtf8 = getTextEncoding().encodeUtf8) {
-		this.encodeUtf8 = encodeUtf8;
+	constructor(encodeUtf8) {
 		/**
-		* Previous fork states.
+		* Previous fork positions (the write position at the time
+		* `fork()` was called).
 		*/
-		this.stack = [];
-		this.chunks = [];
-		this.buf = [];
+		this.stackPos = [];
+		this.encodeUtf8Into = encodeUtf8 ? emulateEncodeInto(encodeUtf8) : getTextEncoding().encodeUtf8Into;
+		this.buffer = EMPTY_BUFFER;
+		this.viewCache = EMPTY_VIEW;
+		this.pos = 0;
+	}
+	ensureCapacity(size) {
+		const required = this.pos + size;
+		if (required > this.buffer.length) {
+			let newLen = this.buffer.length || INITIAL_SIZE;
+			while (newLen < required) newLen *= 2;
+			const newBuf = new Uint8Array(newLen);
+			if (this.pos > 0) newBuf.set(this.buffer);
+			this.buffer = newBuf;
+		}
+	}
+	/**
+	* The DataView over `buffer`, rebuilt only if the buffer has grown since it
+	* was last used.
+	*/
+	view() {
+		const bytes = this.buffer;
+		const view = this.viewCache;
+		if (view.byteLength === bytes.byteLength) return view;
+		const newView = new DataView(bytes.buffer);
+		this.viewCache = newView;
+		return newView;
 	}
 	/**
 	* Return all bytes written and reset this writer.
 	*/
 	finish() {
-		if (this.buf.length) {
-			this.chunks.push(new Uint8Array(this.buf));
-			this.buf = [];
-		}
-		let len = 0;
-		for (let i = 0; i < this.chunks.length; i++) len += this.chunks[i].length;
-		let bytes = new Uint8Array(len);
-		let offset = 0;
-		for (let i = 0; i < this.chunks.length; i++) {
-			bytes.set(this.chunks[i], offset);
-			offset += this.chunks[i].length;
-		}
-		this.chunks = [];
-		return bytes;
+		const result = this.buffer.slice(0, this.pos);
+		this.pos = 0;
+		this.stackPos = [];
+		return result;
 	}
 	/**
 	* Start a new fork for length-delimited data like a message
@@ -470,12 +488,9 @@ var BinaryWriter = class {
 	* Must be joined later with `join()`.
 	*/
 	fork() {
-		this.stack.push({
-			chunks: this.chunks,
-			buf: this.buf
-		});
-		this.chunks = [];
-		this.buf = [];
+		this.stackPos.push(this.pos);
+		this.ensureCapacity(DEFAULT_LEN_PREFIX_SIZE);
+		this.buffer[this.pos++] = 0;
 		return this;
 	}
 	/**
@@ -483,13 +498,18 @@ var BinaryWriter = class {
 	* return to the previous state.
 	*/
 	join() {
-		let chunk = this.finish();
-		let prev = this.stack.pop();
-		if (!prev) throw new Error("invalid state, fork stack empty");
-		this.chunks = prev.chunks;
-		this.buf = prev.buf;
-		this.uint32(chunk.byteLength);
-		return this.raw(chunk);
+		const forkPos = this.stackPos.pop();
+		if (forkPos === void 0) throw new Error("invalid state, fork stack empty");
+		const len = this.pos - forkPos - DEFAULT_LEN_PREFIX_SIZE;
+		const lenPrefixSize = varint32Size(len);
+		if (lenPrefixSize > DEFAULT_LEN_PREFIX_SIZE) {
+			this.ensureCapacity(lenPrefixSize - DEFAULT_LEN_PREFIX_SIZE);
+			this.buffer.copyWithin(forkPos + lenPrefixSize, forkPos + DEFAULT_LEN_PREFIX_SIZE, this.pos);
+		}
+		this.pos = forkPos;
+		this.uint32(len);
+		this.pos += len;
+		return this;
 	}
 	/**
 	* Writes a tag (field number and wire type).
@@ -505,11 +525,9 @@ var BinaryWriter = class {
 	* Write a chunk of raw bytes.
 	*/
 	raw(chunk) {
-		if (this.buf.length) {
-			this.chunks.push(new Uint8Array(this.buf));
-			this.buf = [];
-		}
-		this.chunks.push(chunk);
+		this.ensureCapacity(chunk.length);
+		this.buffer.set(chunk, this.pos);
+		this.pos += chunk.length;
 		return this;
 	}
 	/**
@@ -517,11 +535,16 @@ var BinaryWriter = class {
 	*/
 	uint32(value) {
 		assertUInt32(value);
-		while (value > 127) {
-			this.buf.push(value & 127 | 128);
-			value = value >>> 7;
+		this.ensureCapacity(5);
+		if (value < 128) {
+			this.buffer[this.pos++] = value;
+			return this;
 		}
-		this.buf.push(value);
+		while (value > 127) {
+			this.buffer[this.pos++] = value & 127 | 128;
+			value >>>= 7;
+		}
+		this.buffer[this.pos++] = value;
 		return this;
 	}
 	/**
@@ -529,14 +552,21 @@ var BinaryWriter = class {
 	*/
 	int32(value) {
 		assertInt32(value);
-		varint32write(value, this.buf);
+		if (value >= 0) return this.uint32(value);
+		this.ensureCapacity(10);
+		for (let i = 0; i < 9; i++) {
+			this.buffer[this.pos++] = value & 127 | 128;
+			value >>= 7;
+		}
+		this.buffer[this.pos++] = 1;
 		return this;
 	}
 	/**
 	* Write a `bool` value, a varint.
 	*/
 	bool(value) {
-		this.buf.push(value ? 1 : 0);
+		this.ensureCapacity(1);
+		this.buffer[this.pos++] = value ? 1 : 0;
 		return this;
 	}
 	/**
@@ -550,100 +580,208 @@ var BinaryWriter = class {
 	* Write a `string` value, length-delimited data converted to UTF-8 text.
 	*/
 	string(value) {
-		let chunk = this.encodeUtf8(value);
-		this.uint32(chunk.byteLength);
-		return this.raw(chunk);
+		if (typeof value !== "string") value = String(value);
+		const len = value.length;
+		if (len <= ASCII_MAX_LENGTH) {
+			this.ensureCapacity(len + 1);
+			const ascii = this.buffer;
+			let pos = this.pos;
+			ascii[pos++] = len;
+			let i = 0;
+			for (; i < len; i++) {
+				const code = value.charCodeAt(i);
+				if (code > 127) break;
+				ascii[pos++] = code;
+			}
+			if (i == len) {
+				this.pos = pos;
+				return this;
+			}
+		}
+		this.ensureCapacity(len * 3 + 5);
+		const lenPrefixSizeGuess = varint32Size(len);
+		const buf = this.buffer;
+		const start = this.pos;
+		const { written } = this.encodeUtf8Into(value, buf.subarray(start + lenPrefixSizeGuess));
+		const lenPrefixSize = varint32Size(written);
+		if (lenPrefixSize != lenPrefixSizeGuess) buf.copyWithin(start + lenPrefixSize, start + lenPrefixSizeGuess, start + lenPrefixSizeGuess + written);
+		this.uint32(written);
+		this.pos += written;
+		return this;
 	}
 	/**
 	* Write a `float` value, 32-bit floating point number.
 	*/
 	float(value) {
 		assertFloat32(value);
-		let chunk = /* @__PURE__ */ new Uint8Array(4);
-		new DataView(chunk.buffer).setFloat32(0, value, true);
-		return this.raw(chunk);
+		this.ensureCapacity(4);
+		this.view().setFloat32(this.pos, value, true);
+		this.pos += 4;
+		return this;
 	}
 	/**
 	* Write a `double` value, a 64-bit floating point number.
 	*/
 	double(value) {
-		let chunk = /* @__PURE__ */ new Uint8Array(8);
-		new DataView(chunk.buffer).setFloat64(0, value, true);
-		return this.raw(chunk);
+		this.ensureCapacity(8);
+		this.view().setFloat64(this.pos, value, true);
+		this.pos += 8;
+		return this;
 	}
 	/**
 	* Write a `fixed32` value, an unsigned, fixed-length 32-bit integer.
 	*/
 	fixed32(value) {
 		assertUInt32(value);
-		let chunk = /* @__PURE__ */ new Uint8Array(4);
-		new DataView(chunk.buffer).setUint32(0, value, true);
-		return this.raw(chunk);
+		this.ensureCapacity(4);
+		this.view().setUint32(this.pos, value, true);
+		this.pos += 4;
+		return this;
 	}
 	/**
 	* Write a `sfixed32` value, a signed, fixed-length 32-bit integer.
 	*/
 	sfixed32(value) {
 		assertInt32(value);
-		let chunk = /* @__PURE__ */ new Uint8Array(4);
-		new DataView(chunk.buffer).setInt32(0, value, true);
-		return this.raw(chunk);
+		this.ensureCapacity(4);
+		this.view().setInt32(this.pos, value, true);
+		this.pos += 4;
+		return this;
 	}
 	/**
 	* Write a `sint32` value, a signed, zigzag-encoded 32-bit varint.
 	*/
 	sint32(value) {
 		assertInt32(value);
-		value = (value << 1 ^ value >> 31) >>> 0;
-		varint32write(value, this.buf);
-		return this;
+		return this.uint32((value << 1 ^ value >> 31) >>> 0);
 	}
 	/**
 	* Write a `sfixed64` value, a signed, fixed-length 64-bit integer.
 	*/
 	sfixed64(value) {
-		let chunk = /* @__PURE__ */ new Uint8Array(8), view = new DataView(chunk.buffer), tc = protoInt64.enc(value);
-		view.setInt32(0, tc.lo, true);
-		view.setInt32(4, tc.hi, true);
-		return this.raw(chunk);
+		const tc = protoInt64.enc(value);
+		this.ensureCapacity(8);
+		const view = this.view();
+		view.setInt32(this.pos, tc.lo, true);
+		view.setInt32(this.pos + 4, tc.hi, true);
+		this.pos += 8;
+		return this;
 	}
 	/**
 	* Write a `fixed64` value, an unsigned, fixed-length 64 bit integer.
 	*/
 	fixed64(value) {
-		let chunk = /* @__PURE__ */ new Uint8Array(8), view = new DataView(chunk.buffer), tc = protoInt64.uEnc(value);
-		view.setInt32(0, tc.lo, true);
-		view.setInt32(4, tc.hi, true);
-		return this.raw(chunk);
+		const tc = protoInt64.uEnc(value);
+		this.ensureCapacity(8);
+		const view = this.view();
+		view.setInt32(this.pos, tc.lo, true);
+		view.setInt32(this.pos + 4, tc.hi, true);
+		this.pos += 8;
+		return this;
 	}
 	/**
 	* Write a `int64` value, a signed 64-bit varint.
 	*/
 	int64(value) {
-		let tc = protoInt64.enc(value);
-		varint64write(tc.lo, tc.hi, this.buf);
-		return this;
+		const tc = protoInt64.enc(value);
+		return this.writeVarint64(tc.lo, tc.hi);
 	}
 	/**
 	* Write a `sint64` value, a signed, zig-zag-encoded 64-bit varint.
 	*/
 	sint64(value) {
-		const tc = protoInt64.enc(value), sign = tc.hi >> 31;
-		varint64write(tc.lo << 1 ^ sign, (tc.hi << 1 | tc.lo >>> 31) ^ sign, this.buf);
-		return this;
+		const tc = protoInt64.enc(value), sign = tc.hi >> 31, lo = tc.lo << 1 ^ sign, hi = (tc.hi << 1 | tc.lo >>> 31) ^ sign;
+		return this.writeVarint64(lo, hi);
 	}
 	/**
 	* Write a `uint64` value, an unsigned 64-bit varint.
 	*/
 	uint64(value) {
 		const tc = protoInt64.uEnc(value);
-		varint64write(tc.lo, tc.hi, this.buf);
+		return this.writeVarint64(tc.lo, tc.hi);
+	}
+	/**
+	* Write a 64-bit varint directly into the buffer. Accepts the value as
+	* split low/high 32-bit words.
+	*
+	* Ported from varint64write() to avoid the intermediate number[] buffer.
+	* See https://github.com/protocolbuffers/protobuf/blob/8a71927d74a4ce34efe2d8769fda198f52d20d12/js/experimental/runtime/kernel/writer.js#L344
+	*/
+	writeVarint64(lo, hi) {
+		this.ensureCapacity(10);
+		const buf = this.buffer;
+		let pos = this.pos;
+		for (let i = 0; i < 28; i = i + 7) {
+			const shift = lo >>> i;
+			const hasNext = !(shift >>> 7 == 0 && hi == 0);
+			buf[pos++] = (hasNext ? shift | 128 : shift) & 255;
+			if (!hasNext) {
+				this.pos = pos;
+				return this;
+			}
+		}
+		const splitBits = lo >>> 28 & 15 | (hi & 7) << 4;
+		const hasMoreBits = !(hi >> 3 == 0);
+		buf[pos++] = (hasMoreBits ? splitBits | 128 : splitBits) & 255;
+		if (!hasMoreBits) {
+			this.pos = pos;
+			return this;
+		}
+		for (let i = 3; i < 31; i = i + 7) {
+			const shift = hi >>> i;
+			const hasNext = !(shift >>> 7 == 0);
+			buf[pos++] = (hasNext ? shift | 128 : shift) & 255;
+			if (!hasNext) {
+				this.pos = pos;
+				return this;
+			}
+		}
+		buf[pos++] = hi >>> 31 & 1;
+		this.pos = pos;
 		return this;
 	}
 };
+/**
+* Capacity of the buffer allocated by the first write..
+*/
+const INITIAL_SIZE = 128;
+/**
+* Bytes `fork()` reserves for the length prefix, betting that the payload will
+* be under 128 bytes. `join()` fills them in, and widens them if the bet was
+* wrong.
+*/
+const DEFAULT_LEN_PREFIX_SIZE = 1;
+/**
+* Shared empty buffer used as the initial value before the first write.
+* Avoids allocating and zeroing `INITIAL_SIZE` bytes per BinaryWriter when a
+* writer is only used for a tiny message (or not used at all).
+*/
+const EMPTY_BUFFER = /* @__PURE__ */ new Uint8Array(0);
+/**
+* Shared empty view, paired with `EMPTY_BUFFER`. Never written to: any
+* fixed-width write first grows the buffer, which replaces this view.
+*/
+const EMPTY_VIEW = new DataView(EMPTY_BUFFER.buffer);
+/**
+* Longest string on the ASCII fast paths. Must stay below 0x80, so
+* that the writer's length prefix always fits a single varint byte.
+*/
+const ASCII_MAX_LENGTH = 32;
+/**
+* Number of bytes needed to encode `value` as an unsigned 32-bit varint.
+*/
+function varint32Size(value) {
+	if (value < 128) return 1;
+	if (value < 16384) return 2;
+	if (value < 2097152) return 3;
+	if (value < 268435456) return 4;
+	return 5;
+}
 var BinaryReader = class {
 	constructor(buf, decodeUtf8 = getTextEncoding().decodeUtf8) {
 		this.decodeUtf8 = decodeUtf8;
+		this.varint64Lo = 0;
+		this.varint64Hi = 0;
 		this.varint64 = varint64read;
 		/**
 		* Read a `uint32` field, an unsigned 32 bit varint.
@@ -729,19 +867,23 @@ var BinaryReader = class {
 	* Read a `int64` field, a signed 64-bit varint.
 	*/
 	int64() {
-		return protoInt64.dec(...this.varint64());
+		this.varint64();
+		return protoInt64.dec(this.varint64Lo, this.varint64Hi);
 	}
 	/**
 	* Read a `uint64` field, an unsigned 64-bit varint.
 	*/
 	uint64() {
-		return protoInt64.uDec(...this.varint64());
+		this.varint64();
+		return protoInt64.uDec(this.varint64Lo, this.varint64Hi);
 	}
 	/**
 	* Read a `sint64` field, a signed, zig-zag-encoded 64-bit varint.
 	*/
 	sint64() {
-		let [lo, hi] = this.varint64();
+		this.varint64();
+		let lo = this.varint64Lo;
+		let hi = this.varint64Hi;
 		let s = -(lo & 1);
 		lo = (lo >>> 1 | (hi & 1) << 31) ^ s;
 		hi = hi >>> 1 ^ s;
@@ -751,8 +893,13 @@ var BinaryReader = class {
 	* Read a `bool` field, a variant.
 	*/
 	bool() {
-		let [lo, hi] = this.varint64();
-		return lo !== 0 || hi !== 0;
+		const b = this.buf[this.pos];
+		if (b < 128) {
+			this.pos++;
+			return b !== 0;
+		}
+		this.varint64();
+		return this.varint64Lo !== 0 || this.varint64Hi !== 0;
 	}
 	/**
 	* Read a `fixed32` field, an unsigned, fixed-length 32-bit integer.
@@ -804,7 +951,18 @@ var BinaryReader = class {
 	* `strict` is true, throw on invalid UTF-8 instead of substituting U+FFFD.
 	*/
 	string(strict) {
-		return this.decodeUtf8(this.bytes(), strict);
+		const bytes = this.bytes();
+		const len = bytes.length;
+		if (len <= ASCII_MAX_LENGTH) {
+			const codes = new Array(len);
+			for (let i = 0; i < len; i++) {
+				const byte = bytes[i];
+				if (byte > 127) return this.decodeUtf8(bytes, strict);
+				codes[i] = byte;
+			}
+			return String.fromCharCode.apply(String, codes);
+		}
+		return this.decodeUtf8(bytes, strict);
 	}
 };
 /**
@@ -3174,7 +3332,7 @@ function validateDecryptDataPayload(payload) {
 	validateMetadata(payload.metadata);
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.144.0/helpers/esm/decorate.js
+//#region \0@oxc-project+runtime@0.151.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
 	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3335,7 +3493,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "encryptData", nu
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "decryptData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.5.0";
-const GIT_HASH = "8aaa9db7ab8e25ad5e7f1f973d33af10807eb16b";
+const GIT_HASH = "193a21b11e12aa5db2d912212b35155c6a58685c";
 //#endregion
 export { CryptoBrokerClient, DecryptDataResponse, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataResponse, SignOutputFormat as SignCertificateOutputFormat, SignCertificateResponse, VERSION };
 

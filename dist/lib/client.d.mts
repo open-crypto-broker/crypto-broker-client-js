@@ -55,29 +55,37 @@ declare enum WireType {
   Bit32 = 5
 }
 declare class BinaryWriter {
-  private readonly encodeUtf8;
   /**
-   * We cannot allocate a buffer for the entire output
-   * because we don't know its size.
-   *
-   * So we collect smaller chunks of known size and
-   * concat them later.
-   *
-   * Use `raw()` to push data to this array. It will flush
-   * `buf` first.
+   * Growable byte buffer. We allocate a reasonably sized
+   * initial buffer and double its capacity when needed.
    */
-  private chunks;
+  private buffer;
   /**
-   * A growing buffer for byte values. If you don't know
-   * the size of the data you are writing, push to this
-   * array.
+   * Cached DataView for fixed-width writes. Read it via `view()`, which
+   * rebuilds it if `buffer` has since grown.
    */
-  protected buf: number[];
+  private viewCache;
   /**
-   * Previous fork states.
+   * Current write position in the buffer.
    */
-  private stack;
+  private pos;
+  /**
+   * Previous fork positions (the write position at the time
+   * `fork()` was called).
+   */
+  private stackPos;
+  /**
+   * UTF-8 codec used by `string()`. Uses the text encoding's `encodeUtf8Into`,
+   * or emulates it if a custom `encodeUtf8` was passed to the constructor.
+   */
+  private readonly encodeUtf8Into;
   constructor(encodeUtf8?: (text: string) => Uint8Array);
+  private ensureCapacity;
+  /**
+   * The DataView over `buffer`, rebuilt only if the buffer has grown since it
+   * was last used.
+   */
+  private view;
   /**
    * Return all bytes written and reset this writer.
    */
@@ -166,6 +174,14 @@ declare class BinaryWriter {
    * Write a `uint64` value, an unsigned 64-bit varint.
    */
   uint64(value: string | number | bigint): this;
+  /**
+   * Write a 64-bit varint directly into the buffer. Accepts the value as
+   * split low/high 32-bit words.
+   *
+   * Ported from varint64write() to avoid the intermediate number[] buffer.
+   * See https://github.com/protocolbuffers/protobuf/blob/8a71927d74a4ce34efe2d8769fda198f52d20d12/js/experimental/runtime/kernel/writer.js#L344
+   */
+  private writeVarint64;
 }
 declare class BinaryReader {
   private readonly decodeUtf8;
@@ -177,7 +193,7 @@ declare class BinaryReader {
    * Number of bytes available in this reader.
    */
   readonly len: number;
-  protected readonly buf: Uint8Array;
+  private readonly buf;
   private readonly view;
   constructor(buf: Uint8Array, decodeUtf8?: (bytes: Uint8Array, strict?: boolean) => string);
   /**
@@ -194,11 +210,13 @@ declare class BinaryReader {
    * this method throws.
    */
   skip(wireType: WireType, fieldNo?: number, recursionLimit?: number): Uint8Array;
-  protected varint64: () => [number, number];
+  private varint64Lo;
+  private varint64Hi;
+  private varint64;
   /**
    * Throws error if position in byte array is out of range.
    */
-  protected assertBounds(): void;
+  private assertBounds;
   /**
    * Read a `uint32` field, an unsigned 32 bit varint.
    */
@@ -354,7 +372,7 @@ interface DecryptMetadata {
   aad?: Uint8Array | undefined;
   tag?: Uint8Array | undefined;
 }
-interface HashDataResponse {
+export interface HashDataResponse {
   /** Redundant with descriptor.algorithm; retained for backward compatibility. */
   hashAlgorithm: string;
   metadata: Metadata$1 | undefined;
@@ -363,19 +381,19 @@ interface HashDataResponse {
   descriptor: CryptoDescriptor | undefined;
 }
 /** Response to a SignCertificate Request */
-interface SignCertificateResponse {
+export interface SignCertificateResponse {
   metadata: Metadata$1 | undefined;
   pem?: string | undefined;
   der?: Uint8Array | undefined;
   descriptor: CryptoDescriptor | undefined;
 }
-interface EncryptDataResponse {
+export interface EncryptDataResponse {
   ciphertext: Uint8Array;
   cipherMetadata: CipherMetadata | undefined;
   metadata: Metadata$1 | undefined;
   descriptor: CryptoDescriptor | undefined;
 }
-interface DecryptDataResponse {
+export interface DecryptDataResponse {
   plaintext: Uint8Array;
   metadata: Metadata$1 | undefined;
 }
@@ -391,10 +409,10 @@ declare const KeySource: MessageFns$1<KeySource>;
 declare const EncryptMetadata: MessageFns$1<EncryptMetadata>;
 declare const CipherMetadata: MessageFns$1<CipherMetadata>;
 declare const DecryptMetadata: MessageFns$1<DecryptMetadata>;
-declare const HashDataResponse: MessageFns$1<HashDataResponse>;
-declare const SignCertificateResponse: MessageFns$1<SignCertificateResponse>;
-declare const EncryptDataResponse: MessageFns$1<EncryptDataResponse>;
-declare const DecryptDataResponse: MessageFns$1<DecryptDataResponse>;
+export declare const HashDataResponse: MessageFns$1<HashDataResponse>;
+export declare const SignCertificateResponse: MessageFns$1<SignCertificateResponse>;
+export declare const EncryptDataResponse: MessageFns$1<EncryptDataResponse>;
+export declare const DecryptDataResponse: MessageFns$1<DecryptDataResponse>;
 declare const BenchmarkResponse: MessageFns$1<BenchmarkResponse>;
 type Builtin$1 = Date | Function | Uint8Array | string | number | boolean | bigint | undefined;
 type DeepPartial$1<T> = T extends bigint ? string | number | bigint : T extends Builtin$1 ? T : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial$1<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial$1<U>> : T extends {} ? { [K in keyof T]?: DeepPartial$1<T[K]>; } : Partial<T>;
@@ -436,7 +454,7 @@ interface MessageFns<T> {
 }
 //#endregion
 //#region src/lib/client.d.ts
-interface ConnectOptions {
+export interface ConnectOptions {
   retryAmount: number;
 }
 type CreateCryptoBrokerClientParams = {
@@ -444,27 +462,27 @@ type CreateCryptoBrokerClientParams = {
   circuitBreakerOptions?: CircuitBreakerConfig;
   connectOptions?: ConnectOptions;
 };
-interface TraceContext {
+export interface TraceContext {
   traceId: string;
   spanId: string;
   traceFlags: string;
   traceState: string;
   correlationId: string;
 }
-interface Metadata {
+export interface Metadata {
   id: string;
   traceContext?: TraceContext;
 }
-interface BenchmarkPayload {
+export interface BenchmarkPayload {
   metadata?: Metadata;
 }
-interface HashDataPayload {
+export interface HashDataPayload {
   profile: string;
   input: Uint8Array;
   metadata?: Metadata;
   outputFormat: HashOutputFormat;
 }
-interface SignCertificatePayload {
+export interface SignCertificatePayload {
   profile: string;
   csr: string;
   caPrivateKey: string;
@@ -476,21 +494,21 @@ interface SignCertificatePayload {
   crlDistributionPoints?: string[];
   outputFormat: SignOutputFormat;
 }
-interface EncryptDataPayload {
+export interface EncryptDataPayload {
   profile: string;
   keySource: KeySource;
   plaintext: Uint8Array;
   encryptMetadata: EncryptMetadata;
   metadata?: Metadata;
 }
-interface DecryptDataPayload {
+export interface DecryptDataPayload {
   profile: string;
   keySource: KeySource;
   ciphertext: Uint8Array;
   decryptMetadata: DecryptMetadata;
   metadata?: Metadata;
 }
-declare class CryptoBrokerClient {
+export declare class CryptoBrokerClient {
   private client;
   private healthClient;
   private devClient;
@@ -506,8 +524,8 @@ declare class CryptoBrokerClient {
   decryptData(payload: DecryptDataPayload): Promise<DecryptDataResponse>;
   healthData(): Promise<HealthCheckResponse>;
 }
-declare const VERSION: any;
-declare const GIT_HASH: any;
+export declare const VERSION: any;
+export declare const GIT_HASH: any;
 //#endregion
-export { BenchmarkPayload, ConnectOptions, CryptoBrokerClient, DecryptDataPayload, DecryptDataResponse, EncryptDataPayload, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataPayload, HashDataResponse, Metadata, SignOutputFormat as SignCertificateOutputFormat, SignCertificatePayload, SignCertificateResponse, TraceContext, VERSION };
+export { HashOutputFormat as HashDataOutputFormat, SignOutputFormat as SignCertificateOutputFormat };
 //# sourceMappingURL=client.d.mts.map
