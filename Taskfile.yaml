@@ -1,14 +1,5 @@
 version: '3'
 
-vars:
-  # GNU grep support depending on OS
-  GREP_CMD:
-    sh: |
-      case "$(uname)" in
-        Darwin*) echo ggrep ;;
-        Linux*) echo grep ;;
-      esac
-
 tasks:
   ################# Development Tools ####################
   # Additional resources:
