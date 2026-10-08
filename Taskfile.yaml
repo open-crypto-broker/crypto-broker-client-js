@@ -1,7 +1,6 @@
 version: '3'
 
 vars:
-  PROTOBUF_VERSION: "32.1"
   # GNU grep support depending on OS
   GREP_CMD:
     sh: |
@@ -13,45 +12,13 @@ vars:
 tasks:
   ################# Development Tools ####################
   # Additional resources:
-  # - https://protobuf.dev/getting-started/
-  # - https://protobuf.dev/installation/
+  # - https://buf.build/docs/installation
+  # - https://buf.build/docs/lint/rules
   tools:
     desc: "Download tools required for development"
-    deps: [install-protobuf-compiler]
     cmds:
-      - protoc --version
-
-  # Public task to install the pre-built protobuf compiler depending on the architecture
-  install-protobuf-compiler:
-    desc: "Download and install pre-built protobuf compiler"
-    cmds:
-      - task: install-protobuf-compiler-linux-amd64
-      - task: install-protobuf-compiler-darwin
-
-  install-protobuf-compiler-linux-amd64:
-    desc: "Download and install pre-built protobuf compiler for Linux"
-    internal: true
-    platforms: ["linux/amd64"]
-    cmds:
-      # Create temporary download folder
-      - mkdir tmp-download
-      # Download specified version
-      - cd tmp-download && curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v{{.PROTOBUF_VERSION}}/protoc-{{.PROTOBUF_VERSION}}-linux-x86_64.zip
-      # Unzip download
-      - cd tmp-download && unzip protoc-{{.PROTOBUF_VERSION}}-linux-x86_64.zip -d $HOME/.local/share/protobuf/
-      # Remove temporary download folder
-      - rm -rf tmp-download
-      # Add path to .bashrc if it does not already exists
-      - grep -qx 'export PATH="$PATH:$HOME/.local/share/protobuf/bin"' ~/.bashrc || echo 'export PATH="$PATH:$HOME/.local/share/protobuf/bin"' >> ~/.bashrc
-      # Reload .bashrc
-      - source $HOME/.bashrc
-
-  install-protobuf-compiler-darwin:
-    desc: "Download and install protobuf compiler for Apple/macOS"
-    internal: true
-    platforms: ["darwin"]
-    cmds:
-      - brew install protobuf
+      - npm install
+      - npx buf --version
 
   ################# Build Node.js Client ####################
   build:
@@ -65,12 +32,16 @@ tasks:
     cmds:
       - npm run clean
 
+  proto-update:
+    desc: "Updates the proto files and regenerates JS stubs"
+    cmds:
+      - git submodule update --remote protobuf/
+      - task: proto
+
   proto:
     desc: "Generates JS stubs from proto files"
     cmds:
-      - git submodule update --init --recursive
-      - protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_opt=forceLong=bigint --ts_proto_out=./src/lib/proto -I ./protobuf/ messages.proto
-      - protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./src/lib/proto/third_party/grpc/health/v1/ -I ./protobuf/third_party/grpc/health/v1/ health.proto
+      - npx buf generate
 
   ################# Continuous Improvement Tasks ####################
   npm-ci:
