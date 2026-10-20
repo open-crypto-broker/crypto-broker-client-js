@@ -881,6 +881,19 @@ function signOutputFormatToJSON(object) {
 		default: return "UNRECOGNIZED";
 	}
 }
+/**
+* Output format for signatures produced by SignData and accepted by VerifyData.
+* SIGNATURE_CMS wraps the signature in an RFC 5652 CMS SignedData structure;
+* the other formats carry the bare signature value in the requested encoding.
+*/
+let SignatureFormat = /* @__PURE__ */ function(SignatureFormat) {
+	SignatureFormat[SignatureFormat["SIGNATURE_RAW"] = 0] = "SIGNATURE_RAW";
+	SignatureFormat[SignatureFormat["SIGNATURE_DER"] = 1] = "SIGNATURE_DER";
+	SignatureFormat[SignatureFormat["SIGNATURE_PEM"] = 2] = "SIGNATURE_PEM";
+	SignatureFormat[SignatureFormat["SIGNATURE_CMS"] = 3] = "SIGNATURE_CMS";
+	SignatureFormat[SignatureFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
+	return SignatureFormat;
+}({});
 function signatureFormatFromJSON(object) {
 	switch (object) {
 		case 0:
@@ -3082,6 +3095,10 @@ function assertEnumValue(value, enumType, field) {
 	const stringValues = enumKeysToStringArray(enumType);
 	if (!values.includes(value)) throw typeError(field, `must be one of: ${stringValues.join(", ")}`);
 }
+function assertOptionalEnumValue(value, enumType, field) {
+	if (value === void 0) return;
+	assertEnumValue(value, enumType, field);
+}
 function assertOptionalUint64(value, field) {
 	if (value === void 0) return;
 	if (typeof value === "bigint") {
@@ -3171,6 +3188,55 @@ function validateDecryptDataPayload(payload) {
 	assertOptionalUint8Array(payload.decryptMetadata.tag, "decryptMetadata.tag");
 	if (payload.keySource.keyId === void 0 && payload.keySource.rawKey === void 0) throw typeError("keySource", "missing key source - either keyId or rawKey must be provided");
 	if (payload.keySource.keyId !== void 0 && payload.keySource.rawKey !== void 0) throw typeError("keySource", "too many key sources - either keyId or rawKey must be provided");
+	validateMetadata(payload.metadata);
+}
+function validateSignDataPayload(payload) {
+	assertObject(payload, "payload");
+	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	assertObject(payload.keySource, "keySource");
+	if (payload.keySource.single !== void 0) {
+		assertObject(payload.keySource.single, "keySource.single");
+		assertOptionalString(payload.keySource.single.keyId, "keySource.single.keyId", maxKeyIdLen);
+		assertOptionalUint8Array(payload.keySource.single.rawKey, "keySource.single.rawKey");
+	}
+	if (payload.keySource.componentKeys !== void 0) {
+		assertObject(payload.keySource.componentKeys, "keySource.componentKeys");
+		if (!Array.isArray(payload.keySource.componentKeys.keys)) throw typeError("keySource.componentKeys.keys", "must be an array");
+		payload.keySource.componentKeys.keys.forEach((value, index) => {
+			assertObject(value, `keySource.componentKeys.keys[${index}]`);
+			assertOptionalString(value, "keySource.componentKeys.keys[${index}].keyId", maxKeyIdLen);
+			assertOptionalUint8Array(value, "keySource.componentKeys.keys[${index}].rawKey");
+		});
+	}
+	assertObject(payload.input, "input");
+	assertOptionalEnumValue(payload.signatureFormat, SignatureFormat, "signatureFormat");
+	if (payload.keySource.single !== void 0 && payload.keySource.componentKeys !== void 0) throw typeError("keySource", "too many key sources - either single or componentKeys must be provided");
+	if (payload.keySource.single === void 0 && payload.keySource.componentKeys === void 0) throw typeError("keySource", "missing key source - either single or componentKeys must be provided");
+	validateMetadata(payload.metadata);
+}
+function validateVerifyDataPayload(payload) {
+	assertObject(payload, "payload");
+	assertString(payload.profile, "profile", maxProfileNameLen, true);
+	assertObject(payload.keySource, "keySource");
+	if (payload.keySource.single !== void 0) {
+		assertObject(payload.keySource.single, "keySource.single");
+		assertOptionalString(payload.keySource.single.keyId, "keySource.single.keyId", maxKeyIdLen);
+		assertOptionalUint8Array(payload.keySource.single.rawKey, "keySource.single.rawKey");
+	}
+	if (payload.keySource.componentKeys !== void 0) {
+		assertObject(payload.keySource.componentKeys, "keySource.componentKeys");
+		if (!Array.isArray(payload.keySource.componentKeys.keys)) throw typeError("keySource.componentKeys.keys", "must be an array");
+		payload.keySource.componentKeys.keys.forEach((value, index) => {
+			assertObject(value, `keySource.componentKeys.keys[${index}]`);
+			assertOptionalString(value, "keySource.componentKeys.keys[${index}].keyId", maxKeyIdLen);
+			assertOptionalUint8Array(value, "keySource.componentKeys.keys[${index}].rawKey");
+		});
+	}
+	assertObject(payload.input, "input");
+	assertUint8Array(payload.signature, "signature");
+	assertOptionalEnumValue(payload.signatureFormat, SignatureFormat, "signatureFormat");
+	if (payload.keySource.single !== void 0 && payload.keySource.componentKeys !== void 0) throw typeError("keySource", "too many key sources - either single or componentKeys must be provided");
+	if (payload.keySource.single === void 0 && payload.keySource.componentKeys === void 0) throw typeError("keySource", "missing key source - either single or componentKeys must be provided");
 	validateMetadata(payload.metadata);
 }
 //#endregion
@@ -3323,6 +3389,35 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		};
 		return this.client.DecryptData(req).then((res) => res);
 	}
+	async signData(payload) {
+		validateSignDataPayload(payload);
+		const req = {
+			profile: payload.profile,
+			keySource: payload.keySource,
+			input: payload.input,
+			signatureFormat: payload.signatureFormat,
+			metadata: {
+				id: payload.metadata?.id || randomUUID(),
+				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
+			}
+		};
+		return this.client.SignData(req).then((res) => res);
+	}
+	async verifyData(payload) {
+		validateVerifyDataPayload(payload);
+		const req = {
+			profile: payload.profile,
+			keySource: payload.keySource,
+			input: payload.input,
+			signature: payload.signature,
+			signatureFormat: payload.signatureFormat,
+			metadata: {
+				id: payload.metadata?.id || randomUUID(),
+				...payload.metadata?.traceContext !== void 0 && { traceContext: payload.metadata?.traceContext }
+			}
+		};
+		return this.client.VerifyData(req).then((res) => res);
+	}
 	async healthData() {
 		const req = { service: "" };
 		const status_unknown = { status: 0 };
@@ -3333,10 +3428,12 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "hashData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signCertificate", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "encryptData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "decryptData", null);
+__decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signData", null);
+__decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "verifyData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.5.0";
-const GIT_HASH = "8aaa9db7ab8e25ad5e7f1f973d33af10807eb16b";
+const GIT_HASH = "7b7f10e0251159b7a879f1386eb8ec232b557940";
 //#endregion
-export { CryptoBrokerClient, DecryptDataResponse, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataResponse, SignOutputFormat as SignCertificateOutputFormat, SignCertificateResponse, VERSION };
+export { CryptoBrokerClient, DecryptDataResponse, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataResponse, SignOutputFormat as SignCertificateOutputFormat, SignCertificateResponse, SignDataResponse, SignatureFormat, VERSION };
 
 //# sourceMappingURL=client.mjs.map

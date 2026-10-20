@@ -3,12 +3,15 @@ import type {
   EncryptDataPayload,
   DecryptDataPayload,
   HashDataPayload,
+  SignDataPayload,
+  VerifyDataPayload,
   Metadata,
   SignCertificatePayload,
 } from './client.js';
 import {
   HashOutputFormat as HashDataOutputFormat,
   SignOutputFormat as SignCertificateOutputFormat,
+  SignatureFormat,
   PayloadLimits,
 } from './proto/messages.js';
 
@@ -70,7 +73,6 @@ function assertString(
     throw typeError(field, `too large (max ${max})`);
   }
 }
-
 function assertOptionalString(
   value: unknown,
   field: string,
@@ -102,6 +104,16 @@ function assertEnumValue<E extends Record<string, string | number>>(
   if (!values.includes(value as number)) {
     throw typeError(field, `must be one of: ${stringValues.join(', ')}`);
   }
+}
+function assertOptionalEnumValue<E extends Record<string, string | number>>(
+  value: unknown,
+  enumType: E,
+  field: string,
+): void {
+  if (value === undefined) {
+    return;
+  }
+  assertEnumValue(value, enumType, field);
 }
 
 function assertOptionalUint64(value: unknown, field: string) {
@@ -205,6 +217,7 @@ export function validateHashDataPayload(
     throw typeError('input', `too large (max ${maxHashDataInputBytes})`);
   }
 
+  // Other validations
   validateMetadata(payload.metadata as Metadata | undefined);
 }
 
@@ -249,6 +262,7 @@ export function validateSignCertificatePayload(
     });
   }
 
+  // Other validations
   validateMetadata(payload.metadata as Metadata | undefined);
 }
 
@@ -265,6 +279,7 @@ export function validateEncryptDataPayload(
   assertUint8Array(payload.encryptMetadata.nonce, 'encryptMetadata.nonce');
   assertOptionalUint8Array(payload.encryptMetadata.aad, 'encryptMetadata.aad');
 
+  // Constraints
   if (
     payload.keySource.keyId === undefined &&
     payload.keySource.rawKey === undefined
@@ -300,6 +315,7 @@ export function validateDecryptDataPayload(
   assertOptionalUint8Array(payload.decryptMetadata.aad, 'decryptMetadata.aad');
   assertOptionalUint8Array(payload.decryptMetadata.tag, 'decryptMetadata.tag');
 
+  // Constraints
   if (
     payload.keySource.keyId === undefined &&
     payload.keySource.rawKey === undefined
@@ -319,5 +335,141 @@ export function validateDecryptDataPayload(
     );
   }
 
+  // Other validations
+  validateMetadata(payload.metadata as Metadata | undefined);
+}
+
+export function validateSignDataPayload(
+  payload: unknown,
+): asserts payload is SignDataPayload {
+  assertObject(payload, 'payload');
+  assertString(payload.profile, 'profile', maxProfileNameLen, true);
+  assertObject(payload.keySource, 'keySource');
+  if (payload.keySource.single !== undefined) {
+    assertObject(payload.keySource.single, 'keySource.single');
+    assertOptionalString(
+      payload.keySource.single.keyId,
+      'keySource.single.keyId',
+      maxKeyIdLen,
+    );
+    assertOptionalUint8Array(
+      payload.keySource.single.rawKey,
+      'keySource.single.rawKey',
+    );
+  }
+  if (payload.keySource.componentKeys !== undefined) {
+    assertObject(payload.keySource.componentKeys, 'keySource.componentKeys');
+    if (!Array.isArray(payload.keySource.componentKeys.keys)) {
+      throw typeError('keySource.componentKeys.keys', 'must be an array');
+    }
+    payload.keySource.componentKeys.keys.forEach((value, index) => {
+      assertObject(value, `keySource.componentKeys.keys[${index}]`);
+      assertOptionalString(
+        value,
+        'keySource.componentKeys.keys[${index}].keyId',
+        maxKeyIdLen,
+      );
+      assertOptionalUint8Array(
+        value,
+        'keySource.componentKeys.keys[${index}].rawKey',
+      );
+    });
+  }
+  assertObject(payload.input, 'input');
+  assertOptionalEnumValue(
+    payload.signatureFormat,
+    SignatureFormat,
+    'signatureFormat',
+  );
+
+  // Constraints
+  if (
+    payload.keySource.single !== undefined &&
+    payload.keySource.componentKeys !== undefined
+  ) {
+    throw typeError(
+      'keySource',
+      'too many key sources - either single or componentKeys must be provided',
+    );
+  }
+  if (
+    payload.keySource.single === undefined &&
+    payload.keySource.componentKeys === undefined
+  ) {
+    throw typeError(
+      'keySource',
+      'missing key source - either single or componentKeys must be provided',
+    );
+  }
+
+  // Other validations
+  validateMetadata(payload.metadata as Metadata | undefined);
+}
+
+export function validateVerifyDataPayload(
+  payload: unknown,
+): asserts payload is VerifyDataPayload {
+  assertObject(payload, 'payload');
+  assertString(payload.profile, 'profile', maxProfileNameLen, true);
+  assertObject(payload.keySource, 'keySource');
+  if (payload.keySource.single !== undefined) {
+    assertObject(payload.keySource.single, 'keySource.single');
+    assertOptionalString(
+      payload.keySource.single.keyId,
+      'keySource.single.keyId',
+      maxKeyIdLen,
+    );
+    assertOptionalUint8Array(
+      payload.keySource.single.rawKey,
+      'keySource.single.rawKey',
+    );
+  }
+  if (payload.keySource.componentKeys !== undefined) {
+    assertObject(payload.keySource.componentKeys, 'keySource.componentKeys');
+    if (!Array.isArray(payload.keySource.componentKeys.keys)) {
+      throw typeError('keySource.componentKeys.keys', 'must be an array');
+    }
+    payload.keySource.componentKeys.keys.forEach((value, index) => {
+      assertObject(value, `keySource.componentKeys.keys[${index}]`);
+      assertOptionalString(
+        value,
+        'keySource.componentKeys.keys[${index}].keyId',
+        maxKeyIdLen,
+      );
+      assertOptionalUint8Array(
+        value,
+        'keySource.componentKeys.keys[${index}].rawKey',
+      );
+    });
+  }
+  assertObject(payload.input, 'input');
+  assertUint8Array(payload.signature, 'signature');
+  assertOptionalEnumValue(
+    payload.signatureFormat,
+    SignatureFormat,
+    'signatureFormat',
+  );
+
+  // Constraints
+  if (
+    payload.keySource.single !== undefined &&
+    payload.keySource.componentKeys !== undefined
+  ) {
+    throw typeError(
+      'keySource',
+      'too many key sources - either single or componentKeys must be provided',
+    );
+  }
+  if (
+    payload.keySource.single === undefined &&
+    payload.keySource.componentKeys === undefined
+  ) {
+    throw typeError(
+      'keySource',
+      'missing key source - either single or componentKeys must be provided',
+    );
+  }
+
+  // Other validations
   validateMetadata(payload.metadata as Metadata | undefined);
 }

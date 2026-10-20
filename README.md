@@ -36,6 +36,9 @@ import {
   SignCertificateResponse,
   EncryptDataResponse,
   DecryptDataResponse,
+  SignDataResponse,
+  VerifyDataResponse,
+  SignDataOutputFormat,
   CryptoBrokerClient
 } from "@open-crypto-broker/cryptobroker-client";
 import { randomUUID } from 'crypto';
@@ -110,6 +113,38 @@ const decryptDataResponse: DecryptDataResponse = await cryptoLib.decryptData({
   },
 });
 console.log(`Decrypted Data by CryptoBroker: ${decryptDataResponse.plaintext}`);
+
+const signDataResponse: SignDataResponse = await cryptoLib.signData({
+  profile: profile,
+  keySource: {
+    single: {
+      keyId: myKMSKeyId,
+    },
+  },
+  input: Buffer.from(messageToSign),
+  signatureFormat: SignatureFormat.SIGNATURE_CMS,
+  metadata: {
+    id : randomUUID(),
+  },
+});
+console.log(`Signature: ${signDataResponse.signature}`);
+
+const verifyDataResponse: VerifyDataResponse = await cryptoLib.verifyData({
+  profile: profile,
+  keySource: {
+    single: {
+      keyId: myKMSKeyId,
+    },
+  },
+  input: Buffer.from(signedMessage),
+  signature: Buffer.from(signature),
+  signatureFormat: SignatureFormat.SIGNATURE_CMS,
+  metadata: {
+    id : randomUUID(),
+  },
+});
+console.log(`Signature was ${verifyDataResponse.valid ? 'valid' : 'invalid'}.`);
+
 ```
 
 </details>

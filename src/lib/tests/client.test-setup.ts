@@ -10,6 +10,10 @@ import {
   HashDataResponse,
   SignCertificateRequest,
   SignCertificateResponse,
+  SignDataRequest,
+  SignDataResponse,
+  VerifyDataRequest,
+  VerifyDataResponse,
 } from '../proto/messages.js';
 import {
   HealthCheckRequest,
@@ -123,6 +127,31 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         .mockImplementation(async (input) => {
           return {
             plaintext: Buffer.from('Welcome CryptoBroker'),
+            metadata: {
+              id: input.metadata?.id || 'empty',
+            },
+          };
+        }),
+      SignData: jest
+        .fn<(input: SignDataRequest) => Promise<SignDataResponse>>()
+        .mockImplementation(async (input) => {
+          return {
+            signature: Buffer.from('mocked-signature'),
+            descriptor: {
+              profile: input.profile,
+              operation: 'SignData',
+              algorithm: 'ecdsa-sha-512',
+            },
+            metadata: {
+              id: input.metadata?.id || 'empty',
+            },
+          };
+        }),
+      VerifyData: jest
+        .fn<(input: VerifyDataRequest) => Promise<VerifyDataResponse>>()
+        .mockImplementation(async (input) => {
+          return {
+            valid: true,
             metadata: {
               id: input.metadata?.id || 'empty',
             },

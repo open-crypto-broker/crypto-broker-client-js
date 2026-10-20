@@ -274,6 +274,18 @@ declare enum SignOutputFormat {
   PEM = 1,
   UNRECOGNIZED = -1
 }
+/**
+ * Output format for signatures produced by SignData and accepted by VerifyData.
+ * SIGNATURE_CMS wraps the signature in an RFC 5652 CMS SignedData structure;
+ * the other formats carry the bare signature value in the requested encoding.
+ */
+declare enum SignatureFormat {
+  SIGNATURE_RAW = 0,
+  SIGNATURE_DER = 1,
+  SIGNATURE_PEM = 2,
+  SIGNATURE_CMS = 3,
+  UNRECOGNIZED = -1
+}
 /** Meta-structures shared across other messages and functions */
 interface Metadata$1 {
   id: string;
@@ -324,6 +336,23 @@ interface KeySource {
   rawKey?: Uint8Array | undefined;
 }
 /**
+ * Signing key material for SignData/VerifyData.
+ * Legacy and post-quantum modes use a single KeySource. Hybrid (composite)
+ * mode uses two component keys via componentKeys: the traditional key and the
+ * ML-DSA key. For VerifyData the KeySource(s) carry the corresponding public keys.
+ */
+interface SignKeySource {
+  single?: KeySource | undefined;
+  componentKeys?: ComponentKeys | undefined;
+}
+/**
+ * Ordered list of component key sources for hybrid (composite) signing:
+ * the traditional key followed by the ML-DSA key.
+ */
+interface ComponentKeys {
+  keys: KeySource[];
+}
+/**
  * Caller-supplied encryption parameters. The nonce is always provided by the caller;
  * neither the broker nor the KMS generates it, so the caller owns nonce-uniqueness. AAD is optional.
  */
@@ -369,6 +398,15 @@ interface SignCertificateResponse {
   der?: Uint8Array | undefined;
   descriptor: CryptoDescriptor | undefined;
 }
+interface SignDataResponse {
+  signature: Uint8Array;
+  descriptor: CryptoDescriptor | undefined;
+  metadata: Metadata$1 | undefined;
+}
+interface VerifyDataResponse {
+  valid: boolean;
+  metadata: Metadata$1 | undefined;
+}
 interface EncryptDataResponse {
   ciphertext: Uint8Array;
   cipherMetadata: CipherMetadata | undefined;
@@ -388,11 +426,15 @@ declare const CryptoDescriptor: MessageFns$1<CryptoDescriptor>;
 declare const DeprecationWarning: MessageFns$1<DeprecationWarning>;
 declare const TraceContext$1: MessageFns$1<TraceContext$1>;
 declare const KeySource: MessageFns$1<KeySource>;
+declare const SignKeySource: MessageFns$1<SignKeySource>;
+declare const ComponentKeys: MessageFns$1<ComponentKeys>;
 declare const EncryptMetadata: MessageFns$1<EncryptMetadata>;
 declare const CipherMetadata: MessageFns$1<CipherMetadata>;
 declare const DecryptMetadata: MessageFns$1<DecryptMetadata>;
 declare const HashDataResponse: MessageFns$1<HashDataResponse>;
 declare const SignCertificateResponse: MessageFns$1<SignCertificateResponse>;
+declare const SignDataResponse: MessageFns$1<SignDataResponse>;
+declare const VerifyDataResponse: MessageFns$1<VerifyDataResponse>;
 declare const EncryptDataResponse: MessageFns$1<EncryptDataResponse>;
 declare const DecryptDataResponse: MessageFns$1<DecryptDataResponse>;
 declare const BenchmarkResponse: MessageFns$1<BenchmarkResponse>;
@@ -490,6 +532,21 @@ interface DecryptDataPayload {
   decryptMetadata: DecryptMetadata;
   metadata?: Metadata;
 }
+interface SignDataPayload {
+  profile: string;
+  keySource: SignKeySource;
+  input: Uint8Array;
+  signatureFormat?: SignatureFormat;
+  metadata?: Metadata;
+}
+interface VerifyDataPayload {
+  profile: string;
+  keySource: SignKeySource;
+  input: Uint8Array;
+  signature: Uint8Array;
+  signatureFormat?: SignatureFormat;
+  metadata?: Metadata;
+}
 declare class CryptoBrokerClient {
   private client;
   private healthClient;
@@ -504,10 +561,12 @@ declare class CryptoBrokerClient {
   signCertificate(payload: SignCertificatePayload): Promise<SignCertificateResponse>;
   encryptData(payload: EncryptDataPayload): Promise<EncryptDataResponse>;
   decryptData(payload: DecryptDataPayload): Promise<DecryptDataResponse>;
+  signData(payload: SignDataPayload): Promise<SignDataResponse>;
+  verifyData(payload: VerifyDataPayload): Promise<VerifyDataResponse>;
   healthData(): Promise<HealthCheckResponse>;
 }
 declare const VERSION: any;
 declare const GIT_HASH: any;
 //#endregion
-export { BenchmarkPayload, ConnectOptions, CryptoBrokerClient, DecryptDataPayload, DecryptDataResponse, EncryptDataPayload, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataPayload, HashDataResponse, Metadata, SignOutputFormat as SignCertificateOutputFormat, SignCertificatePayload, SignCertificateResponse, TraceContext, VERSION };
+export { BenchmarkPayload, ConnectOptions, CryptoBrokerClient, DecryptDataPayload, DecryptDataResponse, EncryptDataPayload, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataPayload, HashDataResponse, Metadata, SignOutputFormat as SignCertificateOutputFormat, SignCertificatePayload, SignCertificateResponse, SignDataPayload, SignDataResponse, SignatureFormat, TraceContext, VERSION, VerifyDataPayload };
 //# sourceMappingURL=client.d.mts.map
