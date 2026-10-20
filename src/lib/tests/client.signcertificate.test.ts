@@ -3,7 +3,7 @@ import { CryptoBrokerClient, SignCertificateOutputFormat } from '../client.js';
 import {
   SignCertificateRequest,
   SignCertificateResponse,
-} from '../proto/messages.js';
+} from '../proto/cryptobroker/v1/messages.js';
 import { isUUID4 } from './client.test-utils.js';
 
 describe('CryptoBrokerClient', () => {
@@ -22,7 +22,7 @@ describe('CryptoBrokerClient', () => {
       metadata: { id: 'mocked-id' },
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
-      outputFormat: SignCertificateOutputFormat.PEM,
+      outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
     };
     const response: SignCertificateResponse =
       await client.signCertificate(payload);
@@ -61,7 +61,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         csr: '',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
-        outputFormat: SignCertificateOutputFormat.PEM,
+        outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
     ).rejects.toThrow('csr');
     await expect(
@@ -73,7 +73,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         validNotBefore: BigInt(
           '18446744073709551616', // which is maxUint64 + 1
         ) as unknown as SignCertificateRequest['validNotBefore'],
-        outputFormat: SignCertificateOutputFormat.PEM,
+        outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
     ).rejects.toThrow('validNotBefore');
     await expect(
@@ -83,7 +83,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
         subject: 'A'.repeat(1025),
-        outputFormat: SignCertificateOutputFormat.PEM,
+        outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
     ).rejects.toThrow('subject');
     await expect(
@@ -96,7 +96,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
           { length: 17 },
           () => 'http://example.com/crl',
         ),
-        outputFormat: SignCertificateOutputFormat.PEM,
+        outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
     ).rejects.toThrow('crlDistributionPoints');
     await expect(
@@ -106,7 +106,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
         crlDistributionPoints: [42 as unknown as string],
-        outputFormat: SignCertificateOutputFormat.PEM,
+        outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
     ).rejects.toThrow('crlDistributionPoints[0]');
   });
@@ -133,7 +133,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       validNotAfterOffset: '1',
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
-      outputFormat: SignCertificateOutputFormat.PEM,
+      outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
     };
     const response: SignCertificateResponse =
       await client.signCertificate(payload);
@@ -178,7 +178,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       validNotAfterOffset: '1',
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
-      outputFormat: SignCertificateOutputFormat.PEM,
+      outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
     };
     const response: SignCertificateResponse =
       await client.signCertificate(payload);

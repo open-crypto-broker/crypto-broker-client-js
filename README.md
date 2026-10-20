@@ -38,7 +38,7 @@ import {
   DecryptDataResponse,
   SignDataResponse,
   VerifyDataResponse,
-  SignDataOutputFormat,
+  SignatureFormat,
   CryptoBrokerClient
 } from "@open-crypto-broker/cryptobroker-client";
 import { randomUUID } from 'crypto';
@@ -48,7 +48,7 @@ const cryptoLib = await CryptoBrokerClient.NewLibrary();
 const hashDataResponse: HashDataResponse = await cryptoLib.hashData({
     profile: profile,
     input: Buffer.from(data),
-    outputFormat: HashDataOutputFormat.HEX,
+    outputFormat: HashDataOutputFormat.HASH_OUTPUT_FORMAT_HEX,
     // Optional values
     metadata: {
         id : randomUUID(),
@@ -61,7 +61,7 @@ const signCertificateResponse: SignCertificateResponse = await cryptoLib.signCer
     csr: csr,
     caPrivateKey: caPrivateKey,
     caCert: caCert,
-    outputFormat: SignCertificateOutputFormat.PEM,
+    outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
     // Optional values
     validNotBefore: BigInt(Math.floor(new Date().getTime() / 1000)), // now
     validNotAfter: BigInt(Math.floor(new Date().getTime() / 1000 + 86400 * 30)), // 30 days
@@ -122,7 +122,7 @@ const signDataResponse: SignDataResponse = await cryptoLib.signData({
     },
   },
   input: Buffer.from(messageToSign),
-  signatureFormat: SignatureFormat.SIGNATURE_CMS,
+  signatureFormat: SignatureFormat.SIGNATURE_FORMAT_CMS,
   metadata: {
     id : randomUUID(),
   },
@@ -138,7 +138,7 @@ const verifyDataResponse: VerifyDataResponse = await cryptoLib.verifyData({
   },
   input: Buffer.from(signedMessage),
   signature: Buffer.from(signature),
-  signatureFormat: SignatureFormat.SIGNATURE_CMS,
+  signatureFormat: SignatureFormat.SIGNATURE_FORMAT_CMS,
   metadata: {
     id : randomUUID(),
   },
@@ -161,7 +161,7 @@ client.CryptoBrokerClient.NewLibrary()
   .then((cryptoLib) => cryptoLib.hashData({
     profile: "Default",
     input: Buffer.from("Hello world"),
-    outputFormat: client.HashDataOutputFormat.HEX,
+    outputFormat: client.HashDataOutputFormat.HASH_OUTPUT_FORMAT_HEX,
     // Optional values
     metadata: {
       id: randomUUID(),

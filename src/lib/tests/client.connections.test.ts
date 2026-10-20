@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { CryptoBrokerClient, HashDataOutputFormat } from '../client.js';
 import * as grpc from '@grpc/grpc-js';
 import {
-  CryptoGrpcClientImpl,
+  CryptoServiceClientImpl,
   HashDataRequest,
   HashDataResponse,
-} from '../proto/messages.js';
+} from '../proto/cryptobroker/v1/messages.js';
 
 describe('CryptoBrokerClient', () => {
   let client: CryptoBrokerClient;
@@ -65,7 +65,7 @@ describe('CryptoBrokerClient', () => {
         algorithm: 'ecdsa384-sha3-512',
       },
     };
-    (CryptoGrpcClientImpl as jest.Mock).mockImplementationOnce(() => ({
+    (CryptoServiceClientImpl as jest.Mock).mockImplementationOnce(() => ({
       HashData: jest
         .fn<(input: HashDataRequest) => Promise<HashDataResponse>>()
         .mockResolvedValue(mockedHashDataResponse)
@@ -87,7 +87,7 @@ describe('CryptoBrokerClient', () => {
       profile: 'Default',
       input: Buffer.from('Testing Data'),
       metadata: { id: 'mocked-id' },
-      outputFormat: HashDataOutputFormat.HEX,
+      outputFormat: HashDataOutputFormat.HASH_OUTPUT_FORMAT_HEX,
     };
 
     // the first request should succeed and the circuit remains closed

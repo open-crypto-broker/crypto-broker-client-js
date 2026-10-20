@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { BenchmarkResponse } from '../proto/messages.js';
+import { BenchmarkResponse } from '../proto/cryptobroker/v1/messages.js';
 import { isUUID4 } from './client.test-utils.js';
 import { CryptoBrokerClient } from '../client.js';
 

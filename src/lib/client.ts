@@ -13,8 +13,8 @@ import {
   BenchmarkRequest,
   BenchmarkResponse,
   // GRPC
-  CryptoGrpcClientImpl,
-  CryptoGrpcDevClientImpl,
+  CryptoServiceClientImpl,
+  CryptoDevServiceClientImpl,
   // Data Hashing
   HashOutputFormat as HashDataOutputFormat,
   HashDataRequest,
@@ -32,14 +32,14 @@ import {
   DecryptDataRequest,
   DecryptDataResponse,
   // Data Signing
-  SignatureFormat,
+  SignatureFormat as SignatureFormat,
   SignKeySource,
   SignDataRequest,
   SignDataResponse,
   VerifyDataRequest,
   VerifyDataResponse,
-  MessageSizeLimit,
-} from './proto/messages.js';
+  MessageSizeLimit as MessageSizeLimit,
+} from './proto/cryptobroker/v1/messages.js';
 import {
   HealthCheckRequest,
   HealthCheckResponse,
@@ -135,7 +135,7 @@ export interface SignDataPayload {
   profile: string;
   keySource: SignKeySource;
   input: Uint8Array;
-  signatureFormat?: SignatureFormat;
+  signatureFormat: SignatureFormat;
   metadata?: Metadata;
 }
 export interface VerifyDataPayload {
@@ -143,7 +143,7 @@ export interface VerifyDataPayload {
   keySource: SignKeySource;
   input: Uint8Array;
   signature: Uint8Array;
-  signatureFormat?: SignatureFormat;
+  signatureFormat: SignatureFormat;
   metadata?: Metadata;
 }
 
@@ -182,9 +182,9 @@ function WithCircuitBreaker(
 }
 
 export class CryptoBrokerClient {
-  private client: CryptoGrpcClientImpl;
+  private client: CryptoServiceClientImpl;
   private healthClient: HealthClientImpl;
-  private devClient: CryptoGrpcDevClientImpl;
+  private devClient: CryptoDevServiceClientImpl;
   private address: string;
   private conn: grpc.Client;
   private breakerConfig: CircuitBreakerConfig;
@@ -257,9 +257,9 @@ export class CryptoBrokerClient {
     const hcRpc = {
       request: sendRequest,
     };
-    this.client = new CryptoGrpcClientImpl(rpc);
+    this.client = new CryptoServiceClientImpl(rpc);
     this.healthClient = new HealthClientImpl(hcRpc);
-    this.devClient = new CryptoGrpcDevClientImpl(rpc);
+    this.devClient = new CryptoDevServiceClientImpl(rpc);
   }
 
   static async NewLibrary(

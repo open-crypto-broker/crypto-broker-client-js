@@ -982,7 +982,7 @@ function assertUInt32(arg) {
 	if (!Number.isInteger(arg) || arg > 4294967295 || arg < 0) throw new Error("invalid uint32: " + arg);
 }
 /**
-* Assert a valid protobuf float value as a number or string.
+* Assert a valid protobuf float32 value as a number or string.
 */
 function assertFloat32(arg) {
 	if (typeof arg == "string") {
@@ -990,87 +990,99 @@ function assertFloat32(arg) {
 		arg = Number(arg);
 		if (Number.isNaN(arg) && o !== "NaN") throw new Error("invalid float32: " + o);
 	} else if (typeof arg != "number") throw new Error("invalid float32: " + typeof arg);
-	if (Number.isFinite(arg) && (arg > 34028234663852886e22 || arg < -34028234663852886e22)) throw new Error("invalid float32: " + arg);
+	if (!Number.isFinite(Math.fround(arg)) && Number.isFinite(arg)) throw new Error("invalid float32: " + arg);
 }
 //#endregion
-//#region src/lib/proto/messages.ts
+//#region src/lib/proto/cryptobroker/v1/messages.ts
 /** Output formats */
 let HashOutputFormat = /* @__PURE__ */ function(HashOutputFormat) {
-	HashOutputFormat[HashOutputFormat["HEX"] = 0] = "HEX";
-	HashOutputFormat[HashOutputFormat["RAW"] = 1] = "RAW";
+	HashOutputFormat[HashOutputFormat["HASH_OUTPUT_FORMAT_UNSPECIFIED"] = 0] = "HASH_OUTPUT_FORMAT_UNSPECIFIED";
+	HashOutputFormat[HashOutputFormat["HASH_OUTPUT_FORMAT_HEX"] = 1] = "HASH_OUTPUT_FORMAT_HEX";
+	HashOutputFormat[HashOutputFormat["HASH_OUTPUT_FORMAT_RAW"] = 2] = "HASH_OUTPUT_FORMAT_RAW";
 	HashOutputFormat[HashOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
 	return HashOutputFormat;
 }({});
 function hashOutputFormatFromJSON(object) {
 	switch (object) {
 		case 0:
-		case "HEX": return 0;
+		case "HASH_OUTPUT_FORMAT_UNSPECIFIED": return 0;
 		case 1:
-		case "RAW": return 1;
+		case "HASH_OUTPUT_FORMAT_HEX": return 1;
+		case 2:
+		case "HASH_OUTPUT_FORMAT_RAW": return 2;
 		default: return -1;
 	}
 }
 function hashOutputFormatToJSON(object) {
 	switch (object) {
-		case 0: return "HEX";
-		case 1: return "RAW";
+		case 0: return "HASH_OUTPUT_FORMAT_UNSPECIFIED";
+		case 1: return "HASH_OUTPUT_FORMAT_HEX";
+		case 2: return "HASH_OUTPUT_FORMAT_RAW";
 		default: return "UNRECOGNIZED";
 	}
 }
 let SignOutputFormat = /* @__PURE__ */ function(SignOutputFormat) {
-	SignOutputFormat[SignOutputFormat["DER"] = 0] = "DER";
-	SignOutputFormat[SignOutputFormat["PEM"] = 1] = "PEM";
+	SignOutputFormat[SignOutputFormat["SIGN_OUTPUT_FORMAT_UNSPECIFIED"] = 0] = "SIGN_OUTPUT_FORMAT_UNSPECIFIED";
+	SignOutputFormat[SignOutputFormat["SIGN_OUTPUT_FORMAT_DER"] = 1] = "SIGN_OUTPUT_FORMAT_DER";
+	SignOutputFormat[SignOutputFormat["SIGN_OUTPUT_FORMAT_PEM"] = 2] = "SIGN_OUTPUT_FORMAT_PEM";
 	SignOutputFormat[SignOutputFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
 	return SignOutputFormat;
 }({});
 function signOutputFormatFromJSON(object) {
 	switch (object) {
 		case 0:
-		case "DER": return 0;
+		case "SIGN_OUTPUT_FORMAT_UNSPECIFIED": return 0;
 		case 1:
-		case "PEM": return 1;
+		case "SIGN_OUTPUT_FORMAT_DER": return 1;
+		case 2:
+		case "SIGN_OUTPUT_FORMAT_PEM": return 2;
 		default: return -1;
 	}
 }
 function signOutputFormatToJSON(object) {
 	switch (object) {
-		case 0: return "DER";
-		case 1: return "PEM";
+		case 0: return "SIGN_OUTPUT_FORMAT_UNSPECIFIED";
+		case 1: return "SIGN_OUTPUT_FORMAT_DER";
+		case 2: return "SIGN_OUTPUT_FORMAT_PEM";
 		default: return "UNRECOGNIZED";
 	}
 }
 /**
 * Output format for signatures produced by SignData and accepted by VerifyData.
-* SIGNATURE_CMS wraps the signature in an RFC 5652 CMS SignedData structure;
+* SIGNATURE_FORMAT_CMS wraps the signature in an RFC 5652 CMS SignedData structure;
 * the other formats carry the bare signature value in the requested encoding.
 */
 let SignatureFormat = /* @__PURE__ */ function(SignatureFormat) {
-	SignatureFormat[SignatureFormat["SIGNATURE_RAW"] = 0] = "SIGNATURE_RAW";
-	SignatureFormat[SignatureFormat["SIGNATURE_DER"] = 1] = "SIGNATURE_DER";
-	SignatureFormat[SignatureFormat["SIGNATURE_PEM"] = 2] = "SIGNATURE_PEM";
-	SignatureFormat[SignatureFormat["SIGNATURE_CMS"] = 3] = "SIGNATURE_CMS";
+	SignatureFormat[SignatureFormat["SIGNATURE_FORMAT_UNSPECIFIED"] = 0] = "SIGNATURE_FORMAT_UNSPECIFIED";
+	SignatureFormat[SignatureFormat["SIGNATURE_FORMAT_RAW"] = 1] = "SIGNATURE_FORMAT_RAW";
+	SignatureFormat[SignatureFormat["SIGNATURE_FORMAT_DER"] = 2] = "SIGNATURE_FORMAT_DER";
+	SignatureFormat[SignatureFormat["SIGNATURE_FORMAT_PEM"] = 3] = "SIGNATURE_FORMAT_PEM";
+	SignatureFormat[SignatureFormat["SIGNATURE_FORMAT_CMS"] = 4] = "SIGNATURE_FORMAT_CMS";
 	SignatureFormat[SignatureFormat["UNRECOGNIZED"] = -1] = "UNRECOGNIZED";
 	return SignatureFormat;
 }({});
 function signatureFormatFromJSON(object) {
 	switch (object) {
 		case 0:
-		case "SIGNATURE_RAW": return 0;
+		case "SIGNATURE_FORMAT_UNSPECIFIED": return 0;
 		case 1:
-		case "SIGNATURE_DER": return 1;
+		case "SIGNATURE_FORMAT_RAW": return 1;
 		case 2:
-		case "SIGNATURE_PEM": return 2;
+		case "SIGNATURE_FORMAT_DER": return 2;
 		case 3:
-		case "SIGNATURE_CMS": return 3;
+		case "SIGNATURE_FORMAT_PEM": return 3;
+		case 4:
+		case "SIGNATURE_FORMAT_CMS": return 4;
 		default: return -1;
 	}
 }
 function signatureFormatToJSON(object) {
 	switch (object) {
-		case 0: return "SIGNATURE_RAW";
-		case 1: return "SIGNATURE_DER";
-		case 2: return "SIGNATURE_PEM";
-		case 3: return "SIGNATURE_CMS";
+		case 0: return "SIGNATURE_FORMAT_UNSPECIFIED";
+		case 1: return "SIGNATURE_FORMAT_RAW";
+		case 2: return "SIGNATURE_FORMAT_DER";
+		case 3: return "SIGNATURE_FORMAT_PEM";
+		case 4: return "SIGNATURE_FORMAT_CMS";
 		default: return "UNRECOGNIZED";
 	}
 }
@@ -1090,34 +1102,41 @@ const Metadata = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseMetadata();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.id = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.deprecation = DeprecationWarning.decode(reader, reader.uint32());
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.traceContext = TraceContext.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseMetadata();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.id = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.deprecation = DeprecationWarning.decode(reader, reader.uint32());
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.traceContext = TraceContext.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
 			id: isSet$1(object.id) ? globalThis.String(object.id) : "",
 			deprecation: isSet$1(object.deprecation) ? DeprecationWarning.fromJSON(object.deprecation) : void 0,
-			traceContext: isSet$1(object.traceContext) ? TraceContext.fromJSON(object.traceContext) : void 0
+			traceContext: isSet$1(object.traceContext) ? TraceContext.fromJSON(object.traceContext) : isSet$1(object.trace_context) ? TraceContext.fromJSON(object.trace_context) : void 0
 		};
 	},
 	toJSON(message) {
@@ -1154,28 +1173,35 @@ const CryptoDescriptor = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseCryptoDescriptor();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.profile = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.operation = reader.string();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.algorithm = reader.string();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseCryptoDescriptor();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.profile = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.operation = reader.string();
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.algorithm = reader.string();
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
@@ -1222,43 +1248,50 @@ const DeprecationWarning = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseDeprecationWarning();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.profile = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.replacedBy = reader.string();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.deprecatedSince = reader.string();
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.removeAfter = reader.string();
-					continue;
-				case 5:
-					if (tag !== 42) break;
-					message.reason = reader.string();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseDeprecationWarning();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.profile = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.replacedBy = reader.string();
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.deprecatedSince = reader.string();
+						continue;
+					case 4:
+						if (tag !== 34) break;
+						message.removeAfter = reader.string();
+						continue;
+					case 5:
+						if (tag !== 42) break;
+						message.reason = reader.string();
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
 			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
-			replacedBy: isSet$1(object.replacedBy) ? globalThis.String(object.replacedBy) : void 0,
-			deprecatedSince: isSet$1(object.deprecatedSince) ? globalThis.String(object.deprecatedSince) : void 0,
-			removeAfter: isSet$1(object.removeAfter) ? globalThis.String(object.removeAfter) : void 0,
+			replacedBy: isSet$1(object.replacedBy) ? globalThis.String(object.replacedBy) : isSet$1(object.replaced_by) ? globalThis.String(object.replaced_by) : void 0,
+			deprecatedSince: isSet$1(object.deprecatedSince) ? globalThis.String(object.deprecatedSince) : isSet$1(object.deprecated_since) ? globalThis.String(object.deprecated_since) : void 0,
+			removeAfter: isSet$1(object.removeAfter) ? globalThis.String(object.removeAfter) : isSet$1(object.remove_after) ? globalThis.String(object.remove_after) : void 0,
 			reason: isSet$1(object.reason) ? globalThis.String(object.reason) : void 0
 		};
 	},
@@ -1304,44 +1337,51 @@ const TraceContext = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseTraceContext();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.traceId = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.spanId = reader.string();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.traceFlags = reader.string();
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.traceState = reader.string();
-					continue;
-				case 5:
-					if (tag !== 42) break;
-					message.correlationId = reader.string();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseTraceContext();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.traceId = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.spanId = reader.string();
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.traceFlags = reader.string();
+						continue;
+					case 4:
+						if (tag !== 34) break;
+						message.traceState = reader.string();
+						continue;
+					case 5:
+						if (tag !== 42) break;
+						message.correlationId = reader.string();
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
-			traceId: isSet$1(object.traceId) ? globalThis.String(object.traceId) : "",
-			spanId: isSet$1(object.spanId) ? globalThis.String(object.spanId) : "",
-			traceFlags: isSet$1(object.traceFlags) ? globalThis.String(object.traceFlags) : "",
-			traceState: isSet$1(object.traceState) ? globalThis.String(object.traceState) : "",
-			correlationId: isSet$1(object.correlationId) ? globalThis.String(object.correlationId) : ""
+			traceId: isSet$1(object.traceId) ? globalThis.String(object.traceId) : isSet$1(object.trace_id) ? globalThis.String(object.trace_id) : "",
+			spanId: isSet$1(object.spanId) ? globalThis.String(object.spanId) : isSet$1(object.span_id) ? globalThis.String(object.span_id) : "",
+			traceFlags: isSet$1(object.traceFlags) ? globalThis.String(object.traceFlags) : isSet$1(object.trace_flags) ? globalThis.String(object.trace_flags) : "",
+			traceState: isSet$1(object.traceState) ? globalThis.String(object.traceState) : isSet$1(object.trace_state) ? globalThis.String(object.trace_state) : "",
+			correlationId: isSet$1(object.correlationId) ? globalThis.String(object.correlationId) : isSet$1(object.correlation_id) ? globalThis.String(object.correlation_id) : ""
 		};
 	},
 	toJSON(message) {
@@ -1380,29 +1420,36 @@ const KeySource = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseKeySource();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.keyId = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.rawKey = reader.bytes();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseKeySource();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.keyId = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.rawKey = reader.bytes();
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
-			keyId: isSet$1(object.keyId) ? globalThis.String(object.keyId) : void 0,
-			rawKey: isSet$1(object.rawKey) ? bytesFromBase64(object.rawKey) : void 0
+			keyId: isSet$1(object.keyId) ? globalThis.String(object.keyId) : isSet$1(object.key_id) ? globalThis.String(object.key_id) : void 0,
+			rawKey: isSet$1(object.rawKey) ? bytesFromBase64(object.rawKey) : isSet$1(object.raw_key) ? bytesFromBase64(object.raw_key) : void 0
 		};
 	},
 	toJSON(message) {
@@ -1435,29 +1482,36 @@ const SignKeySource = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseSignKeySource();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.single = KeySource.decode(reader, reader.uint32());
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.componentKeys = ComponentKeys.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseSignKeySource();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.single = KeySource.decode(reader, reader.uint32());
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.componentKeys = ComponentKeys.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
 			single: isSet$1(object.single) ? KeySource.fromJSON(object.single) : void 0,
-			componentKeys: isSet$1(object.componentKeys) ? ComponentKeys.fromJSON(object.componentKeys) : void 0
+			componentKeys: isSet$1(object.componentKeys) ? ComponentKeys.fromJSON(object.componentKeys) : isSet$1(object.component_keys) ? ComponentKeys.fromJSON(object.component_keys) : void 0
 		};
 	},
 	toJSON(message) {
@@ -1486,20 +1540,27 @@ const ComponentKeys = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseComponentKeys();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.keys.push(KeySource.decode(reader, reader.uint32()));
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseComponentKeys();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.keys.push(KeySource.decode(reader, reader.uint32()));
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return { keys: globalThis.Array.isArray(object?.keys) ? object.keys.map((e) => KeySource.fromJSON(e)) : [] };
@@ -1532,24 +1593,31 @@ const EncryptMetadata = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseEncryptMetadata();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.nonce = reader.bytes();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.aad = reader.bytes();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseEncryptMetadata();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.nonce = reader.bytes();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.aad = reader.bytes();
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
@@ -1591,36 +1659,43 @@ const CipherMetadata = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseCipherMetadata();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.keyId = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.nonce = reader.bytes();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.aad = reader.bytes();
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.tag = reader.bytes();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseCipherMetadata();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.keyId = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.nonce = reader.bytes();
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.aad = reader.bytes();
+						continue;
+					case 4:
+						if (tag !== 34) break;
+						message.tag = reader.bytes();
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
-			keyId: isSet$1(object.keyId) ? globalThis.String(object.keyId) : void 0,
+			keyId: isSet$1(object.keyId) ? globalThis.String(object.keyId) : isSet$1(object.key_id) ? globalThis.String(object.key_id) : void 0,
 			nonce: isSet$1(object.nonce) ? bytesFromBase64(object.nonce) : /* @__PURE__ */ new Uint8Array(0),
 			aad: isSet$1(object.aad) ? bytesFromBase64(object.aad) : void 0,
 			tag: isSet$1(object.tag) ? bytesFromBase64(object.tag) : void 0
@@ -1662,28 +1737,35 @@ const DecryptMetadata = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseDecryptMetadata();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.nonce = reader.bytes();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.aad = reader.bytes();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.tag = reader.bytes();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseDecryptMetadata();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.nonce = reader.bytes();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.aad = reader.bytes();
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.tag = reader.bytes();
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
@@ -1714,61 +1796,68 @@ function createBaseHashDataRequest() {
 	return {
 		profile: "",
 		input: /* @__PURE__ */ new Uint8Array(0),
-		metadata: void 0,
-		outputFormat: 0
+		outputFormat: 0,
+		metadata: void 0
 	};
 }
 const HashDataRequest = {
 	encode(message, writer = new BinaryWriter()) {
 		if (message.profile !== "") writer.uint32(10).string(message.profile);
 		if (message.input.length !== 0) writer.uint32(18).bytes(message.input);
-		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
 		if (message.outputFormat !== 0) writer.uint32(32).int32(message.outputFormat);
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseHashDataRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.profile = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.input = reader.bytes();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
-				case 4:
-					if (tag !== 32) break;
-					message.outputFormat = reader.int32();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseHashDataRequest();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.profile = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.input = reader.bytes();
+						continue;
+					case 4:
+						if (tag !== 32) break;
+						message.outputFormat = reader.int32();
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
 			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
 			input: isSet$1(object.input) ? bytesFromBase64(object.input) : /* @__PURE__ */ new Uint8Array(0),
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
-			outputFormat: isSet$1(object.outputFormat) ? hashOutputFormatFromJSON(object.outputFormat) : 0
+			outputFormat: isSet$1(object.outputFormat) ? hashOutputFormatFromJSON(object.outputFormat) : isSet$1(object.output_format) ? hashOutputFormatFromJSON(object.output_format) : 0,
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
 	toJSON(message) {
 		const obj = {};
 		if (message.profile !== "") obj.profile = message.profile;
 		if (message.input.length !== 0) obj.input = base64FromBytes(message.input);
-		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		if (message.outputFormat !== 0) obj.outputFormat = hashOutputFormatToJSON(message.outputFormat);
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		return obj;
 	},
 	create(base) {
@@ -1778,78 +1867,77 @@ const HashDataRequest = {
 		const message = createBaseHashDataRequest();
 		message.profile = object.profile ?? "";
 		message.input = object.input ?? /* @__PURE__ */ new Uint8Array(0);
-		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		message.outputFormat = object.outputFormat ?? 0;
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		return message;
 	}
 };
 function createBaseHashDataResponse() {
 	return {
-		hashAlgorithm: "",
-		metadata: void 0,
 		hashValueHex: void 0,
 		hashValueRaw: void 0,
-		descriptor: void 0
+		descriptor: void 0,
+		metadata: void 0
 	};
 }
 const HashDataResponse = {
 	encode(message, writer = new BinaryWriter()) {
-		if (message.hashAlgorithm !== "") writer.uint32(18).string(message.hashAlgorithm);
-		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
-		if (message.hashValueHex !== void 0) writer.uint32(34).string(message.hashValueHex);
-		if (message.hashValueRaw !== void 0) writer.uint32(42).bytes(message.hashValueRaw);
-		if (message.descriptor !== void 0) CryptoDescriptor.encode(message.descriptor, writer.uint32(50).fork()).join();
+		if (message.hashValueHex !== void 0) writer.uint32(18).string(message.hashValueHex);
+		if (message.hashValueRaw !== void 0) writer.uint32(26).bytes(message.hashValueRaw);
+		if (message.descriptor !== void 0) CryptoDescriptor.encode(message.descriptor, writer.uint32(34).fork()).join();
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseHashDataResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 2:
-					if (tag !== 18) break;
-					message.hashAlgorithm = reader.string();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.hashValueHex = reader.string();
-					continue;
-				case 5:
-					if (tag !== 42) break;
-					message.hashValueRaw = reader.bytes();
-					continue;
-				case 6:
-					if (tag !== 50) break;
-					message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseHashDataResponse();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 2:
+						if (tag !== 18) break;
+						message.hashValueHex = reader.string();
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.hashValueRaw = reader.bytes();
+						continue;
+					case 4:
+						if (tag !== 34) break;
+						message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+						continue;
+					case 1:
+						if (tag !== 10) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
-			hashAlgorithm: isSet$1(object.hashAlgorithm) ? globalThis.String(object.hashAlgorithm) : "",
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
-			hashValueHex: isSet$1(object.hashValueHex) ? globalThis.String(object.hashValueHex) : void 0,
-			hashValueRaw: isSet$1(object.hashValueRaw) ? bytesFromBase64(object.hashValueRaw) : void 0,
-			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0
+			hashValueHex: isSet$1(object.hashValueHex) ? globalThis.String(object.hashValueHex) : isSet$1(object.hash_value_hex) ? globalThis.String(object.hash_value_hex) : void 0,
+			hashValueRaw: isSet$1(object.hashValueRaw) ? bytesFromBase64(object.hashValueRaw) : isSet$1(object.hash_value_raw) ? bytesFromBase64(object.hash_value_raw) : void 0,
+			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0,
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
 	toJSON(message) {
 		const obj = {};
-		if (message.hashAlgorithm !== "") obj.hashAlgorithm = message.hashAlgorithm;
-		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		if (message.hashValueHex !== void 0) obj.hashValueHex = message.hashValueHex;
 		if (message.hashValueRaw !== void 0) obj.hashValueRaw = base64FromBytes(message.hashValueRaw);
 		if (message.descriptor !== void 0) obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		return obj;
 	},
 	create(base) {
@@ -1857,11 +1945,10 @@ const HashDataResponse = {
 	},
 	fromPartial(object) {
 		const message = createBaseHashDataResponse();
-		message.hashAlgorithm = object.hashAlgorithm ?? "";
-		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		message.hashValueHex = object.hashValueHex ?? void 0;
 		message.hashValueRaw = object.hashValueRaw ?? void 0;
 		message.descriptor = object.descriptor !== void 0 && object.descriptor !== null ? CryptoDescriptor.fromPartial(object.descriptor) : void 0;
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		return message;
 	}
 };
@@ -1871,12 +1958,12 @@ function createBaseSignCertificateRequest() {
 		csr: "",
 		caPrivateKey: "",
 		caCert: "",
-		metadata: void 0,
 		validNotBefore: void 0,
 		validNotAfter: void 0,
 		subject: void 0,
 		crlDistributionPoints: [],
-		outputFormat: 0
+		outputFormat: 0,
+		metadata: void 0
 	};
 }
 const SignCertificateRequest = {
@@ -1885,7 +1972,6 @@ const SignCertificateRequest = {
 		if (message.csr !== "") writer.uint32(18).string(message.csr);
 		if (message.caPrivateKey !== "") writer.uint32(26).string(message.caPrivateKey);
 		if (message.caCert !== "") writer.uint32(34).string(message.caCert);
-		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(42).fork()).join();
 		if (message.validNotBefore !== void 0) {
 			if (BigInt.asUintN(64, message.validNotBefore) !== message.validNotBefore) throw new globalThis.Error("value provided for field message.validNotBefore of type uint64 too large");
 			writer.uint32(48).uint64(message.validNotBefore);
@@ -1897,73 +1983,81 @@ const SignCertificateRequest = {
 		if (message.subject !== void 0) writer.uint32(66).string(message.subject);
 		for (const v of message.crlDistributionPoints) writer.uint32(74).string(v);
 		if (message.outputFormat !== 0) writer.uint32(80).int32(message.outputFormat);
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(42).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseSignCertificateRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.profile = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.csr = reader.string();
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.caPrivateKey = reader.string();
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.caCert = reader.string();
-					continue;
-				case 5:
-					if (tag !== 42) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
-				case 6:
-					if (tag !== 48) break;
-					message.validNotBefore = reader.uint64();
-					continue;
-				case 7:
-					if (tag !== 56) break;
-					message.validNotAfter = reader.uint64();
-					continue;
-				case 8:
-					if (tag !== 66) break;
-					message.subject = reader.string();
-					continue;
-				case 9:
-					if (tag !== 74) break;
-					message.crlDistributionPoints.push(reader.string());
-					continue;
-				case 10:
-					if (tag !== 80) break;
-					message.outputFormat = reader.int32();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseSignCertificateRequest();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.profile = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.csr = reader.string();
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.caPrivateKey = reader.string();
+						continue;
+					case 4:
+						if (tag !== 34) break;
+						message.caCert = reader.string();
+						continue;
+					case 6:
+						if (tag !== 48) break;
+						message.validNotBefore = reader.uint64();
+						continue;
+					case 7:
+						if (tag !== 56) break;
+						message.validNotAfter = reader.uint64();
+						continue;
+					case 8:
+						if (tag !== 66) break;
+						message.subject = reader.string();
+						continue;
+					case 9:
+						if (tag !== 74) break;
+						message.crlDistributionPoints.push(reader.string());
+						continue;
+					case 10:
+						if (tag !== 80) break;
+						message.outputFormat = reader.int32();
+						continue;
+					case 5:
+						if (tag !== 42) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
 			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
 			csr: isSet$1(object.csr) ? globalThis.String(object.csr) : "",
-			caPrivateKey: isSet$1(object.caPrivateKey) ? globalThis.String(object.caPrivateKey) : "",
-			caCert: isSet$1(object.caCert) ? globalThis.String(object.caCert) : "",
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
-			validNotBefore: isSet$1(object.validNotBefore) ? BigInt(object.validNotBefore) : void 0,
-			validNotAfter: isSet$1(object.validNotAfter) ? BigInt(object.validNotAfter) : void 0,
+			caPrivateKey: isSet$1(object.caPrivateKey) ? globalThis.String(object.caPrivateKey) : isSet$1(object.ca_private_key) ? globalThis.String(object.ca_private_key) : "",
+			caCert: isSet$1(object.caCert) ? globalThis.String(object.caCert) : isSet$1(object.ca_cert) ? globalThis.String(object.ca_cert) : "",
+			validNotBefore: isSet$1(object.validNotBefore) ? BigInt(object.validNotBefore) : isSet$1(object.valid_not_before) ? BigInt(object.valid_not_before) : void 0,
+			validNotAfter: isSet$1(object.validNotAfter) ? BigInt(object.validNotAfter) : isSet$1(object.valid_not_after) ? BigInt(object.valid_not_after) : void 0,
 			subject: isSet$1(object.subject) ? globalThis.String(object.subject) : void 0,
-			crlDistributionPoints: globalThis.Array.isArray(object?.crlDistributionPoints) ? object.crlDistributionPoints.map((e) => globalThis.String(e)) : [],
-			outputFormat: isSet$1(object.outputFormat) ? signOutputFormatFromJSON(object.outputFormat) : 0
+			crlDistributionPoints: globalThis.Array.isArray(object?.crlDistributionPoints) ? object.crlDistributionPoints.map((e) => globalThis.String(e)) : globalThis.Array.isArray(object?.crl_distribution_points) ? object.crl_distribution_points.map((e) => globalThis.String(e)) : [],
+			outputFormat: isSet$1(object.outputFormat) ? signOutputFormatFromJSON(object.outputFormat) : isSet$1(object.output_format) ? signOutputFormatFromJSON(object.output_format) : 0,
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
 	toJSON(message) {
@@ -1972,12 +2066,12 @@ const SignCertificateRequest = {
 		if (message.csr !== "") obj.csr = message.csr;
 		if (message.caPrivateKey !== "") obj.caPrivateKey = message.caPrivateKey;
 		if (message.caCert !== "") obj.caCert = message.caCert;
-		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		if (message.validNotBefore !== void 0) obj.validNotBefore = message.validNotBefore.toString();
 		if (message.validNotAfter !== void 0) obj.validNotAfter = message.validNotAfter.toString();
 		if (message.subject !== void 0) obj.subject = message.subject;
 		if (message.crlDistributionPoints?.length) obj.crlDistributionPoints = message.crlDistributionPoints;
 		if (message.outputFormat !== 0) obj.outputFormat = signOutputFormatToJSON(message.outputFormat);
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		return obj;
 	},
 	create(base) {
@@ -1989,74 +2083,81 @@ const SignCertificateRequest = {
 		message.csr = object.csr ?? "";
 		message.caPrivateKey = object.caPrivateKey ?? "";
 		message.caCert = object.caCert ?? "";
-		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		message.validNotBefore = object.validNotBefore !== void 0 && object.validNotBefore !== null ? BigInt(object.validNotBefore) : void 0;
 		message.validNotAfter = object.validNotAfter !== void 0 && object.validNotAfter !== null ? BigInt(object.validNotAfter) : void 0;
 		message.subject = object.subject ?? void 0;
 		message.crlDistributionPoints = object.crlDistributionPoints?.map((e) => e) || [];
 		message.outputFormat = object.outputFormat ?? 0;
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		return message;
 	}
 };
 function createBaseSignCertificateResponse() {
 	return {
-		metadata: void 0,
 		pem: void 0,
 		der: void 0,
-		descriptor: void 0
+		descriptor: void 0,
+		metadata: void 0
 	};
 }
 const SignCertificateResponse = {
 	encode(message, writer = new BinaryWriter()) {
-		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(18).fork()).join();
-		if (message.pem !== void 0) writer.uint32(26).string(message.pem);
-		if (message.der !== void 0) writer.uint32(34).bytes(message.der);
-		if (message.descriptor !== void 0) CryptoDescriptor.encode(message.descriptor, writer.uint32(42).fork()).join();
+		if (message.pem !== void 0) writer.uint32(18).string(message.pem);
+		if (message.der !== void 0) writer.uint32(26).bytes(message.der);
+		if (message.descriptor !== void 0) CryptoDescriptor.encode(message.descriptor, writer.uint32(34).fork()).join();
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(10).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseSignCertificateResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 2:
-					if (tag !== 18) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.pem = reader.string();
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.der = reader.bytes();
-					continue;
-				case 5:
-					if (tag !== 42) break;
-					message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseSignCertificateResponse();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 2:
+						if (tag !== 18) break;
+						message.pem = reader.string();
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.der = reader.bytes();
+						continue;
+					case 4:
+						if (tag !== 34) break;
+						message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+						continue;
+					case 1:
+						if (tag !== 10) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
 			pem: isSet$1(object.pem) ? globalThis.String(object.pem) : void 0,
 			der: isSet$1(object.der) ? bytesFromBase64(object.der) : void 0,
-			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0
+			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0,
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
 	toJSON(message) {
 		const obj = {};
-		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		if (message.pem !== void 0) obj.pem = message.pem;
 		if (message.der !== void 0) obj.der = base64FromBytes(message.der);
 		if (message.descriptor !== void 0) obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		return obj;
 	},
 	create(base) {
@@ -2064,10 +2165,10 @@ const SignCertificateResponse = {
 	},
 	fromPartial(object) {
 		const message = createBaseSignCertificateResponse();
-		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		message.pem = object.pem ?? void 0;
 		message.der = object.der ?? void 0;
 		message.descriptor = object.descriptor !== void 0 && object.descriptor !== null ? CryptoDescriptor.fromPartial(object.descriptor) : void 0;
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		return message;
 	}
 };
@@ -2076,7 +2177,7 @@ function createBaseSignDataRequest() {
 		profile: "",
 		keySource: void 0,
 		input: /* @__PURE__ */ new Uint8Array(0),
-		signatureFormat: void 0,
+		signatureFormat: 0,
 		metadata: void 0
 	};
 }
@@ -2085,49 +2186,56 @@ const SignDataRequest = {
 		if (message.profile !== "") writer.uint32(10).string(message.profile);
 		if (message.keySource !== void 0) SignKeySource.encode(message.keySource, writer.uint32(18).fork()).join();
 		if (message.input.length !== 0) writer.uint32(26).bytes(message.input);
-		if (message.signatureFormat !== void 0) writer.uint32(32).int32(message.signatureFormat);
+		if (message.signatureFormat !== 0) writer.uint32(32).int32(message.signatureFormat);
 		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(42).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseSignDataRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.profile = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.keySource = SignKeySource.decode(reader, reader.uint32());
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.input = reader.bytes();
-					continue;
-				case 4:
-					if (tag !== 32) break;
-					message.signatureFormat = reader.int32();
-					continue;
-				case 5:
-					if (tag !== 42) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseSignDataRequest();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.profile = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.keySource = SignKeySource.decode(reader, reader.uint32());
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.input = reader.bytes();
+						continue;
+					case 4:
+						if (tag !== 32) break;
+						message.signatureFormat = reader.int32();
+						continue;
+					case 5:
+						if (tag !== 42) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
 			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
-			keySource: isSet$1(object.keySource) ? SignKeySource.fromJSON(object.keySource) : void 0,
+			keySource: isSet$1(object.keySource) ? SignKeySource.fromJSON(object.keySource) : isSet$1(object.key_source) ? SignKeySource.fromJSON(object.key_source) : void 0,
 			input: isSet$1(object.input) ? bytesFromBase64(object.input) : /* @__PURE__ */ new Uint8Array(0),
-			signatureFormat: isSet$1(object.signatureFormat) ? signatureFormatFromJSON(object.signatureFormat) : void 0,
+			signatureFormat: isSet$1(object.signatureFormat) ? signatureFormatFromJSON(object.signatureFormat) : isSet$1(object.signature_format) ? signatureFormatFromJSON(object.signature_format) : 0,
 			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
@@ -2136,7 +2244,7 @@ const SignDataRequest = {
 		if (message.profile !== "") obj.profile = message.profile;
 		if (message.keySource !== void 0) obj.keySource = SignKeySource.toJSON(message.keySource);
 		if (message.input.length !== 0) obj.input = base64FromBytes(message.input);
-		if (message.signatureFormat !== void 0) obj.signatureFormat = signatureFormatToJSON(message.signatureFormat);
+		if (message.signatureFormat !== 0) obj.signatureFormat = signatureFormatToJSON(message.signatureFormat);
 		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		return obj;
 	},
@@ -2148,7 +2256,7 @@ const SignDataRequest = {
 		message.profile = object.profile ?? "";
 		message.keySource = object.keySource !== void 0 && object.keySource !== null ? SignKeySource.fromPartial(object.keySource) : void 0;
 		message.input = object.input ?? /* @__PURE__ */ new Uint8Array(0);
-		message.signatureFormat = object.signatureFormat ?? void 0;
+		message.signatureFormat = object.signatureFormat ?? 0;
 		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		return message;
 	}
@@ -2169,28 +2277,35 @@ const SignDataResponse = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseSignDataResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.signature = reader.bytes();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseSignDataResponse();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.signature = reader.bytes();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
@@ -2223,7 +2338,7 @@ function createBaseVerifyDataRequest() {
 		keySource: void 0,
 		input: /* @__PURE__ */ new Uint8Array(0),
 		signature: /* @__PURE__ */ new Uint8Array(0),
-		signatureFormat: void 0,
+		signatureFormat: 0,
 		metadata: void 0
 	};
 }
@@ -2233,54 +2348,61 @@ const VerifyDataRequest = {
 		if (message.keySource !== void 0) SignKeySource.encode(message.keySource, writer.uint32(18).fork()).join();
 		if (message.input.length !== 0) writer.uint32(26).bytes(message.input);
 		if (message.signature.length !== 0) writer.uint32(34).bytes(message.signature);
-		if (message.signatureFormat !== void 0) writer.uint32(40).int32(message.signatureFormat);
+		if (message.signatureFormat !== 0) writer.uint32(40).int32(message.signatureFormat);
 		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(50).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseVerifyDataRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.profile = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.keySource = SignKeySource.decode(reader, reader.uint32());
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.input = reader.bytes();
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.signature = reader.bytes();
-					continue;
-				case 5:
-					if (tag !== 40) break;
-					message.signatureFormat = reader.int32();
-					continue;
-				case 6:
-					if (tag !== 50) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseVerifyDataRequest();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.profile = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.keySource = SignKeySource.decode(reader, reader.uint32());
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.input = reader.bytes();
+						continue;
+					case 4:
+						if (tag !== 34) break;
+						message.signature = reader.bytes();
+						continue;
+					case 5:
+						if (tag !== 40) break;
+						message.signatureFormat = reader.int32();
+						continue;
+					case 6:
+						if (tag !== 50) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
 			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
-			keySource: isSet$1(object.keySource) ? SignKeySource.fromJSON(object.keySource) : void 0,
+			keySource: isSet$1(object.keySource) ? SignKeySource.fromJSON(object.keySource) : isSet$1(object.key_source) ? SignKeySource.fromJSON(object.key_source) : void 0,
 			input: isSet$1(object.input) ? bytesFromBase64(object.input) : /* @__PURE__ */ new Uint8Array(0),
 			signature: isSet$1(object.signature) ? bytesFromBase64(object.signature) : /* @__PURE__ */ new Uint8Array(0),
-			signatureFormat: isSet$1(object.signatureFormat) ? signatureFormatFromJSON(object.signatureFormat) : void 0,
+			signatureFormat: isSet$1(object.signatureFormat) ? signatureFormatFromJSON(object.signatureFormat) : isSet$1(object.signature_format) ? signatureFormatFromJSON(object.signature_format) : 0,
 			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
@@ -2290,7 +2412,7 @@ const VerifyDataRequest = {
 		if (message.keySource !== void 0) obj.keySource = SignKeySource.toJSON(message.keySource);
 		if (message.input.length !== 0) obj.input = base64FromBytes(message.input);
 		if (message.signature.length !== 0) obj.signature = base64FromBytes(message.signature);
-		if (message.signatureFormat !== void 0) obj.signatureFormat = signatureFormatToJSON(message.signatureFormat);
+		if (message.signatureFormat !== 0) obj.signatureFormat = signatureFormatToJSON(message.signatureFormat);
 		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		return obj;
 	},
@@ -2303,7 +2425,7 @@ const VerifyDataRequest = {
 		message.keySource = object.keySource !== void 0 && object.keySource !== null ? SignKeySource.fromPartial(object.keySource) : void 0;
 		message.input = object.input ?? /* @__PURE__ */ new Uint8Array(0);
 		message.signature = object.signature ?? /* @__PURE__ */ new Uint8Array(0);
-		message.signatureFormat = object.signatureFormat ?? void 0;
+		message.signatureFormat = object.signatureFormat ?? 0;
 		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		return message;
 	}
@@ -2322,24 +2444,31 @@ const VerifyDataResponse = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseVerifyDataResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 8) break;
-					message.valid = reader.bool();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseVerifyDataResponse();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 8) break;
+						message.valid = reader.bool();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
@@ -2383,43 +2512,50 @@ const EncryptDataRequest = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseEncryptDataRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.profile = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.keySource = KeySource.decode(reader, reader.uint32());
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.plaintext = reader.bytes();
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.encryptMetadata = EncryptMetadata.decode(reader, reader.uint32());
-					continue;
-				case 5:
-					if (tag !== 42) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseEncryptDataRequest();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.profile = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.keySource = KeySource.decode(reader, reader.uint32());
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.plaintext = reader.bytes();
+						continue;
+					case 4:
+						if (tag !== 34) break;
+						message.encryptMetadata = EncryptMetadata.decode(reader, reader.uint32());
+						continue;
+					case 5:
+						if (tag !== 42) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
 			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
-			keySource: isSet$1(object.keySource) ? KeySource.fromJSON(object.keySource) : void 0,
+			keySource: isSet$1(object.keySource) ? KeySource.fromJSON(object.keySource) : isSet$1(object.key_source) ? KeySource.fromJSON(object.key_source) : void 0,
 			plaintext: isSet$1(object.plaintext) ? bytesFromBase64(object.plaintext) : /* @__PURE__ */ new Uint8Array(0),
-			encryptMetadata: isSet$1(object.encryptMetadata) ? EncryptMetadata.fromJSON(object.encryptMetadata) : void 0,
+			encryptMetadata: isSet$1(object.encryptMetadata) ? EncryptMetadata.fromJSON(object.encryptMetadata) : isSet$1(object.encrypt_metadata) ? EncryptMetadata.fromJSON(object.encrypt_metadata) : void 0,
 			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
@@ -2449,61 +2585,68 @@ function createBaseEncryptDataResponse() {
 	return {
 		ciphertext: /* @__PURE__ */ new Uint8Array(0),
 		cipherMetadata: void 0,
-		metadata: void 0,
-		descriptor: void 0
+		descriptor: void 0,
+		metadata: void 0
 	};
 }
 const EncryptDataResponse = {
 	encode(message, writer = new BinaryWriter()) {
 		if (message.ciphertext.length !== 0) writer.uint32(10).bytes(message.ciphertext);
 		if (message.cipherMetadata !== void 0) CipherMetadata.encode(message.cipherMetadata, writer.uint32(18).fork()).join();
-		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
 		if (message.descriptor !== void 0) CryptoDescriptor.encode(message.descriptor, writer.uint32(34).fork()).join();
+		if (message.metadata !== void 0) Metadata.encode(message.metadata, writer.uint32(26).fork()).join();
 		return writer;
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseEncryptDataResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.ciphertext = reader.bytes();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.cipherMetadata = CipherMetadata.decode(reader, reader.uint32());
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseEncryptDataResponse();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.ciphertext = reader.bytes();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.cipherMetadata = CipherMetadata.decode(reader, reader.uint32());
+						continue;
+					case 4:
+						if (tag !== 34) break;
+						message.descriptor = CryptoDescriptor.decode(reader, reader.uint32());
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
 			ciphertext: isSet$1(object.ciphertext) ? bytesFromBase64(object.ciphertext) : /* @__PURE__ */ new Uint8Array(0),
-			cipherMetadata: isSet$1(object.cipherMetadata) ? CipherMetadata.fromJSON(object.cipherMetadata) : void 0,
-			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0,
-			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0
+			cipherMetadata: isSet$1(object.cipherMetadata) ? CipherMetadata.fromJSON(object.cipherMetadata) : isSet$1(object.cipher_metadata) ? CipherMetadata.fromJSON(object.cipher_metadata) : void 0,
+			descriptor: isSet$1(object.descriptor) ? CryptoDescriptor.fromJSON(object.descriptor) : void 0,
+			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
 	toJSON(message) {
 		const obj = {};
 		if (message.ciphertext.length !== 0) obj.ciphertext = base64FromBytes(message.ciphertext);
 		if (message.cipherMetadata !== void 0) obj.cipherMetadata = CipherMetadata.toJSON(message.cipherMetadata);
-		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		if (message.descriptor !== void 0) obj.descriptor = CryptoDescriptor.toJSON(message.descriptor);
+		if (message.metadata !== void 0) obj.metadata = Metadata.toJSON(message.metadata);
 		return obj;
 	},
 	create(base) {
@@ -2513,8 +2656,8 @@ const EncryptDataResponse = {
 		const message = createBaseEncryptDataResponse();
 		message.ciphertext = object.ciphertext ?? /* @__PURE__ */ new Uint8Array(0);
 		message.cipherMetadata = object.cipherMetadata !== void 0 && object.cipherMetadata !== null ? CipherMetadata.fromPartial(object.cipherMetadata) : void 0;
-		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		message.descriptor = object.descriptor !== void 0 && object.descriptor !== null ? CryptoDescriptor.fromPartial(object.descriptor) : void 0;
+		message.metadata = object.metadata !== void 0 && object.metadata !== null ? Metadata.fromPartial(object.metadata) : void 0;
 		return message;
 	}
 };
@@ -2538,43 +2681,50 @@ const DecryptDataRequest = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseDecryptDataRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.profile = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.keySource = KeySource.decode(reader, reader.uint32());
-					continue;
-				case 3:
-					if (tag !== 26) break;
-					message.ciphertext = reader.bytes();
-					continue;
-				case 4:
-					if (tag !== 34) break;
-					message.decryptMetadata = DecryptMetadata.decode(reader, reader.uint32());
-					continue;
-				case 5:
-					if (tag !== 42) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseDecryptDataRequest();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.profile = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.keySource = KeySource.decode(reader, reader.uint32());
+						continue;
+					case 3:
+						if (tag !== 26) break;
+						message.ciphertext = reader.bytes();
+						continue;
+					case 4:
+						if (tag !== 34) break;
+						message.decryptMetadata = DecryptMetadata.decode(reader, reader.uint32());
+						continue;
+					case 5:
+						if (tag !== 42) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
 			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
-			keySource: isSet$1(object.keySource) ? KeySource.fromJSON(object.keySource) : void 0,
+			keySource: isSet$1(object.keySource) ? KeySource.fromJSON(object.keySource) : isSet$1(object.key_source) ? KeySource.fromJSON(object.key_source) : void 0,
 			ciphertext: isSet$1(object.ciphertext) ? bytesFromBase64(object.ciphertext) : /* @__PURE__ */ new Uint8Array(0),
-			decryptMetadata: isSet$1(object.decryptMetadata) ? DecryptMetadata.fromJSON(object.decryptMetadata) : void 0,
+			decryptMetadata: isSet$1(object.decryptMetadata) ? DecryptMetadata.fromJSON(object.decryptMetadata) : isSet$1(object.decrypt_metadata) ? DecryptMetadata.fromJSON(object.decrypt_metadata) : void 0,
 			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
@@ -2614,24 +2764,31 @@ const DecryptDataResponse = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseDecryptDataResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.plaintext = reader.bytes();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseDecryptDataResponse();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.plaintext = reader.bytes();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
@@ -2665,20 +2822,27 @@ const BenchmarkRequest = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseBenchmarkRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseBenchmarkRequest();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return { metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0 };
@@ -2711,28 +2875,35 @@ const BenchmarkResponse = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseBenchmarkResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.benchmarkResults = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseBenchmarkResponse();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.benchmarkResults = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
-			benchmarkResults: isSet$1(object.benchmarkResults) ? globalThis.String(object.benchmarkResults) : "",
+			benchmarkResults: isSet$1(object.benchmarkResults) ? globalThis.String(object.benchmarkResults) : isSet$1(object.benchmark_results) ? globalThis.String(object.benchmark_results) : "",
 			metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0
 		};
 	},
@@ -2762,20 +2933,27 @@ const FakeEndpointRequest = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseFakeEndpointRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseFakeEndpointRequest();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return { metadata: isSet$1(object.metadata) ? Metadata.fromJSON(object.metadata) : void 0 };
@@ -2808,24 +2986,31 @@ const FakeEndpointResponse = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseFakeEndpointResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.message = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.metadata = Metadata.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseFakeEndpointResponse();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.message = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.metadata = Metadata.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
@@ -2849,11 +3034,11 @@ const FakeEndpointResponse = {
 		return message;
 	}
 };
-var CryptoGrpcClientImpl = class {
+var CryptoServiceClientImpl = class {
 	rpc;
 	service;
 	constructor(rpc, opts) {
-		this.service = opts?.service || "CryptoBroker.CryptoGrpc";
+		this.service = opts?.service || "cryptobroker.v1.CryptoService";
 		this.rpc = rpc;
 		this.HashData = this.HashData.bind(this);
 		this.SignCertificate = this.SignCertificate.bind(this);
@@ -2887,11 +3072,11 @@ var CryptoGrpcClientImpl = class {
 		return this.rpc.request(this.service, "DecryptData", data).then((data) => DecryptDataResponse.decode(new BinaryReader(data)));
 	}
 };
-var CryptoGrpcDevClientImpl = class {
+var CryptoDevServiceClientImpl = class {
 	rpc;
 	service;
 	constructor(rpc, opts) {
-		this.service = opts?.service || "CryptoBroker.CryptoGrpcDev";
+		this.service = opts?.service || "cryptobroker.v1.CryptoDevService";
 		this.rpc = rpc;
 		this.Benchmark = this.Benchmark.bind(this);
 		this.FakeEndpoint = this.FakeEndpoint.bind(this);
@@ -2961,20 +3146,27 @@ const HealthCheckRequest = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseHealthCheckRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.service = reader.string();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseHealthCheckRequest();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.service = reader.string();
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return { service: isSet(object.service) ? globalThis.String(object.service) : "" };
@@ -3003,20 +3195,27 @@ const HealthCheckResponse = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseHealthCheckResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 8) break;
-					message.status = reader.int32();
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseHealthCheckResponse();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 8) break;
+						message.status = reader.int32();
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return { status: isSet(object.status) ? healthCheckResponse_ServingStatusFromJSON(object.status) : 0 };
@@ -3044,15 +3243,22 @@ const HealthListRequest = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseHealthListRequest();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			tag >>> 3;
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseHealthListRequest();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				tag >>> 3;
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
+			}
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(_) {
 		return {};
@@ -3082,26 +3288,38 @@ const HealthListResponse = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseHealthListResponse();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1: {
-					if (tag !== 10) break;
-					const entry1 = HealthListResponse_StatusesEntry.decode(reader, reader.uint32());
-					if (entry1.value !== void 0) message.statuses[entry1.key] = entry1.value;
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseHealthListResponse();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1: {
+						if (tag !== 10) break;
+						const entry1 = HealthListResponse_StatusesEntry.decode(reader, reader.uint32());
+						if (entry1.value !== void 0) message.statuses[entry1.key] = entry1.value;
+						continue;
+					}
 				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return { statuses: isObject(object.statuses) ? globalThis.Object.entries(object.statuses).reduce((acc, [key, value]) => {
-			acc[key] = HealthCheckResponse.fromJSON(value);
+			globalThis.Object.defineProperty(acc, key, {
+				value: HealthCheckResponse.fromJSON(value),
+				enumerable: true,
+				configurable: true,
+				writable: true
+			});
 			return acc;
 		}, {}) : {} };
 	},
@@ -3144,24 +3362,31 @@ const HealthListResponse_StatusesEntry = {
 	},
 	decode(input, length) {
 		const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-		const end = length === void 0 ? reader.len : reader.pos + length;
-		const message = createBaseHealthListResponse_StatusesEntry();
-		while (reader.pos < end) {
-			const tag = reader.uint32();
-			switch (tag >>> 3) {
-				case 1:
-					if (tag !== 10) break;
-					message.key = reader.string();
-					continue;
-				case 2:
-					if (tag !== 18) break;
-					message.value = HealthCheckResponse.decode(reader, reader.uint32());
-					continue;
+		const previousRecursionDepth = reader.__tsProtoDecodeDepth ?? 0;
+		if (previousRecursionDepth >= 100) throw new globalThis.Error("protobuf decode recursion limit exceeded");
+		reader.__tsProtoDecodeDepth = previousRecursionDepth + 1;
+		try {
+			const end = length === void 0 ? reader.len : reader.pos + length;
+			const message = createBaseHealthListResponse_StatusesEntry();
+			while (reader.pos < end) {
+				const tag = reader.uint32();
+				switch (tag >>> 3) {
+					case 1:
+						if (tag !== 10) break;
+						message.key = reader.string();
+						continue;
+					case 2:
+						if (tag !== 18) break;
+						message.value = HealthCheckResponse.decode(reader, reader.uint32());
+						continue;
+				}
+				if ((tag & 7) === 4 || tag === 0) break;
+				reader.skip(tag & 7);
 			}
-			if ((tag & 7) === 4 || tag === 0) break;
-			reader.skip(tag & 7);
+			return message;
+		} finally {
+			reader.__tsProtoDecodeDepth = previousRecursionDepth;
 		}
-		return message;
 	},
 	fromJSON(object) {
 		return {
@@ -3398,7 +3623,7 @@ function validateVerifyDataPayload(payload) {
 	validateMetadata(payload.metadata);
 }
 //#endregion
-//#region \0@oxc-project+runtime@0.151.0/helpers/esm/decorate.js
+//#region \0@oxc-project+runtime@0.154.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
 	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3458,9 +3683,9 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		};
 		const rpc = { request: sendRequest };
 		const hcRpc = { request: sendRequest };
-		this.client = new CryptoGrpcClientImpl(rpc);
+		this.client = new CryptoServiceClientImpl(rpc);
 		this.healthClient = new HealthClientImpl(hcRpc);
-		this.devClient = new CryptoGrpcDevClientImpl(rpc);
+		this.devClient = new CryptoDevServiceClientImpl(rpc);
 	}
 	static async NewLibrary(opts) {
 		const instance = new CryptoBrokerClient(opts);
@@ -3590,7 +3815,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "verifyData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.5.0";
-const GIT_HASH = "a53e87cbf39bd4f80fac9b6855d277733ea459b1";
+const GIT_HASH = "599172f0334d4c9d2abfad4f2fd5ee3772f06623";
 //#endregion
 export { CryptoBrokerClient, DecryptDataResponse, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataResponse, SignOutputFormat as SignCertificateOutputFormat, SignCertificateResponse, SignDataResponse, SignatureFormat, VERSION };
 

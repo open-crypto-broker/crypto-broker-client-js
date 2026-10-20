@@ -4,7 +4,10 @@ import {
   HashDataOutputFormat,
   HashDataPayload,
 } from '../client.js';
-import { HashDataRequest, HashDataResponse } from '../proto/messages.js';
+import {
+  HashDataRequest,
+  HashDataResponse,
+} from '../proto/cryptobroker/v1/messages.js';
 import { isUUID4 } from './client.test-utils.js';
 
 describe('CryptoBrokerClient', () => {
@@ -19,7 +22,7 @@ describe('CryptoBrokerClient', () => {
       profile: 'Default',
       input: Buffer.from('Testing Data'),
       metadata: { id: 'mocked-id' },
-      outputFormat: HashDataOutputFormat.HEX,
+      outputFormat: HashDataOutputFormat.HASH_OUTPUT_FORMAT_HEX,
     };
     const response: HashDataResponse = await client.hashData(payload);
 
@@ -44,14 +47,14 @@ describe('CryptoBrokerClient', () => {
       client.hashData({
         profile: '',
         input: Buffer.from('Testing Data'),
-        outputFormat: HashDataOutputFormat.HEX,
+        outputFormat: HashDataOutputFormat.HASH_OUTPUT_FORMAT_HEX,
       }),
     ).rejects.toThrow('profile');
     await expect(
       client.hashData({
         profile: 'Default',
         input: 'Testing Data' as unknown as Uint8Array,
-        outputFormat: HashDataOutputFormat.HEX,
+        outputFormat: HashDataOutputFormat.HASH_OUTPUT_FORMAT_HEX,
       }),
     ).rejects.toThrow('input');
     await expect(
@@ -68,7 +71,7 @@ describe('CryptoBrokerClient', () => {
             correlationId: '',
           },
         },
-        outputFormat: HashDataOutputFormat.HEX,
+        outputFormat: HashDataOutputFormat.HASH_OUTPUT_FORMAT_HEX,
       }),
     ).rejects.toThrow('metadata.traceContext.traceId');
   });
@@ -78,7 +81,7 @@ describe('CryptoBrokerClient', () => {
       profile: 'Default',
       input: Buffer.from('Testing Data'),
       metadata: undefined,
-      outputFormat: HashDataOutputFormat.HEX,
+      outputFormat: HashDataOutputFormat.HASH_OUTPUT_FORMAT_HEX,
     };
     const response: HashDataResponse = await client.hashData(payload);
 
