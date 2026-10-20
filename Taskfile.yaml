@@ -26,7 +26,7 @@ tasks:
   proto-update:
     desc: "Updates the proto files and regenerates JS stubs"
     cmds:
-      - git submodule update --remote protobuf/
+      - git submodule update --init --remote protobuf/
       - task: proto
 
   proto:
