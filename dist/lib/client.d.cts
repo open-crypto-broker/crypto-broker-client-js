@@ -280,28 +280,31 @@ declare class BinaryReader {
   string(strict?: boolean): string;
 }
 //#endregion
-//#region src/lib/proto/messages.d.ts
+//#region src/lib/proto/cryptobroker/v1/messages.d.ts
 /** Output formats */
 declare enum HashOutputFormat {
-  HEX = 0,
-  RAW = 1,
+  HASH_OUTPUT_FORMAT_UNSPECIFIED = 0,
+  HASH_OUTPUT_FORMAT_HEX = 1,
+  HASH_OUTPUT_FORMAT_RAW = 2,
   UNRECOGNIZED = -1
 }
 declare enum SignOutputFormat {
-  DER = 0,
-  PEM = 1,
+  SIGN_OUTPUT_FORMAT_UNSPECIFIED = 0,
+  SIGN_OUTPUT_FORMAT_DER = 1,
+  SIGN_OUTPUT_FORMAT_PEM = 2,
   UNRECOGNIZED = -1
 }
 /**
  * Output format for signatures produced by SignData and accepted by VerifyData.
- * SIGNATURE_CMS wraps the signature in an RFC 5652 CMS SignedData structure;
+ * SIGNATURE_FORMAT_CMS wraps the signature in an RFC 5652 CMS SignedData structure;
  * the other formats carry the bare signature value in the requested encoding.
  */
 export declare enum SignatureFormat {
-  SIGNATURE_RAW = 0,
-  SIGNATURE_DER = 1,
-  SIGNATURE_PEM = 2,
-  SIGNATURE_CMS = 3,
+  SIGNATURE_FORMAT_UNSPECIFIED = 0,
+  SIGNATURE_FORMAT_RAW = 1,
+  SIGNATURE_FORMAT_DER = 2,
+  SIGNATURE_FORMAT_PEM = 3,
+  SIGNATURE_FORMAT_CMS = 4,
   UNRECOGNIZED = -1
 }
 /** Meta-structures shared across other messages and functions */
@@ -325,7 +328,7 @@ interface CryptoDescriptor {
 }
 /**
  * Deprecation signal for a profile scheduled for a rolling migration (see ADR 0013).
- * replacedBy should point to an equal-or-stronger profile.
+ * replaced_by should point to an equal-or-stronger profile.
  */
 interface DeprecationWarning {
   profile: string;
@@ -345,7 +348,7 @@ interface TraceContext$1 {
 /**
  * Key material source for symmetric encryption/decryption.
  * Exactly one variant is set, governed by the profile:
- * rawKey for caller-managed profiles (no KMS), keyId for KMS profiles where the broker
+ * raw_key for caller-managed profiles (no KMS), key_id for KMS profiles where the broker
  * resolves the identifier and retrieves the externally provisioned key. The broker never
  * creates, imports, or deletes keys; key lifecycle is owned by the KMS/operator.
  */
@@ -356,7 +359,7 @@ interface KeySource {
 /**
  * Signing key material for SignData/VerifyData.
  * Legacy and post-quantum modes use a single KeySource. Hybrid (composite)
- * mode uses two component keys via componentKeys: the traditional key and the
+ * mode uses two component keys via component_keys: the traditional key and the
  * ML-DSA key. For VerifyData the KeySource(s) carry the corresponding public keys.
  */
 interface SignKeySource {
@@ -381,7 +384,7 @@ interface EncryptMetadata {
 /**
  * Metadata returned alongside the ciphertext by EncryptData. It encapsulates
  * everything the caller may need besides the ciphertext itself:
- *   - keyId: echoed for KMS profiles; key material is never returned.
+ *   - key_id: echoed for KMS profiles; key material is never returned.
  *   - nonce/aad: echoed back; the caller supplied them and must retain them to decrypt.
  *   - tag: the authentication tag the caller must retain to decrypt later.
  */
@@ -402,19 +405,17 @@ interface DecryptMetadata {
   tag?: Uint8Array | undefined;
 }
 export interface HashDataResponse {
-  /** Redundant with descriptor.algorithm; retained for backward compatibility. */
-  hashAlgorithm: string;
-  metadata: Metadata$1 | undefined;
   hashValueHex?: string | undefined;
   hashValueRaw?: Uint8Array | undefined;
   descriptor: CryptoDescriptor | undefined;
+  metadata: Metadata$1 | undefined;
 }
 /** Response to a SignCertificate Request */
 export interface SignCertificateResponse {
-  metadata: Metadata$1 | undefined;
   pem?: string | undefined;
   der?: Uint8Array | undefined;
   descriptor: CryptoDescriptor | undefined;
+  metadata: Metadata$1 | undefined;
 }
 export interface SignDataResponse {
   signature: Uint8Array;
@@ -428,8 +429,8 @@ interface VerifyDataResponse {
 export interface EncryptDataResponse {
   ciphertext: Uint8Array;
   cipherMetadata: CipherMetadata | undefined;
-  metadata: Metadata$1 | undefined;
   descriptor: CryptoDescriptor | undefined;
+  metadata: Metadata$1 | undefined;
 }
 export interface DecryptDataResponse {
   plaintext: Uint8Array;
@@ -482,8 +483,8 @@ declare enum HealthCheckResponse_ServingStatus {
   UNRECOGNIZED = -1
 }
 declare const HealthCheckResponse: MessageFns<HealthCheckResponse>;
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
-type DeepPartial<T> = T extends Builtin ? T : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]>; } : Partial<T>;
+type Builtin = Date | Function | Uint8Array | string | number | boolean | bigint | undefined;
+type DeepPartial<T> = T extends bigint ? string | number | bigint : T extends Builtin ? T : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]>; } : Partial<T>;
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 type Exact<P, I extends P> = P extends Builtin ? P : P & { [K in keyof P]: Exact<P[K], I[K]>; } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never; };
 interface MessageFns<T> {
@@ -554,7 +555,7 @@ export interface SignDataPayload {
   profile: string;
   keySource: SignKeySource;
   input: Uint8Array;
-  signatureFormat?: SignatureFormat;
+  signatureFormat: SignatureFormat;
   metadata?: Metadata;
 }
 export interface VerifyDataPayload {
@@ -562,7 +563,7 @@ export interface VerifyDataPayload {
   keySource: SignKeySource;
   input: Uint8Array;
   signature: Uint8Array;
-  signatureFormat?: SignatureFormat;
+  signatureFormat: SignatureFormat;
   metadata?: Metadata;
 }
 export declare class CryptoBrokerClient {

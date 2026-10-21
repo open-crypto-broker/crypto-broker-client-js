@@ -13,7 +13,7 @@ import {
   SignOutputFormat as SignCertificateOutputFormat,
   SignatureFormat,
   PayloadLimits,
-} from './proto/messages.js';
+} from './proto/cryptobroker/v1/messages.js';
 
 const maxProfileNameLen = PayloadLimits.PAYLOAD_LIMITS_PROFILE_MAX_LEN;
 const maxHashDataInputBytes =

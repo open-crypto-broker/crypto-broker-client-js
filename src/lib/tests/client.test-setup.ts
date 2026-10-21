@@ -8,29 +8,31 @@ import {
   EncryptDataResponse,
   HashDataRequest,
   HashDataResponse,
+  HashOutputFormat,
   SignCertificateRequest,
   SignCertificateResponse,
   SignDataRequest,
   SignDataResponse,
+  SignOutputFormat,
   VerifyDataRequest,
   VerifyDataResponse,
-} from '../proto/messages.js';
+} from '../proto/cryptobroker/v1/messages.js';
 import {
   HealthCheckRequest,
   HealthCheckResponse,
 } from '../proto/third_party/grpc/health/v1/health.js';
 
 // Mock the protobuf client under the hood, returning the same values after doing a gRPC call functions
-jest.mock('src/lib/proto/messages.js', () => {
+jest.mock('src/lib/proto/cryptobroker/v1/messages.js', () => {
   const originalMessages = jest.requireActual<
-    typeof import('../proto/messages.js')
-  >('../proto/messages.js');
+    typeof import('../proto/cryptobroker/v1/messages.js')
+  >('../proto/cryptobroker/v1/messages.js');
 
   return {
     // note, that the original messages are the default and then overwritten
     // for providing a serverless response mock
     ...originalMessages,
-    CryptoGrpcClientImpl: jest.fn().mockImplementation(() => ({
+    CryptoServiceClientImpl: jest.fn().mockImplementation(() => ({
       HashData: jest
         .fn<(input: HashDataRequest) => Promise<HashDataResponse>>()
         .mockImplementation(async (input) => {
@@ -45,7 +47,7 @@ jest.mock('src/lib/proto/messages.js', () => {
               id: input.metadata?.id || 'empty',
             },
           };
-          if (input.outputFormat === 0) {
+          if (input.outputFormat === HashOutputFormat.HASH_OUTPUT_FORMAT_HEX) {
             // HEX
             return {
               ...base,
@@ -73,7 +75,7 @@ jest.mock('src/lib/proto/messages.js', () => {
               id: input.metadata?.id || 'empty',
             },
           };
-          if (input.outputFormat === 1) {
+          if (input.outputFormat === SignOutputFormat.SIGN_OUTPUT_FORMAT_PEM) {
             // PEM
             return {
               ...base,
@@ -158,7 +160,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
           };
         }),
     })),
-    CryptoGrpcDevClientImpl: jest.fn().mockImplementation(() => ({
+    CryptoDevServiceClientImpl: jest.fn().mockImplementation(() => ({
       Benchmark: jest
         .fn<(input: BenchmarkRequest) => Promise<BenchmarkResponse>>()
         .mockImplementation(async (input) => ({

@@ -3,6 +3,7 @@ import {
   CryptoBrokerClient,
   SignDataPayload,
   VerifyDataPayload,
+  SignatureFormat,
 } from '../client.js';
 import { isUUID4 } from './client.test-utils.js';
 
@@ -22,6 +23,7 @@ describe('CryptoBrokerClient', () => {
         },
       },
       input: Buffer.from('Welcome CryptoBroker'),
+      signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
       metadata: { id: 'mocked-id' },
     };
     const response = await client.signData(payload);
@@ -50,6 +52,7 @@ describe('CryptoBrokerClient', () => {
           },
         },
         input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
         metadata: { id: 'mocked-id' },
       }),
     ).rejects.toThrow('profile');
@@ -62,6 +65,7 @@ describe('CryptoBrokerClient', () => {
           },
         },
         input: 'Welcome CryptoBroker' as unknown as Uint8Array,
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
         metadata: { id: 'mocked-id' },
       }),
     ).rejects.toThrow('input');
@@ -74,6 +78,7 @@ describe('CryptoBrokerClient', () => {
           },
         },
         input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
         metadata: {
           id: 'mocked-id',
           traceContext: {
@@ -91,6 +96,7 @@ describe('CryptoBrokerClient', () => {
         profile: 'Default',
         keySource: {},
         input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
         metadata: { id: 'mocked-id' },
       }),
     ).rejects.toThrow('keySource');
@@ -118,6 +124,7 @@ describe('CryptoBrokerClient', () => {
         },
       },
       input: Buffer.from('Welcome CryptoBroker'),
+      signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
       metadata: undefined,
     };
     const response = await client.signData(payload);
@@ -147,6 +154,7 @@ describe('CryptoBrokerClient', () => {
         },
       },
       input: Buffer.from('Welcome CryptoBroker'),
+      signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
       signature: Buffer.from('deadbeef', 'hex'),
       metadata: { id: 'mocked-id' },
     };
@@ -171,6 +179,7 @@ describe('CryptoBrokerClient', () => {
           },
         },
         input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
         signature: Buffer.from('deadbeef', 'hex'),
         metadata: { id: 'mocked-id' },
       }),
@@ -184,6 +193,7 @@ describe('CryptoBrokerClient', () => {
           },
         },
         input: 'Welcome CryptoBroker' as unknown as Uint8Array,
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
         signature: Buffer.from(''),
         metadata: { id: 'mocked-id' },
       }),
@@ -197,6 +207,7 @@ describe('CryptoBrokerClient', () => {
           },
         },
         input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
         signature: Buffer.from('deadbeef', 'hex'),
         metadata: {
           id: 'mocked-id',
@@ -215,6 +226,7 @@ describe('CryptoBrokerClient', () => {
         profile: 'Default',
         keySource: {},
         input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
         signature: Buffer.from('deadbeef', 'hex'),
         metadata: { id: 'mocked-id' },
       }),
@@ -238,6 +250,7 @@ describe('CryptoBrokerClient', () => {
           },
         },
         input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
         signature: Buffer.from('deadbeef', 'hex'),
         metadata: { id: 'mocked-id' },
       }),
@@ -267,6 +280,7 @@ describe('CryptoBrokerClient', () => {
         },
       },
       input: Buffer.from('Welcome CryptoBroker'),
+      signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
       signature: Buffer.from('deadbeef', 'hex'),
       metadata: undefined,
     };
