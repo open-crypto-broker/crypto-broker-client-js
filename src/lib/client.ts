@@ -108,6 +108,7 @@ export interface SignCertificatePayload {
   csr: string;
   caPrivateKey: string;
   caCert: string;
+  keySource: KeySource | undefined;
   validNotBefore?: bigint;
   validNotAfter?: bigint;
   metadata?: Metadata;
@@ -331,6 +332,7 @@ export class CryptoBrokerClient {
       csr: payload.csr,
       caPrivateKey: payload.caPrivateKey,
       caCert: payload.caCert,
+      keySource: payload.keySource,
       outputFormat: payload.outputFormat,
       metadata: {
         id: payload.metadata?.id || randomUUID(),

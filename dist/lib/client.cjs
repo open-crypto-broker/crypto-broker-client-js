@@ -1,5 +1,5 @@
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-//#region \0rolldown/runtime.js
+// \0rolldown/runtime.js
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -20,14 +20,13 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 	value: mod,
 	enumerable: true
 }) : target, mod));
-//#endregion
 require("reflect-metadata");
 let _grpc_grpc_js = require("@grpc/grpc-js");
 _grpc_grpc_js = __toESM(_grpc_grpc_js, 1);
 let crypto = require("crypto");
 let opossum = require("opossum");
 opossum = __toESM(opossum, 1);
-//#region src/lib/conf/service_config.ts
+// src/lib/conf/service_config.ts
 const defaultServiceConfig = { methodConfig: [{
 	name: [{}],
 	retryPolicy: {
@@ -42,8 +41,7 @@ const defaultServiceConfig = { methodConfig: [{
 		]
 	}
 }] };
-//#endregion
-//#region src/lib/conf/circuitbreaker_config.ts
+// src/lib/conf/circuitbreaker_config.ts
 const circuitBreakerConfigFactory = (override) => {
 	const defaultConfig = {
 		enabled: true,
@@ -67,8 +65,7 @@ const circuitBreakerConfigFactory = (override) => {
 		}
 	};
 };
-//#endregion
-//#region node_modules/@bufbuild/protobuf/dist/esm/wire/varint.js
+// node_modules/@bufbuild/protobuf/dist/esm/wire/varint.js
 /**
 * Read a 64 bit varint as two JS numbers.
 *
@@ -255,8 +252,7 @@ function varint32read() {
 	this.assertBounds();
 	return result >>> 0;
 }
-//#endregion
-//#region node_modules/@bufbuild/protobuf/dist/esm/proto-int64.js
+// node_modules/@bufbuild/protobuf/dist/esm/proto-int64.js
 /**
 * Int64Support for the current environment.
 */
@@ -344,8 +340,7 @@ function assertInt64String(value) {
 function assertUInt64String(value) {
 	if (!/^[0-9]+$/.test(value)) throw new Error("invalid uint64: " + value);
 }
-//#endregion
-//#region node_modules/@bufbuild/protobuf/dist/esm/wire/text-encoding.js
+// node_modules/@bufbuild/protobuf/dist/esm/wire/text-encoding.js
 let te;
 /**
 * Protobuf-ES requires the Text Encoding API to convert UTF-8 from and to
@@ -419,8 +414,7 @@ function emulateEncodeInto(encodeUtf8) {
 		return { written: bytes.byteLength };
 	};
 }
-//#endregion
-//#region node_modules/@bufbuild/protobuf/dist/esm/wire/binary-encoding.js
+// node_modules/@bufbuild/protobuf/dist/esm/wire/binary-encoding.js
 /**
 * Protobuf binary format wire types.
 *
@@ -1017,8 +1011,7 @@ function assertFloat32(arg) {
 	} else if (typeof arg != "number") throw new Error("invalid float32: " + typeof arg);
 	if (!Number.isFinite(Math.fround(arg)) && Number.isFinite(arg)) throw new Error("invalid float32: " + arg);
 }
-//#endregion
-//#region src/lib/proto/cryptobroker/v1/messages.ts
+// src/lib/proto/cryptobroker/v1/messages.ts
 /** Output formats */
 let HashOutputFormat = /* @__PURE__ */ function(HashOutputFormat) {
 	HashOutputFormat[HashOutputFormat["HASH_OUTPUT_FORMAT_UNSPECIFIED"] = 0] = "HASH_OUTPUT_FORMAT_UNSPECIFIED";
@@ -1983,6 +1976,7 @@ function createBaseSignCertificateRequest() {
 		csr: "",
 		caPrivateKey: "",
 		caCert: "",
+		keySource: void 0,
 		validNotBefore: void 0,
 		validNotAfter: void 0,
 		subject: void 0,
@@ -1997,6 +1991,7 @@ const SignCertificateRequest = {
 		if (message.csr !== "") writer.uint32(18).string(message.csr);
 		if (message.caPrivateKey !== "") writer.uint32(26).string(message.caPrivateKey);
 		if (message.caCert !== "") writer.uint32(34).string(message.caCert);
+		if (message.keySource !== void 0) KeySource.encode(message.keySource, writer.uint32(90).fork()).join();
 		if (message.validNotBefore !== void 0) {
 			if (BigInt.asUintN(64, message.validNotBefore) !== message.validNotBefore) throw new globalThis.Error("value provided for field message.validNotBefore of type uint64 too large");
 			writer.uint32(48).uint64(message.validNotBefore);
@@ -2038,6 +2033,10 @@ const SignCertificateRequest = {
 						if (tag !== 34) break;
 						message.caCert = reader.string();
 						continue;
+					case 11:
+						if (tag !== 90) break;
+						message.keySource = KeySource.decode(reader, reader.uint32());
+						continue;
 					case 6:
 						if (tag !== 48) break;
 						message.validNotBefore = reader.uint64();
@@ -2077,6 +2076,7 @@ const SignCertificateRequest = {
 			csr: isSet$1(object.csr) ? globalThis.String(object.csr) : "",
 			caPrivateKey: isSet$1(object.caPrivateKey) ? globalThis.String(object.caPrivateKey) : isSet$1(object.ca_private_key) ? globalThis.String(object.ca_private_key) : "",
 			caCert: isSet$1(object.caCert) ? globalThis.String(object.caCert) : isSet$1(object.ca_cert) ? globalThis.String(object.ca_cert) : "",
+			keySource: isSet$1(object.keySource) ? KeySource.fromJSON(object.keySource) : isSet$1(object.key_source) ? KeySource.fromJSON(object.key_source) : void 0,
 			validNotBefore: isSet$1(object.validNotBefore) ? BigInt(object.validNotBefore) : isSet$1(object.valid_not_before) ? BigInt(object.valid_not_before) : void 0,
 			validNotAfter: isSet$1(object.validNotAfter) ? BigInt(object.validNotAfter) : isSet$1(object.valid_not_after) ? BigInt(object.valid_not_after) : void 0,
 			subject: isSet$1(object.subject) ? globalThis.String(object.subject) : void 0,
@@ -2091,6 +2091,7 @@ const SignCertificateRequest = {
 		if (message.csr !== "") obj.csr = message.csr;
 		if (message.caPrivateKey !== "") obj.caPrivateKey = message.caPrivateKey;
 		if (message.caCert !== "") obj.caCert = message.caCert;
+		if (message.keySource !== void 0) obj.keySource = KeySource.toJSON(message.keySource);
 		if (message.validNotBefore !== void 0) obj.validNotBefore = message.validNotBefore.toString();
 		if (message.validNotAfter !== void 0) obj.validNotAfter = message.validNotAfter.toString();
 		if (message.subject !== void 0) obj.subject = message.subject;
@@ -2108,6 +2109,7 @@ const SignCertificateRequest = {
 		message.csr = object.csr ?? "";
 		message.caPrivateKey = object.caPrivateKey ?? "";
 		message.caCert = object.caCert ?? "";
+		message.keySource = object.keySource !== void 0 && object.keySource !== null ? KeySource.fromPartial(object.keySource) : void 0;
 		message.validNotBefore = object.validNotBefore !== void 0 && object.validNotBefore !== null ? BigInt(object.validNotBefore) : void 0;
 		message.validNotAfter = object.validNotAfter !== void 0 && object.validNotAfter !== null ? BigInt(object.validNotAfter) : void 0;
 		message.subject = object.subject ?? void 0;
@@ -3137,8 +3139,7 @@ function base64FromBytes(arr) {
 function isSet$1(value) {
 	return value !== null && value !== void 0;
 }
-//#endregion
-//#region src/lib/proto/third_party/grpc/health/v1/health.ts
+// src/lib/proto/third_party/grpc/health/v1/health.ts
 function healthCheckResponse_ServingStatusFromJSON(object) {
 	switch (object) {
 		case 0:
@@ -3459,8 +3460,7 @@ function isObject(value) {
 function isSet(value) {
 	return value !== null && value !== void 0;
 }
-//#endregion
-//#region src/lib/request_validation.ts
+// src/lib/request_validation.ts
 const maxProfileNameLen = 64;
 const maxHashDataInputBytes = 1048576;
 const maxCSRBytes = 65536;
@@ -3647,16 +3647,14 @@ function validateVerifyDataPayload(payload) {
 	if (payload.keySource.single === void 0 && payload.keySource.componentKeys === void 0) throw typeError("keySource", "missing key source - either single or componentKeys must be provided");
 	validateMetadata(payload.metadata);
 }
-//#endregion
-//#region \0@oxc-project+runtime@0.154.0/helpers/esm/decorate.js
+// \0@oxc-project+runtime@0.155.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
 	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
 	else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
 	return c > 3 && r && Object.defineProperty(target, key, r), r;
 }
-//#endregion
-//#region src/lib/client.ts
+// src/lib/client.ts
 const breakers = /* @__PURE__ */ new WeakMap();
 function WithCircuitBreaker(_prototype, name, descriptor) {
 	const original = descriptor.value;
@@ -3757,6 +3755,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 			csr: payload.csr,
 			caPrivateKey: payload.caPrivateKey,
 			caCert: payload.caCert,
+			keySource: payload.keySource,
 			outputFormat: payload.outputFormat,
 			metadata: {
 				id: payload.metadata?.id || (0, crypto.randomUUID)(),
@@ -3840,8 +3839,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "verifyData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.5.0";
-const GIT_HASH = "599172f0334d4c9d2abfad4f2fd5ee3772f06623";
-//#endregion
+const GIT_HASH = "e2b91ba2e9204b2ad957bac6b2f3d3a35287ce75";
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.DecryptDataResponse = DecryptDataResponse;
 exports.EncryptDataResponse = EncryptDataResponse;

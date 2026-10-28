@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import * as grpc from "@grpc/grpc-js";
-//#region src/lib/conf/circuitbreaker_config.d.ts
 interface CircuitBreakerConfig {
   enabled: boolean;
   name?: string;
@@ -11,8 +10,6 @@ interface CircuitBreakerConfig {
   failureStatusCodes?: number[];
   errorFilter?: (err: Error) => boolean;
 }
-//#endregion
-//#region node_modules/@bufbuild/protobuf/dist/esm/wire/binary-encoding.d.ts
 /**
  * Protobuf binary format wire types.
  *
@@ -279,8 +276,6 @@ declare class BinaryReader {
    */
   string(strict?: boolean): string;
 }
-//#endregion
-//#region src/lib/proto/cryptobroker/v1/messages.d.ts
 /** Output formats */
 declare enum HashOutputFormat {
   HASH_OUTPUT_FORMAT_UNSPECIFIED = 0,
@@ -460,7 +455,7 @@ declare const BenchmarkResponse: MessageFns$1<BenchmarkResponse>;
 type Builtin$1 = Date | Function | Uint8Array | string | number | boolean | bigint | undefined;
 type DeepPartial$1<T> = T extends bigint ? string | number | bigint : T extends Builtin$1 ? T : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial$1<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial$1<U>> : T extends {} ? { [K in keyof T]?: DeepPartial$1<T[K]>; } : Partial<T>;
 type KeysOfUnion$1<T> = T extends T ? keyof T : never;
-type Exact$1<P, I extends P> = P extends Builtin$1 ? P : P & { [K in keyof P]: Exact$1<P[K], I[K]>; } & { [K in Exclude<keyof I, KeysOfUnion$1<P>>]: never; };
+type Exact$1<P, I> = P extends Builtin$1 ? P : P & { [K in keyof P as Extract<K, keyof I>]: Exact$1<P[K], I[K & keyof I]>; } & { [K in Exclude<keyof I, KeysOfUnion$1<P>>]: never; };
 interface MessageFns$1<T> {
   encode(message: T, writer?: BinaryWriter): BinaryWriter;
   decode(input: BinaryReader | Uint8Array, length?: number): T;
@@ -469,8 +464,6 @@ interface MessageFns$1<T> {
   create<I extends Exact$1<DeepPartial$1<T>, I>>(base?: I): T;
   fromPartial<I extends Exact$1<DeepPartial$1<T>, I>>(object: I): T;
 }
-//#endregion
-//#region src/lib/proto/third_party/grpc/health/v1/health.d.ts
 interface HealthCheckResponse {
   status: HealthCheckResponse_ServingStatus;
 }
@@ -495,8 +488,6 @@ interface MessageFns<T> {
   create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
   fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }
-//#endregion
-//#region src/lib/client.d.ts
 export interface ConnectOptions {
   retryAmount: number;
 }
@@ -530,6 +521,7 @@ export interface SignCertificatePayload {
   csr: string;
   caPrivateKey: string;
   caCert: string;
+  keySource: KeySource | undefined;
   validNotBefore?: bigint;
   validNotAfter?: bigint;
   metadata?: Metadata;
@@ -586,6 +578,5 @@ export declare class CryptoBrokerClient {
 }
 export declare const VERSION: any;
 export declare const GIT_HASH: any;
-//#endregion
 export { HashOutputFormat as HashDataOutputFormat, SignOutputFormat as SignCertificateOutputFormat };
 //# sourceMappingURL=client.d.mts.map

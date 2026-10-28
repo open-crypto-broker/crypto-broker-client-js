@@ -19,6 +19,7 @@ describe('CryptoBrokerClient', () => {
       csr: 'mocked-csr',
       caPrivateKey: 'mocked-key',
       caCert: 'mocked-cert',
+      keySource: {},
       metadata: { id: 'mocked-id' },
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
@@ -61,6 +62,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         csr: '',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {},
         outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
     ).rejects.toThrow('csr');
@@ -70,6 +72,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         csr: 'mocked-csr',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {},
         validNotBefore: BigInt(
           '18446744073709551616', // which is maxUint64 + 1
         ) as unknown as SignCertificateRequest['validNotBefore'],
@@ -82,6 +85,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         csr: 'mocked-csr',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {},
         subject: 'A'.repeat(1025),
         outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
@@ -92,6 +96,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         csr: 'mocked-csr',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {},
         crlDistributionPoints: Array.from(
           { length: 17 },
           () => 'http://example.com/crl',
@@ -105,6 +110,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         csr: 'mocked-csr',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {},
         crlDistributionPoints: [42 as unknown as string],
         outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
@@ -118,6 +124,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         csr: 'mocked-csr',
         caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {},
         outputFormat: SignCertificateOutputFormat.UNRECOGNIZED,
       }),
     ).rejects.toThrow('outputFormat');
@@ -129,6 +136,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       csr: 'mocked-csr',
       caPrivateKey: 'mocked-key',
       caCert: 'mocked-cert',
+      keySource: {},
       validNotBeforeOffset: '0',
       validNotAfterOffset: '1',
       subject: 'CN=Test',
@@ -174,6 +182,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       csr: 'mocked-csr',
       caPrivateKey: 'mocked-key',
       caCert: 'mocked-cert',
+      keySource: {},
       validNotBeforeOffset: '0',
       validNotAfterOffset: '1',
       subject: 'CN=Test',
