@@ -46,6 +46,12 @@ but other keywords are also possible. To introduce breaking changes, the ! symbo
 
 For a full description of all the options and possibilities, the specification can be checked.
 
+## Client Test Scenarios
+
+Use the shared [client test scenario catalogue](https://github.com/open-crypto-broker/crypto-broker-documentation/blob/main/spec/client-test-cases.md).
+Add each new test scenario to the catalogue and to both the Go and JavaScript client libraries.
+If a language cannot represent a scenario, document the type-system difference in the catalogue.
+
 ## Issues and Planning
 
 * We use GitHub issues to track bugs and enhancement requests.
