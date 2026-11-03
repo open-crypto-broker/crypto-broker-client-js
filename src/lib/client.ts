@@ -106,9 +106,8 @@ export interface HashDataPayload {
 export interface SignCertificatePayload {
   profile: string;
   csr: string;
-  caPrivateKey: string;
   caCert: string;
-  keySource: KeySource | undefined;
+  keySource: SignKeySource | undefined;
   validNotBefore?: bigint;
   validNotAfter?: bigint;
   metadata?: Metadata;
@@ -330,7 +329,6 @@ export class CryptoBrokerClient {
     const req: SignCertificateRequest = {
       profile: payload.profile,
       csr: payload.csr,
-      caPrivateKey: payload.caPrivateKey,
       caCert: payload.caCert,
       keySource: payload.keySource,
       outputFormat: payload.outputFormat,

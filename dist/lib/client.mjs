@@ -1950,7 +1950,6 @@ function createBaseSignCertificateRequest() {
 	return {
 		profile: "",
 		csr: "",
-		caPrivateKey: "",
 		caCert: "",
 		keySource: void 0,
 		validNotBefore: void 0,
@@ -1965,9 +1964,8 @@ const SignCertificateRequest = {
 	encode(message, writer = new BinaryWriter()) {
 		if (message.profile !== "") writer.uint32(10).string(message.profile);
 		if (message.csr !== "") writer.uint32(18).string(message.csr);
-		if (message.caPrivateKey !== "") writer.uint32(26).string(message.caPrivateKey);
 		if (message.caCert !== "") writer.uint32(34).string(message.caCert);
-		if (message.keySource !== void 0) KeySource.encode(message.keySource, writer.uint32(90).fork()).join();
+		if (message.keySource !== void 0) SignKeySource.encode(message.keySource, writer.uint32(90).fork()).join();
 		if (message.validNotBefore !== void 0) {
 			if (BigInt.asUintN(64, message.validNotBefore) !== message.validNotBefore) throw new globalThis.Error("value provided for field message.validNotBefore of type uint64 too large");
 			writer.uint32(48).uint64(message.validNotBefore);
@@ -2001,17 +1999,13 @@ const SignCertificateRequest = {
 						if (tag !== 18) break;
 						message.csr = reader.string();
 						continue;
-					case 3:
-						if (tag !== 26) break;
-						message.caPrivateKey = reader.string();
-						continue;
 					case 4:
 						if (tag !== 34) break;
 						message.caCert = reader.string();
 						continue;
 					case 11:
 						if (tag !== 90) break;
-						message.keySource = KeySource.decode(reader, reader.uint32());
+						message.keySource = SignKeySource.decode(reader, reader.uint32());
 						continue;
 					case 6:
 						if (tag !== 48) break;
@@ -2050,9 +2044,8 @@ const SignCertificateRequest = {
 		return {
 			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
 			csr: isSet$1(object.csr) ? globalThis.String(object.csr) : "",
-			caPrivateKey: isSet$1(object.caPrivateKey) ? globalThis.String(object.caPrivateKey) : isSet$1(object.ca_private_key) ? globalThis.String(object.ca_private_key) : "",
 			caCert: isSet$1(object.caCert) ? globalThis.String(object.caCert) : isSet$1(object.ca_cert) ? globalThis.String(object.ca_cert) : "",
-			keySource: isSet$1(object.keySource) ? KeySource.fromJSON(object.keySource) : isSet$1(object.key_source) ? KeySource.fromJSON(object.key_source) : void 0,
+			keySource: isSet$1(object.keySource) ? SignKeySource.fromJSON(object.keySource) : isSet$1(object.key_source) ? SignKeySource.fromJSON(object.key_source) : void 0,
 			validNotBefore: isSet$1(object.validNotBefore) ? BigInt(object.validNotBefore) : isSet$1(object.valid_not_before) ? BigInt(object.valid_not_before) : void 0,
 			validNotAfter: isSet$1(object.validNotAfter) ? BigInt(object.validNotAfter) : isSet$1(object.valid_not_after) ? BigInt(object.valid_not_after) : void 0,
 			subject: isSet$1(object.subject) ? globalThis.String(object.subject) : void 0,
@@ -2065,9 +2058,8 @@ const SignCertificateRequest = {
 		const obj = {};
 		if (message.profile !== "") obj.profile = message.profile;
 		if (message.csr !== "") obj.csr = message.csr;
-		if (message.caPrivateKey !== "") obj.caPrivateKey = message.caPrivateKey;
 		if (message.caCert !== "") obj.caCert = message.caCert;
-		if (message.keySource !== void 0) obj.keySource = KeySource.toJSON(message.keySource);
+		if (message.keySource !== void 0) obj.keySource = SignKeySource.toJSON(message.keySource);
 		if (message.validNotBefore !== void 0) obj.validNotBefore = message.validNotBefore.toString();
 		if (message.validNotAfter !== void 0) obj.validNotAfter = message.validNotAfter.toString();
 		if (message.subject !== void 0) obj.subject = message.subject;
@@ -2083,9 +2075,8 @@ const SignCertificateRequest = {
 		const message = createBaseSignCertificateRequest();
 		message.profile = object.profile ?? "";
 		message.csr = object.csr ?? "";
-		message.caPrivateKey = object.caPrivateKey ?? "";
 		message.caCert = object.caCert ?? "";
-		message.keySource = object.keySource !== void 0 && object.keySource !== null ? KeySource.fromPartial(object.keySource) : void 0;
+		message.keySource = object.keySource !== void 0 && object.keySource !== null ? SignKeySource.fromPartial(object.keySource) : void 0;
 		message.validNotBefore = object.validNotBefore !== void 0 && object.validNotBefore !== null ? BigInt(object.validNotBefore) : void 0;
 		message.validNotAfter = object.validNotAfter !== void 0 && object.validNotAfter !== null ? BigInt(object.validNotAfter) : void 0;
 		message.subject = object.subject ?? void 0;
@@ -3440,7 +3431,6 @@ function isSet(value) {
 const maxProfileNameLen = 64;
 const maxHashDataInputBytes = 1048576;
 const maxCSRBytes = 65536;
-const maxCAPrivateKeyBytes = 65536;
 const maxCACertBytes = 65536;
 const maxSubjectLen = 1024;
 const maxCRLDistributionPoints = 16;
@@ -3514,6 +3504,26 @@ function validateMetadata(metadata) {
 	assertString(metadata.traceContext.traceState, "metadata.traceContext.traceState", maxTraceStateLen);
 	assertString(metadata.traceContext.correlationId, "metadata.traceContext.correlationId", maxCorrelationIdLen);
 }
+function validateSignKeySource(signKeySource) {
+	if (signKeySource === void 0) return;
+	assertObject(signKeySource, "keySource");
+	if (signKeySource.single !== void 0) {
+		assertObject(signKeySource.single, "keySource.single");
+		assertOptionalString(signKeySource.single.keyId, "keySource.single.keyId", maxKeyIdLen);
+		assertOptionalUint8Array(signKeySource.single.rawKey, "keySource.single.rawKey");
+	}
+	if (signKeySource.componentKeys !== void 0) {
+		assertObject(signKeySource.componentKeys, "keySource.componentKeys");
+		if (!Array.isArray(signKeySource.componentKeys.keys)) throw typeError("keySource.componentKeys.keys", "must be an array");
+		signKeySource.componentKeys.keys.forEach((value, index) => {
+			assertObject(value, `keySource.componentKeys.keys[${index}]`);
+			assertOptionalString(value, "keySource.componentKeys.keys[${index}].keyId", maxKeyIdLen);
+			assertOptionalUint8Array(value, "keySource.componentKeys.keys[${index}].rawKey");
+		});
+	}
+	if (signKeySource.single !== void 0 && signKeySource.componentKeys !== void 0) throw typeError("keySource", "too many key sources - either single or componentKeys must be provided");
+	if (signKeySource.single === void 0 && signKeySource.componentKeys === void 0) throw typeError("keySource", "missing key source - either single or componentKeys must be provided");
+}
 function validateBenchmarkPayload(payload) {
 	assertObject(payload, "payload");
 	validateMetadata(payload.metadata);
@@ -3530,8 +3540,8 @@ function validateSignCertificatePayload(payload) {
 	assertObject(payload, "payload");
 	assertString(payload.profile, "profile", maxProfileNameLen, true);
 	assertString(payload.csr, "csr", maxCSRBytes, true);
-	assertString(payload.caPrivateKey, "caPrivateKey", maxCAPrivateKeyBytes, true);
 	assertString(payload.caCert, "caCert", maxCACertBytes, true);
+	assertObject(payload.keySource, "keySource");
 	assertOptionalUint64(payload.validNotBefore, "validNotBefore");
 	assertOptionalUint64(payload.validNotAfter, "validNotAfter");
 	assertOptionalString(payload.subject, "subject", maxSubjectLen);
@@ -3544,6 +3554,7 @@ function validateSignCertificatePayload(payload) {
 		});
 	}
 	validateMetadata(payload.metadata);
+	validateSignKeySource(payload.keySource);
 }
 function validateEncryptDataPayload(payload) {
 	assertObject(payload, "payload");
@@ -3578,50 +3589,20 @@ function validateSignDataPayload(payload) {
 	assertObject(payload, "payload");
 	assertString(payload.profile, "profile", maxProfileNameLen, true);
 	assertObject(payload.keySource, "keySource");
-	if (payload.keySource.single !== void 0) {
-		assertObject(payload.keySource.single, "keySource.single");
-		assertOptionalString(payload.keySource.single.keyId, "keySource.single.keyId", maxKeyIdLen);
-		assertOptionalUint8Array(payload.keySource.single.rawKey, "keySource.single.rawKey");
-	}
-	if (payload.keySource.componentKeys !== void 0) {
-		assertObject(payload.keySource.componentKeys, "keySource.componentKeys");
-		if (!Array.isArray(payload.keySource.componentKeys.keys)) throw typeError("keySource.componentKeys.keys", "must be an array");
-		payload.keySource.componentKeys.keys.forEach((value, index) => {
-			assertObject(value, `keySource.componentKeys.keys[${index}]`);
-			assertOptionalString(value, "keySource.componentKeys.keys[${index}].keyId", maxKeyIdLen);
-			assertOptionalUint8Array(value, "keySource.componentKeys.keys[${index}].rawKey");
-		});
-	}
 	assertObject(payload.input, "input");
 	assertOptionalEnumValue(payload.signatureFormat, SignatureFormat, "signatureFormat");
-	if (payload.keySource.single !== void 0 && payload.keySource.componentKeys !== void 0) throw typeError("keySource", "too many key sources - either single or componentKeys must be provided");
-	if (payload.keySource.single === void 0 && payload.keySource.componentKeys === void 0) throw typeError("keySource", "missing key source - either single or componentKeys must be provided");
 	validateMetadata(payload.metadata);
+	validateSignKeySource(payload.keySource);
 }
 function validateVerifyDataPayload(payload) {
 	assertObject(payload, "payload");
 	assertString(payload.profile, "profile", maxProfileNameLen, true);
 	assertObject(payload.keySource, "keySource");
-	if (payload.keySource.single !== void 0) {
-		assertObject(payload.keySource.single, "keySource.single");
-		assertOptionalString(payload.keySource.single.keyId, "keySource.single.keyId", maxKeyIdLen);
-		assertOptionalUint8Array(payload.keySource.single.rawKey, "keySource.single.rawKey");
-	}
-	if (payload.keySource.componentKeys !== void 0) {
-		assertObject(payload.keySource.componentKeys, "keySource.componentKeys");
-		if (!Array.isArray(payload.keySource.componentKeys.keys)) throw typeError("keySource.componentKeys.keys", "must be an array");
-		payload.keySource.componentKeys.keys.forEach((value, index) => {
-			assertObject(value, `keySource.componentKeys.keys[${index}]`);
-			assertOptionalString(value, "keySource.componentKeys.keys[${index}].keyId", maxKeyIdLen);
-			assertOptionalUint8Array(value, "keySource.componentKeys.keys[${index}].rawKey");
-		});
-	}
 	assertObject(payload.input, "input");
 	assertUint8Array(payload.signature, "signature");
 	assertOptionalEnumValue(payload.signatureFormat, SignatureFormat, "signatureFormat");
-	if (payload.keySource.single !== void 0 && payload.keySource.componentKeys !== void 0) throw typeError("keySource", "too many key sources - either single or componentKeys must be provided");
-	if (payload.keySource.single === void 0 && payload.keySource.componentKeys === void 0) throw typeError("keySource", "missing key source - either single or componentKeys must be provided");
 	validateMetadata(payload.metadata);
+	validateSignKeySource(payload.keySource);
 }
 // \0@oxc-project+runtime@0.155.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
@@ -3729,7 +3710,6 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 		const req = {
 			profile: payload.profile,
 			csr: payload.csr,
-			caPrivateKey: payload.caPrivateKey,
 			caCert: payload.caCert,
 			keySource: payload.keySource,
 			outputFormat: payload.outputFormat,
@@ -3815,7 +3795,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "verifyData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.5.0";
-const GIT_HASH = "e2b91ba2e9204b2ad957bac6b2f3d3a35287ce75";
+const GIT_HASH = "c286b20242529fe5b80d042f74b3b588ad8d981e";
 export { CryptoBrokerClient, DecryptDataResponse, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataResponse, SignOutputFormat as SignCertificateOutputFormat, SignCertificateResponse, SignDataResponse, SignatureFormat, VERSION };
 
 //# sourceMappingURL=client.mjs.map

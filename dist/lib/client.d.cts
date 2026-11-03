@@ -519,9 +519,8 @@ export interface HashDataPayload {
 export interface SignCertificatePayload {
   profile: string;
   csr: string;
-  caPrivateKey: string;
   caCert: string;
-  keySource: KeySource | undefined;
+  keySource: SignKeySource | undefined;
   validNotBefore?: bigint;
   validNotAfter?: bigint;
   metadata?: Metadata;
