@@ -1,12 +1,17 @@
-import { describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { CryptoBrokerClient, SignCertificateOutputFormat } from '../client.js';
 import {
   SignCertificateRequest,
+  PayloadLimits,
   SignCertificateResponse,
 } from '../proto/cryptobroker/v1/messages.js';
 import { isUUID4 } from './client.test-utils.js';
 
 describe('CryptoBrokerClient', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   const client: CryptoBrokerClient = new CryptoBrokerClient({
     circuitBreakerOptions: {
       enabled: false,
@@ -55,6 +60,68 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       metadata: { id: 'mocked-id' },
     });
   });
+  it.each<[Partial<SignCertificateRequest>, string]>([
+    [{ profile: '' }, 'profile'],
+    [
+      { profile: 'A'.repeat(PayloadLimits.PAYLOAD_LIMITS_PROFILE_MAX_LEN + 1) },
+      'profile',
+    ],
+    [{ keySource: undefined }, 'keySource'],
+    [{ caCert: '' }, 'caCert'],
+    [
+      {
+        csr: 'A'.repeat(
+          PayloadLimits.PAYLOAD_LIMITS_SIGN_CERTIFICATE_CSR_MAX_LEN + 1,
+        ),
+      },
+      'csr',
+    ],
+    [
+      {
+        keySource: {
+          single: {
+            keyId: 'A'.repeat(
+              PayloadLimits.PAYLOAD_LIMITS_ENCRYPT_DECRYPT_DATA_KEYSOURCE_KEY_ID_MAX_LEN +
+                1,
+            ),
+          },
+        },
+      },
+      'keySource.single.keyId',
+    ],
+    [
+      {
+        caCert: 'A'.repeat(
+          PayloadLimits.PAYLOAD_LIMITS_SIGN_CERTIFICATE_CA_CERT_MAX_LEN + 1,
+        ),
+      },
+      'caCert',
+    ],
+    [
+      {
+        crlDistributionPoints: [
+          'A'.repeat(
+            PayloadLimits.PAYLOAD_LIMITS_SIGN_CERTIFICATE_DISTRIBUTION_POINT_MAX_LEN +
+              1,
+          ),
+        ],
+      },
+      'crlDistributionPoints[0]',
+    ],
+  ])('should reject invalid certificate fields (%#)', async (fields, field) => {
+    await expect(
+      client.signCertificate({
+        profile: 'Default',
+        csr: 'mocked-csr',
+        keySource: { single: { keyId: 'mocked-key-id' } },
+        caCert: 'mocked-cert',
+        outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
+        ...fields,
+      } as SignCertificateRequest),
+    ).rejects.toThrow(field);
+    expect(client['client'].SignCertificate).not.toHaveBeenCalled();
+  });
+
   it('should reject invalid sign certificate payloads before making a request', async () => {
     await expect(
       client.signCertificate(null as unknown as SignCertificateRequest),
@@ -133,6 +200,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
     ).rejects.toThrow('crlDistributionPoints[0]');
+    expect(client['client'].SignCertificate).not.toHaveBeenCalled();
   });
 
   it('should reject invalid certificate encoding options', async () => {
@@ -149,6 +217,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         outputFormat: SignCertificateOutputFormat.UNRECOGNIZED,
       }),
     ).rejects.toThrow('outputFormat');
+    expect(client['client'].SignCertificate).not.toHaveBeenCalled();
   });
 
   it('sign certificate should autofill the metadata', async () => {
