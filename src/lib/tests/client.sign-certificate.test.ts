@@ -17,8 +17,12 @@ describe('CryptoBrokerClient', () => {
     const payload: SignCertificateRequest = {
       profile: 'Default',
       csr: 'mocked-csr',
-      caPrivateKey: 'mocked-key',
       caCert: 'mocked-cert',
+      keySource: {
+        single: {
+          keyId: 'mocked-key-id',
+        },
+      },
       metadata: { id: 'mocked-id' },
       subject: 'CN=Test',
       crlDistributionPoints: ['http://example.com/crl'],
@@ -59,8 +63,12 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       client.signCertificate({
         profile: 'Default',
         csr: '',
-        caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {
+          single: {
+            keyId: 'mocked-key-id',
+          },
+        },
         outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
     ).rejects.toThrow('csr');
@@ -68,8 +76,12 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       client.signCertificate({
         profile: 'Default',
         csr: 'mocked-csr',
-        caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {
+          single: {
+            keyId: 'mocked-key-id',
+          },
+        },
         validNotBefore: BigInt(
           '18446744073709551616', // which is maxUint64 + 1
         ) as unknown as SignCertificateRequest['validNotBefore'],
@@ -80,8 +92,12 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       client.signCertificate({
         profile: 'Default',
         csr: 'mocked-csr',
-        caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {
+          single: {
+            keyId: 'mocked-key-id',
+          },
+        },
         subject: 'A'.repeat(1025),
         outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
@@ -90,8 +106,12 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       client.signCertificate({
         profile: 'Default',
         csr: 'mocked-csr',
-        caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {
+          single: {
+            keyId: 'mocked-key-id',
+          },
+        },
         crlDistributionPoints: Array.from(
           { length: 17 },
           () => 'http://example.com/crl',
@@ -103,8 +123,12 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       client.signCertificate({
         profile: 'Default',
         csr: 'mocked-csr',
-        caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {
+          single: {
+            keyId: 'mocked-key-id',
+          },
+        },
         crlDistributionPoints: [42 as unknown as string],
         outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
@@ -116,8 +140,12 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
       client.signCertificate({
         profile: 'Default',
         csr: 'mocked-csr',
-        caPrivateKey: 'mocked-key',
         caCert: 'mocked-cert',
+        keySource: {
+          single: {
+            keyId: 'mocked-key-id',
+          },
+        },
         outputFormat: SignCertificateOutputFormat.UNRECOGNIZED,
       }),
     ).rejects.toThrow('outputFormat');
@@ -127,8 +155,12 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
     const payload = {
       profile: 'Default',
       csr: 'mocked-csr',
-      caPrivateKey: 'mocked-key',
       caCert: 'mocked-cert',
+      keySource: {
+        single: {
+          keyId: 'mocked-key-id',
+        },
+      },
       validNotBeforeOffset: '0',
       validNotAfterOffset: '1',
       subject: 'CN=Test',
@@ -172,8 +204,12 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
     const payload = {
       profile: 'Default',
       csr: 'mocked-csr',
-      caPrivateKey: 'mocked-key',
       caCert: 'mocked-cert',
+      keySource: {
+        single: {
+          keyId: 'mocked-key-id',
+        },
+      },
       validNotBeforeOffset: '0',
       validNotAfterOffset: '1',
       subject: 'CN=Test',

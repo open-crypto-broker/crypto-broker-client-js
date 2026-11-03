@@ -54,7 +54,7 @@
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
-    "@bufbuild/buf": "^1.73.0",
+    "@bufbuild/buf": "^1.75.0",
     "@bufbuild/protobuf": "^2.15.0",
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^10.0.1",
@@ -63,7 +63,7 @@
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.70.1",
     "@typescript-eslint/parser": "^8.67.0",
-    "eslint": "^10.11.0",
+    "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "husky": "^9.1.7",
@@ -72,9 +72,9 @@
     "rxjs": "^7.8.2",
     "ts-jest": "^29.4.14",
     "ts-node": "^10.9.2",
-    "ts-proto": "^2.12.4",
+    "ts-proto": "^2.18.3",
     "tsconfig": "^7.0.0",
-    "tsdown": "^0.23.0",
+    "tsdown": "^0.23.2",
     "tsx": "^4.23.15",
     "typescript": "6.0.3"
   },
