@@ -59,8 +59,12 @@ console.log(`Hashed Data response: ${hashDataResponse.hashValueHex}`);
 const signCertificateResponse: SignCertificateResponse = await cryptoLib.signCertificate({
     profile: profile,
     csr: csr,
-    caPrivateKey: caPrivateKey,
     caCert: caCert,
+    keySource: {
+      single: {
+        keyId: myKMSKeyId,
+      },
+    },
     outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
     // Optional values
     validNotBefore: BigInt(Math.floor(new Date().getTime() / 1000)), // now
