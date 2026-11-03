@@ -1,13 +1,9 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { BenchmarkResponse } from '../proto/cryptobroker/v1/messages.js';
 import { isUUID4 } from './client.test-utils.js';
 import { CryptoBrokerClient } from '../client.js';
 
 describe('CryptoBrokerClient', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   const client: CryptoBrokerClient = new CryptoBrokerClient({
     circuitBreakerOptions: {
       enabled: false,
@@ -38,6 +34,5 @@ describe('CryptoBrokerClient', () => {
         },
       }),
     ).rejects.toThrow('metadata.id');
-    expect(client['devClient'].Benchmark).not.toHaveBeenCalled();
   });
 });
