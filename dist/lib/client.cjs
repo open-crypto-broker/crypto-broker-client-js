@@ -3871,7 +3871,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "verifyData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.5.0";
-const GIT_HASH = "67c63ab2ae6896332fc337a15ce7febaf257c136";
+const GIT_HASH = "5e857302c0eb11b7fab18d47a52fcf9f164d3c30";
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.DecryptDataResponse = DecryptDataResponse;
 exports.EncryptDataResponse = EncryptDataResponse;
