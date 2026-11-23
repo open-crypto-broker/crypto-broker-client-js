@@ -49,9 +49,13 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.14.5",
-    "@peculiar/x509": "^2.1.0",
+    "@peculiar/asn1-asym-key": "^2.11.1",
+    "@peculiar/asn1-schema": "^2.11.1",
+    "@peculiar/asn1-x509": "^2.11.1",
+    "@peculiar/x509": "^2.2.0",
     "opossum": "^10.0.0",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@bufbuild/buf": "^1.75.0",
