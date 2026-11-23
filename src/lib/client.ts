@@ -3,6 +3,7 @@ import * as grpc from '@grpc/grpc-js';
 import { ClientOptions } from '@grpc/grpc-js';
 import { UnaryCallback } from '@grpc/grpc-js/build/src/client.js';
 import { defaultServiceConfig } from './conf/service_config.js';
+import { formatSignKeySource } from './utils/conversions.js';
 import {
   CircuitBreakerConfig,
   circuitBreakerConfigFactory,
@@ -107,7 +108,7 @@ export interface SignCertificatePayload {
   profile: string;
   csr: string;
   caCert: string;
-  keySource: SignKeySource | undefined;
+  keySource: SignKeySource;
   validNotBefore?: bigint;
   validNotAfter?: bigint;
   metadata?: Metadata;
@@ -292,6 +293,7 @@ export class CryptoBrokerClient {
 
   async benchmarkData(payload: BenchmarkPayload): Promise<BenchmarkResponse> {
     validateBenchmarkPayload(payload);
+    // Prepare the Request
     const req: BenchmarkRequest = {
       metadata: {
         id: payload.metadata?.id || randomUUID(),
@@ -300,12 +302,14 @@ export class CryptoBrokerClient {
         }),
       },
     };
+    // Send the Request
     return this.devClient.Benchmark(req).then((res: BenchmarkResponse) => res);
   }
 
   @WithCircuitBreaker
   async hashData(payload: HashDataPayload): Promise<HashDataResponse> {
     validateHashDataPayload(payload);
+    // Prepare the Request
     const req: HashDataRequest = {
       profile: payload.profile,
       input: payload.input,
@@ -317,6 +321,7 @@ export class CryptoBrokerClient {
         }),
       },
     };
+    // Send the Request
     return this.client.HashData(req).then((res: HashDataResponse) => res);
   }
 
@@ -325,12 +330,14 @@ export class CryptoBrokerClient {
     payload: SignCertificatePayload,
   ): Promise<SignCertificateResponse> {
     validateSignCertificatePayload(payload);
+    // re-format key source input
+    const keySource = formatSignKeySource(payload.keySource, 'private');
     // Prepare the Request
     const req: SignCertificateRequest = {
       profile: payload.profile,
       csr: payload.csr,
       caCert: payload.caCert,
-      keySource: payload.keySource,
+      keySource: keySource,
       outputFormat: payload.outputFormat,
       metadata: {
         id: payload.metadata?.id || randomUUID(),
@@ -352,6 +359,7 @@ export class CryptoBrokerClient {
   @WithCircuitBreaker
   async encryptData(payload: EncryptDataPayload): Promise<EncryptDataResponse> {
     validateEncryptDataPayload(payload);
+    // Prepare the Request
     const req: EncryptDataRequest = {
       profile: payload.profile,
       keySource: payload.keySource,
@@ -371,6 +379,7 @@ export class CryptoBrokerClient {
   @WithCircuitBreaker
   async decryptData(payload: DecryptDataPayload): Promise<DecryptDataResponse> {
     validateDecryptDataPayload(payload);
+    // Prepare the Request
     const req: DecryptDataRequest = {
       profile: payload.profile,
       keySource: payload.keySource,
@@ -390,9 +399,12 @@ export class CryptoBrokerClient {
   @WithCircuitBreaker
   async signData(payload: SignDataPayload): Promise<SignDataResponse> {
     validateSignDataPayload(payload);
+    // re-format key source input
+    const keySource = formatSignKeySource(payload.keySource, 'private');
+    // Prepare the Request
     const req: SignDataRequest = {
       profile: payload.profile,
-      keySource: payload.keySource,
+      keySource: keySource,
       input: payload.input,
       signatureFormat: payload.signatureFormat,
       metadata: {
@@ -409,9 +421,12 @@ export class CryptoBrokerClient {
   @WithCircuitBreaker
   async verifyData(payload: VerifyDataPayload): Promise<VerifyDataResponse> {
     validateVerifyDataPayload(payload);
+    // re-format key source input
+    const keySource = formatSignKeySource(payload.keySource, 'public');
+    // Prepare the Request
     const req: VerifyDataRequest = {
       profile: payload.profile,
-      keySource: payload.keySource,
+      keySource: keySource,
       input: payload.input,
       signature: payload.signature,
       signatureFormat: payload.signatureFormat,

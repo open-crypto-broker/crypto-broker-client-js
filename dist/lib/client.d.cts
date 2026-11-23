@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import * as grpc from "@grpc/grpc-js";
 interface CircuitBreakerConfig {
   enabled: boolean;
@@ -520,7 +519,7 @@ export interface SignCertificatePayload {
   profile: string;
   csr: string;
   caCert: string;
-  keySource: SignKeySource | undefined;
+  keySource: SignKeySource;
   validNotBefore?: bigint;
   validNotAfter?: bigint;
   metadata?: Metadata;
@@ -578,4 +577,3 @@ export declare class CryptoBrokerClient {
 export declare const VERSION: any;
 export declare const GIT_HASH: any;
 export { HashOutputFormat as HashDataOutputFormat, SignOutputFormat as SignCertificateOutputFormat };
-//# sourceMappingURL=client.d.cts.map

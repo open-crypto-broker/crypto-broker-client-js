@@ -1,9 +1,10 @@
 import { describe, expect, it } from '@jest/globals';
-import { CryptoBrokerClient, SignCertificateOutputFormat } from '../client.js';
 import {
-  SignCertificateRequest,
-  SignCertificateResponse,
-} from '../proto/cryptobroker/v1/messages.js';
+  CryptoBrokerClient,
+  SignCertificateOutputFormat,
+  SignCertificatePayload,
+} from '../client.js';
+import { SignCertificateResponse } from '../proto/cryptobroker/v1/messages.js';
 import { isUUID4 } from './client.test-utils.js';
 
 describe('CryptoBrokerClient', () => {
@@ -14,7 +15,7 @@ describe('CryptoBrokerClient', () => {
   });
 
   it('should return mocked sign certificate response', async () => {
-    const payload: SignCertificateRequest = {
+    const payload: SignCertificatePayload = {
       profile: 'Default',
       csr: 'mocked-csr',
       caCert: 'mocked-cert',
@@ -57,7 +58,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
   });
   it('should reject invalid sign certificate payloads before making a request', async () => {
     await expect(
-      client.signCertificate(null as unknown as SignCertificateRequest),
+      client.signCertificate(null as unknown as SignCertificatePayload),
     ).rejects.toThrow(TypeError);
     await expect(
       client.signCertificate({
@@ -84,7 +85,7 @@ cUZg4IA9bHw0i3z+r7/CHPIifhZVJgN4PBB8UavfKVVzpSAXTN6k4EeDEA==
         },
         validNotBefore: BigInt(
           '18446744073709551616', // which is maxUint64 + 1
-        ) as unknown as SignCertificateRequest['validNotBefore'],
+        ) as unknown as SignCertificatePayload['validNotBefore'],
         outputFormat: SignCertificateOutputFormat.SIGN_OUTPUT_FORMAT_PEM,
       }),
     ).rejects.toThrow('validNotBefore');
