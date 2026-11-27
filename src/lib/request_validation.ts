@@ -51,8 +51,8 @@ function assertObject(
   value: unknown,
   field: string,
 ): asserts value is Record<string, unknown> {
-  if (!isRecord(value)) {
-    throw typeError(field, 'must be an object');
+  if (!isRecord(value) || Object.keys(value).length === 0) {
+    throw typeError(field, 'must be a non-empty object');
   }
 }
 
@@ -198,9 +198,6 @@ function validateMetadata(metadata: unknown): void {
 }
 
 function validateSignKeySource(signKeySource: unknown): void {
-  if (signKeySource === undefined) {
-    return;
-  }
   assertObject(signKeySource, 'keySource');
   if (signKeySource.single !== undefined) {
     assertObject(signKeySource.single, 'keySource.single');
@@ -216,21 +213,26 @@ function validateSignKeySource(signKeySource: unknown): void {
   }
   if (signKeySource.componentKeys !== undefined) {
     assertObject(signKeySource.componentKeys, 'keySource.componentKeys');
-    if (!Array.isArray(signKeySource.componentKeys.keys)) {
+    if (
+      !signKeySource.componentKeys.keys ||
+      !Array.isArray(signKeySource.componentKeys.keys)
+    ) {
       throw typeError('keySource.componentKeys.keys', 'must be an array');
     }
-    signKeySource.componentKeys.keys.forEach((value, index) => {
-      assertObject(value, `keySource.componentKeys.keys[${index}]`);
-      assertOptionalString(
-        value,
-        'keySource.componentKeys.keys[${index}].keyId',
-        maxKeyIdLen,
-      );
-      assertOptionalUint8Array(
-        value,
-        'keySource.componentKeys.keys[${index}].rawKey',
-      );
-    });
+    signKeySource.componentKeys.keys.forEach(
+      (keySource: Record<string, string | Uint8Array>, index: number) => {
+        assertObject(keySource, `keySource.componentKeys.keys[${index}]`);
+        assertOptionalString(
+          keySource.keyId,
+          `keySource.componentKeys.keys[${index}].keyId`,
+          maxKeyIdLen,
+        );
+        assertOptionalUint8Array(
+          keySource.rawKey,
+          `keySource.componentKeys.keys[${index}].rawKey`,
+        );
+      },
+    );
   }
 
   // Constraints

@@ -12,6 +12,32 @@ describe('CryptoBrokerClient', () => {
       enabled: false,
     },
   });
+  it('should autofill the metadata values', async () => {
+    const payload: VerifyDataPayload = {
+      profile: 'Default',
+      keySource: {
+        single: {
+          keyId: 'mocked-keyID',
+        },
+      },
+      input: Buffer.from('Welcome CryptoBroker'),
+      signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
+      signature: Buffer.from('deadbeef', 'hex'),
+      metadata: undefined,
+    };
+    const response = await client.verifyData(payload);
+
+    // Test that the response is a subset of the object
+    expect(response).toMatchObject({
+      valid: true,
+    });
+
+    // assert that the metadata was correctly autofilled
+    expect(response.metadata).toBeDefined();
+    expect(response.metadata?.id).not.toEqual('empty');
+    expect(isUUID4(response.metadata?.id)).toBeTruthy();
+  });
+
   it('should return that the signature is valid', async () => {
     const payload: VerifyDataPayload = {
       profile: 'Default',
@@ -137,30 +163,79 @@ describe('CryptoBrokerClient', () => {
       }),
     ).rejects.toThrow('signatureFormat');
   });
-
-  it('verify data should autofill the metadata values', async () => {
-    const payload: VerifyDataPayload = {
-      profile: 'Default',
-      keySource: {
-        single: {
-          keyId: 'mocked-keyID',
+  it('should only accept specified valid keys', async () => {
+    await expect(
+      client.verifyData({
+        profile: 'Default',
+        keySource: {
+          single: {
+            rawKey: Buffer.from('mocked DER key contents'),
+          },
         },
-      },
-      input: Buffer.from('Welcome CryptoBroker'),
-      signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
-      signature: Buffer.from('deadbeef', 'hex'),
-      metadata: undefined,
-    };
-    const response = await client.verifyData(payload);
-
-    // Test that the response is a subset of the object
-    expect(response).toMatchObject({
+        input: Buffer.from('Welcome CryptoBroker'),
+        signature: Buffer.from('deadbeef', 'hex'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
+        metadata: { id: 'mocked-id' },
+      }),
+    ).resolves.toEqual({
       valid: true,
+      metadata: { id: 'mocked-id' },
     });
-
-    // assert that the metadata was correctly autofilled
-    expect(response.metadata).toBeDefined();
-    expect(response.metadata?.id).not.toEqual('empty');
-    expect(isUUID4(response.metadata?.id)).toBeTruthy();
+    await expect(
+      client.verifyData({
+        profile: 'Default',
+        keySource: {
+          componentKeys: {
+            keys: [
+              {
+                keyId: 'mocked-keyID',
+              },
+              {
+                rawKey: Buffer.from('mocked-rawKey'),
+              },
+            ],
+          },
+        },
+        input: Buffer.from('Welcome CryptoBroker'),
+        signature: Buffer.from('deadbeef', 'hex'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
+        metadata: { id: 'mocked-id' },
+      }),
+    ).resolves.toEqual({
+      valid: true,
+      metadata: { id: 'mocked-id' },
+    });
+    await expect(
+      client.verifyData({
+        profile: 'Default',
+        keySource: {
+          single: {
+            rawKey: Buffer.from(
+              '-----BEGIN UNSUPPORTED PUBLIC KEY-----\nABC\n-----END UNSUPPORTED PUBLIC KEY-----\n',
+            ),
+          },
+        },
+        input: Buffer.from('Welcome CryptoBroker'),
+        signature: Buffer.from('deadbeef', 'hex'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
+        metadata: { id: 'mocked-id' },
+      }),
+    ).rejects.toThrow('Unsupported Key');
+    await expect(
+      client.verifyData({
+        profile: 'Default',
+        keySource: {
+          single: {
+            rawKey: Buffer.from(
+              '-----BEGIN PRIVATE KEY-----\nABC\n-----END PRIVATE KEY-----\n',
+            ),
+          },
+        },
+        input: Buffer.from('Welcome CryptoBroker'),
+        signature: Buffer.from('deadbeef', 'hex'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
+        metadata: { id: 'mocked-id' },
+      }),
+    ).rejects.toThrow('Unexpected Key');
   });
 });

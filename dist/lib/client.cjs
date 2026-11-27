@@ -22,9 +22,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 }) : target, mod));
 require("reflect-metadata");
 let _grpc_grpc_js = require("@grpc/grpc-js");
-_grpc_grpc_js = __toESM(_grpc_grpc_js, 1);
 let crypto = require("crypto");
 let opossum = require("opossum");
+_grpc_grpc_js = __toESM(_grpc_grpc_js, 1);
 opossum = __toESM(opossum, 1);
 // src/lib/conf/service_config.ts
 const defaultServiceConfig = { methodConfig: [{
@@ -41,6 +41,42 @@ const defaultServiceConfig = { methodConfig: [{
 		]
 	}
 }] };
+// src/lib/utils/conversions.ts
+function toPKCS8DER(key, mode) {
+	const pemPatterns = {
+		private: /^\s*-----BEGIN ([A-Z0-9 -]*?)PRIVATE KEY-----([A-Za-z0-9+/=\s]*)-----END \1PRIVATE KEY-----\s*$/,
+		public: /^\s*-----BEGIN ([A-Z0-9 -]*?)PUBLIC KEY-----([A-Za-z0-9+/=\s]*)-----END \1PUBLIC KEY-----\s*$/
+	};
+	const keyDescriptions = {
+		private: "an unencrypted PKCS#8 private key",
+		public: "a SubjectPublicKeyInfo (SPKI) public key"
+	};
+	const decodedKey = new TextDecoder().decode(key);
+	const isPrivate = mode === "private";
+	const pem = decodedKey.match(pemPatterns[mode]);
+	if (!pem && decodedKey.match(pemPatterns[isPrivate ? "public" : "private"])) throw new TypeError(`Unexpected Key: The key must be ${keyDescriptions[mode]}`);
+	if (pem && pem[1] !== "") throw new TypeError(`Unsupported Key: The key must be ${keyDescriptions[mode]}!`);
+	return pem ? new Uint8Array(Buffer.from(pem[2], "base64")) : key;
+}
+function formatValidateSignKeySource(sks, mode) {
+	if (sks.single !== void 0) return {
+		...sks,
+		single: {
+			...sks.single.rawKey !== void 0 && { rawKey: toPKCS8DER(sks.single.rawKey, mode) },
+			...sks.single.keyId !== void 0 && { keyId: sks.single.keyId }
+		}
+	};
+	if (sks.componentKeys !== void 0) {
+		const newComponentKeyList = [];
+		for (const ks of sks.componentKeys.keys) if (ks.rawKey !== void 0) newComponentKeyList.push({ rawKey: toPKCS8DER(ks.rawKey, mode) });
+		else newComponentKeyList.push({ keyId: ks.keyId });
+		return {
+			...sks,
+			componentKeys: { keys: newComponentKeyList }
+		};
+	}
+	throw new Error("SignKeySource is invalid");
+}
 // src/lib/conf/circuitbreaker_config.ts
 const circuitBreakerConfigFactory = (override) => {
 	const defaultConfig = {
@@ -153,7 +189,7 @@ function int64FromString(dec) {
 */
 function int64ToString(lo, hi) {
 	let bits = newBits(lo, hi);
-	const negative = bits.hi & 2147483648;
+	const negative = bits.hi & 0x80000000;
 	if (negative) bits = negate(bits.lo, bits.hi);
 	const result = uInt64ToString(bits.lo, bits.hi);
 	return negative ? "-" + result : result;
@@ -169,8 +205,8 @@ function int64ToString(lo, hi) {
 function uInt64ToString(lo, hi) {
 	({lo, hi} = toUnsigned(lo, hi));
 	if (hi <= 2097151) return String(TWO_PWR_32_DBL * hi + lo);
-	const low = lo & 16777215;
-	const mid = (lo >>> 24 | hi << 8) & 16777215;
+	const low = lo & 0xffffff;
+	const mid = (lo >>> 24 | hi << 8) & 0xffffff;
 	const high = hi >> 16 & 65535;
 	let digitA = low + mid * 6777216 + high * 6710656;
 	let digitB = mid + high * 8147497;
@@ -351,8 +387,8 @@ let te;
 * It only configures the copy of the library it is imported from. To provide
 * the encoding API for every copy of Protobuf-ES in an isolate, install
 * `TextEncoder` (with the methods `encode` and optionally `encodeInto`) and
-* `TextDecoder` (with the `fatal: true` constructor argument and the `decode`
-* method) on `globalThis`.
+* `TextDecoder` (with the `fatal: true` and `ignoreBOM: true` constructor
+* arguments and the `decode` method) on `globalThis`.
 *
 * Providing `encodeUtf8Into` is optional for backwards compatibility. If it
 * is omitted, we emulate it with a wrapper that calls `encodeUtf8`.
@@ -372,7 +408,7 @@ function getTextEncoding() {
 		const globals = globalThis;
 		if (!globals.TextEncoder || !globals.TextDecoder) throw new Error("encoding API missing: install TextEncoder and TextDecoder on globalThis");
 		const textEncoder = new globals.TextEncoder();
-		const textDecoder = new globals.TextDecoder();
+		const textDecoder = new globals.TextDecoder("utf-8", { ignoreBOM: true });
 		let textDecoderStrict;
 		const config = {
 			encodeUtf8(text) {
@@ -380,13 +416,17 @@ function getTextEncoding() {
 			},
 			decodeUtf8(bytes, strict) {
 				if (strict) {
-					if (!textDecoderStrict) textDecoderStrict = new globals.TextDecoder("utf-8", { fatal: true });
+					if (!textDecoderStrict) textDecoderStrict = new globals.TextDecoder("utf-8", {
+						fatal: true,
+						ignoreBOM: true
+					});
 					return textDecoderStrict.decode(bytes);
 				}
 				return textDecoder.decode(bytes);
 			},
 			checkUtf8(text) {
 				try {
+					encodeURIComponent(text);
 					return true;
 				} catch (_) {
 					return false;
@@ -970,18 +1010,21 @@ var BinaryReader = class {
 	* `strict` is true, throw on invalid UTF-8 instead of substituting U+FFFD.
 	*/
 	string(strict) {
-		const bytes = this.bytes();
-		const len = bytes.length;
+		const len = this.uint32();
+		const start = this.pos;
+		this.pos += len;
+		this.assertBounds();
+		const buf = this.buf;
 		if (len <= ASCII_MAX_LENGTH) {
 			const codes = new Array(len);
 			for (let i = 0; i < len; i++) {
-				const byte = bytes[i];
-				if (byte > 127) return this.decodeUtf8(bytes, strict);
+				const byte = buf[start + i];
+				if (byte > 127) return this.decodeUtf8(buf.subarray(start, this.pos), strict);
 				codes[i] = byte;
 			}
 			return String.fromCharCode.apply(String, codes);
 		}
-		return this.decodeUtf8(bytes, strict);
+		return this.decodeUtf8(buf.subarray(start, this.pos), strict);
 	}
 };
 /**
@@ -990,7 +1033,7 @@ var BinaryReader = class {
 function assertInt32(arg) {
 	if (typeof arg == "string") arg = Number(arg);
 	else if (typeof arg != "number") throw new Error("invalid int32: " + typeof arg);
-	if (!Number.isInteger(arg) || arg > 2147483647 || arg < -2147483648) throw new Error("invalid int32: " + arg);
+	if (!Number.isInteger(arg) || arg > 0x7fffffff || arg < -0x80000000) throw new Error("invalid int32: " + arg);
 }
 /**
 * Assert a valid unsigned protobuf 32-bit integer as a number or string.
@@ -998,7 +1041,7 @@ function assertInt32(arg) {
 function assertUInt32(arg) {
 	if (typeof arg == "string") arg = Number(arg);
 	else if (typeof arg != "number") throw new Error("invalid uint32: " + typeof arg);
-	if (!Number.isInteger(arg) || arg > 4294967295 || arg < 0) throw new Error("invalid uint32: " + arg);
+	if (!Number.isInteger(arg) || arg > 0xffffffff || arg < 0) throw new Error("invalid uint32: " + arg);
 }
 /**
 * Assert a valid protobuf float32 value as a number or string.
@@ -1974,7 +2017,7 @@ function createBaseSignCertificateRequest() {
 	return {
 		profile: "",
 		csr: "",
-		caCert: "",
+		caCert: void 0,
 		keySource: void 0,
 		validNotBefore: void 0,
 		validNotAfter: void 0,
@@ -1988,7 +2031,7 @@ const SignCertificateRequest = {
 	encode(message, writer = new BinaryWriter()) {
 		if (message.profile !== "") writer.uint32(10).string(message.profile);
 		if (message.csr !== "") writer.uint32(18).string(message.csr);
-		if (message.caCert !== "") writer.uint32(34).string(message.caCert);
+		if (message.caCert !== void 0) writer.uint32(34).string(message.caCert);
 		if (message.keySource !== void 0) SignKeySource.encode(message.keySource, writer.uint32(90).fork()).join();
 		if (message.validNotBefore !== void 0) {
 			if (BigInt.asUintN(64, message.validNotBefore) !== message.validNotBefore) throw new globalThis.Error("value provided for field message.validNotBefore of type uint64 too large");
@@ -2068,7 +2111,7 @@ const SignCertificateRequest = {
 		return {
 			profile: isSet$1(object.profile) ? globalThis.String(object.profile) : "",
 			csr: isSet$1(object.csr) ? globalThis.String(object.csr) : "",
-			caCert: isSet$1(object.caCert) ? globalThis.String(object.caCert) : isSet$1(object.ca_cert) ? globalThis.String(object.ca_cert) : "",
+			caCert: isSet$1(object.caCert) ? globalThis.String(object.caCert) : isSet$1(object.ca_cert) ? globalThis.String(object.ca_cert) : void 0,
 			keySource: isSet$1(object.keySource) ? SignKeySource.fromJSON(object.keySource) : isSet$1(object.key_source) ? SignKeySource.fromJSON(object.key_source) : void 0,
 			validNotBefore: isSet$1(object.validNotBefore) ? BigInt(object.validNotBefore) : isSet$1(object.valid_not_before) ? BigInt(object.valid_not_before) : void 0,
 			validNotAfter: isSet$1(object.validNotAfter) ? BigInt(object.validNotAfter) : isSet$1(object.valid_not_after) ? BigInt(object.valid_not_after) : void 0,
@@ -2082,7 +2125,7 @@ const SignCertificateRequest = {
 		const obj = {};
 		if (message.profile !== "") obj.profile = message.profile;
 		if (message.csr !== "") obj.csr = message.csr;
-		if (message.caCert !== "") obj.caCert = message.caCert;
+		if (message.caCert !== void 0) obj.caCert = message.caCert;
 		if (message.keySource !== void 0) obj.keySource = SignKeySource.toJSON(message.keySource);
 		if (message.validNotBefore !== void 0) obj.validNotBefore = message.validNotBefore.toString();
 		if (message.validNotAfter !== void 0) obj.validNotAfter = message.validNotAfter.toString();
@@ -2099,7 +2142,7 @@ const SignCertificateRequest = {
 		const message = createBaseSignCertificateRequest();
 		message.profile = object.profile ?? "";
 		message.csr = object.csr ?? "";
-		message.caCert = object.caCert ?? "";
+		message.caCert = object.caCert ?? void 0;
 		message.keySource = object.keySource !== void 0 && object.keySource !== null ? SignKeySource.fromPartial(object.keySource) : void 0;
 		message.validNotBefore = object.validNotBefore !== void 0 && object.validNotBefore !== null ? BigInt(object.validNotBefore) : void 0;
 		message.validNotAfter = object.validNotAfter !== void 0 && object.validNotAfter !== null ? BigInt(object.validNotAfter) : void 0;
@@ -3474,7 +3517,7 @@ function isRecord(value) {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function assertObject(value, field) {
-	if (!isRecord(value)) throw typeError(field, "must be an object");
+	if (!isRecord(value) || Object.keys(value).length === 0) throw typeError(field, "must be a non-empty object");
 }
 function assertString(value, field, max, required = false) {
 	if (typeof value !== "string") throw typeError(field, "must be a string");
@@ -3529,7 +3572,6 @@ function validateMetadata(metadata) {
 	assertString(metadata.traceContext.correlationId, "metadata.traceContext.correlationId", maxCorrelationIdLen);
 }
 function validateSignKeySource(signKeySource) {
-	if (signKeySource === void 0) return;
 	assertObject(signKeySource, "keySource");
 	if (signKeySource.single !== void 0) {
 		assertObject(signKeySource.single, "keySource.single");
@@ -3538,11 +3580,11 @@ function validateSignKeySource(signKeySource) {
 	}
 	if (signKeySource.componentKeys !== void 0) {
 		assertObject(signKeySource.componentKeys, "keySource.componentKeys");
-		if (!Array.isArray(signKeySource.componentKeys.keys)) throw typeError("keySource.componentKeys.keys", "must be an array");
-		signKeySource.componentKeys.keys.forEach((value, index) => {
-			assertObject(value, `keySource.componentKeys.keys[${index}]`);
-			assertOptionalString(value, "keySource.componentKeys.keys[${index}].keyId", maxKeyIdLen);
-			assertOptionalUint8Array(value, "keySource.componentKeys.keys[${index}].rawKey");
+		if (!signKeySource.componentKeys.keys || !Array.isArray(signKeySource.componentKeys.keys)) throw typeError("keySource.componentKeys.keys", "must be an array");
+		signKeySource.componentKeys.keys.forEach((keySource, index) => {
+			assertObject(keySource, `keySource.componentKeys.keys[${index}]`);
+			assertOptionalString(keySource.keyId, `keySource.componentKeys.keys[${index}].keyId`, maxKeyIdLen);
+			assertOptionalUint8Array(keySource.rawKey, `keySource.componentKeys.keys[${index}].rawKey`);
 		});
 	}
 	if (signKeySource.single !== void 0 && signKeySource.componentKeys !== void 0) throw typeError("keySource", "too many key sources - either single or componentKeys must be provided");
@@ -3628,7 +3670,7 @@ function validateVerifyDataPayload(payload) {
 	validateMetadata(payload.metadata);
 	validateSignKeySource(payload.keySource);
 }
-// \0@oxc-project+runtime@0.155.0/helpers/esm/decorate.js
+// \0@oxc-project+runtime@0.159.0/helpers/esm/decorate.js
 function __decorate(decorators, target, key, desc) {
 	var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 	if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3731,11 +3773,12 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 	async signCertificate(payload) {
 		validateSignCertificatePayload(payload);
+		const keySource = formatValidateSignKeySource(payload.keySource, "private");
 		const req = {
 			profile: payload.profile,
 			csr: payload.csr,
 			caCert: payload.caCert,
-			keySource: payload.keySource,
+			keySource,
 			outputFormat: payload.outputFormat,
 			metadata: {
 				id: payload.metadata?.id || (0, crypto.randomUUID)(),
@@ -3778,9 +3821,10 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 	async signData(payload) {
 		validateSignDataPayload(payload);
+		const keySource = formatValidateSignKeySource(payload.keySource, "private");
 		const req = {
 			profile: payload.profile,
-			keySource: payload.keySource,
+			keySource,
 			input: payload.input,
 			signatureFormat: payload.signatureFormat,
 			metadata: {
@@ -3792,9 +3836,10 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 	async verifyData(payload) {
 		validateVerifyDataPayload(payload);
+		const keySource = formatValidateSignKeySource(payload.keySource, "public");
 		const req = {
 			profile: payload.profile,
-			keySource: payload.keySource,
+			keySource,
 			input: payload.input,
 			signature: payload.signature,
 			signatureFormat: payload.signatureFormat,
@@ -3819,7 +3864,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "verifyData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.5.0";
-const GIT_HASH = "c286b20242529fe5b80d042f74b3b588ad8d981e";
+const GIT_HASH = "3c235183f6e61438b1879b3e98b17ee2cba0c9d1";
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.DecryptDataResponse = DecryptDataResponse;
 exports.EncryptDataResponse = EncryptDataResponse;
