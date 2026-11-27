@@ -44,11 +44,8 @@ function formatValidateSignKeySource(sks, mode) {
 	};
 	if (sks.componentKeys !== void 0) {
 		const newComponentKeyList = [];
-		for (const ks of sks.componentKeys.keys) {
-			console.error(ks);
-			if (ks.rawKey !== void 0) newComponentKeyList.push({ rawKey: toPKCS8DER(ks.rawKey, mode) });
-			else newComponentKeyList.push({ keyId: ks.keyId });
-		}
+		for (const ks of sks.componentKeys.keys) if (ks.rawKey !== void 0) newComponentKeyList.push({ rawKey: toPKCS8DER(ks.rawKey, mode) });
+		else newComponentKeyList.push({ keyId: ks.keyId });
 		return {
 			...sks,
 			componentKeys: { keys: newComponentKeyList }
@@ -3843,7 +3840,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "verifyData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.5.0";
-const GIT_HASH = "f500d538f2e9533b8dfd0d11a9a31f376189c0d9";
+const GIT_HASH = "3c235183f6e61438b1879b3e98b17ee2cba0c9d1";
 export { CryptoBrokerClient, DecryptDataResponse, EncryptDataResponse, GIT_HASH, HashOutputFormat as HashDataOutputFormat, HashDataResponse, SignOutputFormat as SignCertificateOutputFormat, SignCertificateResponse, SignDataResponse, SignatureFormat, VERSION };
 
 //# sourceMappingURL=client.mjs.map

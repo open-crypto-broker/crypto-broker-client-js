@@ -57,7 +57,6 @@ export function formatValidateSignKeySource(
     const newComponentKeyList: KeySource[] = [];
     // do the conversion for each key in the component list
     for (const ks of sks.componentKeys.keys) {
-      console.error(ks);
       // either rawKey or keyId must be supplied, which is validated before
       if (ks.rawKey !== undefined) {
         newComponentKeyList.push({
