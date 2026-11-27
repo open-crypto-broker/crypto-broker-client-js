@@ -1,8 +1,8 @@
 import { describe, expect, it } from '@jest/globals';
 import {
   CryptoBrokerClient,
-  SignDataPayload,
   SignatureFormat,
+  SignDataPayload,
 } from '../client.js';
 import { isUUID4 } from './client.test-utils.js';
 
@@ -11,6 +11,36 @@ describe('CryptoBrokerClient', () => {
     circuitBreakerOptions: {
       enabled: false,
     },
+  });
+
+  it('should autofill the metadata values', async () => {
+    const payload: SignDataPayload = {
+      profile: 'Default',
+      keySource: {
+        single: {
+          keyId: 'mocked-keyID',
+        },
+      },
+      input: Buffer.from('Welcome CryptoBroker'),
+      signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
+      metadata: undefined,
+    };
+    const response = await client.signData(payload);
+
+    // Test that the response is a subset of the object
+    expect(response).toMatchObject({
+      signature: Buffer.from('mocked-signature'),
+      descriptor: {
+        profile: 'Default',
+        operation: 'SignData',
+        algorithm: 'ecdsa-sha-512',
+      },
+    });
+
+    // assert that the metadata was correctly autofilled
+    expect(response.metadata).toBeDefined();
+    expect(response.metadata?.id).not.toEqual('empty');
+    expect(isUUID4(response.metadata?.id)).toBeTruthy();
   });
 
   it('should return a mocked signed data response', async () => {
@@ -114,33 +144,88 @@ describe('CryptoBrokerClient', () => {
     ).rejects.toThrow('signatureFormat');
   });
 
-  it('sign data should autofill the metadata values', async () => {
-    const payload: SignDataPayload = {
-      profile: 'Default',
-      keySource: {
-        single: {
-          keyId: 'mocked-keyID',
+  it('should format and only accept specified valid keys', async () => {
+    // resolving cases
+    await expect(
+      client.signData({
+        profile: 'Default',
+        keySource: {
+          single: {
+            rawKey: Buffer.from('mocked DER key contents'),
+          },
         },
-      },
-      input: Buffer.from('Welcome CryptoBroker'),
-      signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
-      metadata: undefined,
-    };
-    const response = await client.signData(payload);
-
-    // Test that the response is a subset of the object
-    expect(response).toMatchObject({
+        input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
+        metadata: { id: 'mocked-id' },
+      }),
+    ).resolves.toEqual({
       signature: Buffer.from('mocked-signature'),
       descriptor: {
         profile: 'Default',
         operation: 'SignData',
         algorithm: 'ecdsa-sha-512',
       },
+      metadata: { id: 'mocked-id' },
+    });
+    await expect(
+      client.signData({
+        profile: 'Default',
+        keySource: {
+          componentKeys: {
+            keys: [
+              {
+                keyId: 'mocked-keyID',
+              },
+              {
+                rawKey: Buffer.from('mocked-rawKey'),
+              },
+            ],
+          },
+        },
+        input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
+        metadata: { id: 'mocked-id' },
+      }),
+    ).resolves.toEqual({
+      signature: Buffer.from('mocked-signature'),
+      descriptor: {
+        profile: 'Default',
+        operation: 'SignData',
+        algorithm: 'ecdsa-sha-512',
+      },
+      metadata: { id: 'mocked-id' },
     });
 
-    // assert that the metadata was correctly autofilled
-    expect(response.metadata).toBeDefined();
-    expect(response.metadata?.id).not.toEqual('empty');
-    expect(isUUID4(response.metadata?.id)).toBeTruthy();
+    // rejecting cases
+    await expect(
+      client.signData({
+        profile: 'Default',
+        keySource: {
+          single: {
+            rawKey: Buffer.from(
+              '-----BEGIN UNSUPPORTED PRIVATE KEY-----\nABC\n-----END UNSUPPORTED PRIVATE KEY-----\n',
+            ),
+          },
+        },
+        input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
+        metadata: { id: 'mocked-id' },
+      }),
+    ).rejects.toThrow('Unsupported Key');
+    await expect(
+      client.signData({
+        profile: 'Default',
+        keySource: {
+          single: {
+            rawKey: Buffer.from(
+              '-----BEGIN PUBLIC KEY-----\nABC\n-----END PUBLIC KEY-----\n',
+            ),
+          },
+        },
+        input: Buffer.from('Welcome CryptoBroker'),
+        signatureFormat: SignatureFormat.SIGNATURE_FORMAT_RAW,
+        metadata: { id: 'mocked-id' },
+      }),
+    ).rejects.toThrow('Unexpected Key');
   });
 });

@@ -3,7 +3,7 @@ import * as grpc from '@grpc/grpc-js';
 import { ClientOptions } from '@grpc/grpc-js';
 import { UnaryCallback } from '@grpc/grpc-js/build/src/client.js';
 import { defaultServiceConfig } from './conf/service_config.js';
-import { formatSignKeySource } from './utils/conversions.js';
+import { formatValidateSignKeySource } from './utils/conversions.js';
 import {
   CircuitBreakerConfig,
   circuitBreakerConfigFactory,
@@ -331,7 +331,7 @@ export class CryptoBrokerClient {
   ): Promise<SignCertificateResponse> {
     validateSignCertificatePayload(payload);
     // re-format key source input
-    const keySource = formatSignKeySource(payload.keySource, 'private');
+    const keySource = formatValidateSignKeySource(payload.keySource, 'private');
     // Prepare the Request
     const req: SignCertificateRequest = {
       profile: payload.profile,
@@ -400,7 +400,7 @@ export class CryptoBrokerClient {
   async signData(payload: SignDataPayload): Promise<SignDataResponse> {
     validateSignDataPayload(payload);
     // re-format key source input
-    const keySource = formatSignKeySource(payload.keySource, 'private');
+    const keySource = formatValidateSignKeySource(payload.keySource, 'private');
     // Prepare the Request
     const req: SignDataRequest = {
       profile: payload.profile,
@@ -422,7 +422,7 @@ export class CryptoBrokerClient {
   async verifyData(payload: VerifyDataPayload): Promise<VerifyDataResponse> {
     validateVerifyDataPayload(payload);
     // re-format key source input
-    const keySource = formatSignKeySource(payload.keySource, 'public');
+    const keySource = formatValidateSignKeySource(payload.keySource, 'public');
     // Prepare the Request
     const req: VerifyDataRequest = {
       profile: payload.profile,

@@ -22,9 +22,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 }) : target, mod));
 require("reflect-metadata");
 let _grpc_grpc_js = require("@grpc/grpc-js");
-let _peculiar_asn1_schema = require("@peculiar/asn1-schema");
-let _peculiar_asn1_asym_key = require("@peculiar/asn1-asym-key");
-let _peculiar_asn1_x509 = require("@peculiar/asn1-x509");
 let crypto = require("crypto");
 let opossum = require("opossum");
 _grpc_grpc_js = __toESM(_grpc_grpc_js, 1);
@@ -45,43 +42,43 @@ const defaultServiceConfig = { methodConfig: [{
 	}
 }] };
 // src/lib/utils/conversions.ts
-const pemPatterns = {
-	private: /^\s*-----BEGIN ([A-Z0-9 -]*?)PRIVATE KEY-----([A-Za-z0-9+/=\s]*)-----END \1PRIVATE KEY-----\s*$/,
-	public: /^\s*-----BEGIN ([A-Z0-9 -]*?)PUBLIC KEY-----([A-Za-z0-9+/=\s]*)-----END \1PUBLIC KEY-----\s*$/
-};
-const keyDescriptions = {
-	private: "an unencrypted PKCS#8 private key",
-	public: "a SubjectPublicKeyInfo (SPKI) public key"
-};
-function toPkcs8(key, mode = "private") {
-	const pem = new TextDecoder().decode(key).match(pemPatterns[mode]);
-	const der = pem ? new Uint8Array(Buffer.from(pem[2], "base64")) : key;
-	const expected = keyDescriptions[mode];
-	let parsed;
-	try {
-		parsed = mode === "private" ? _peculiar_asn1_schema.AsnConvert.parse(der, _peculiar_asn1_asym_key.OneAsymmetricKey) : _peculiar_asn1_schema.AsnConvert.parse(der, _peculiar_asn1_x509.SubjectPublicKeyInfo);
-	} catch {
-		throw new TypeError(`the key must be ${expected}`);
-	}
-	if (parsed instanceof _peculiar_asn1_asym_key.OneAsymmetricKey && parsed.version !== _peculiar_asn1_asym_key.Version.v1 && parsed.version !== _peculiar_asn1_asym_key.Version.v2) throw new TypeError(`the key must be ${expected}`);
-	const reencoded = new Uint8Array(_peculiar_asn1_schema.AsnConvert.serialize(parsed));
-	if (!Buffer.from(reencoded).equals(Buffer.from(der))) throw new TypeError(`the key must be DER-encoded: expected ${expected}`);
-	return der;
-}
-function formatSignKeySource(sks, mode) {
-	if (sks.single !== void 0 && sks.single.rawKey !== void 0) return {
-		...sks,
-		single: { rawKey: toPkcs8(sks.single.rawKey, mode) }
+function toPKCS8DER(key, mode) {
+	const pemPatterns = {
+		private: /^\s*-----BEGIN ([A-Z0-9 -]*?)PRIVATE KEY-----([A-Za-z0-9+/=\s]*)-----END \1PRIVATE KEY-----\s*$/,
+		public: /^\s*-----BEGIN ([A-Z0-9 -]*?)PUBLIC KEY-----([A-Za-z0-9+/=\s]*)-----END \1PUBLIC KEY-----\s*$/
 	};
-	else if (sks.componentKeys !== void 0) {
-		const nck = [];
-		for (const ks of sks.componentKeys.keys) if (ks.rawKey !== void 0) nck.push({ rawKey: toPkcs8(ks.rawKey, mode) });
+	const keyDescriptions = {
+		private: "an unencrypted PKCS#8 private key",
+		public: "a SubjectPublicKeyInfo (SPKI) public key"
+	};
+	const decodedKey = new TextDecoder().decode(key);
+	const isPrivate = mode === "private";
+	const pem = decodedKey.match(pemPatterns[mode]);
+	if (!pem && decodedKey.match(pemPatterns[isPrivate ? "public" : "private"])) throw new TypeError(`Unexpected Key: The key must be ${keyDescriptions[mode]}`);
+	if (pem && pem[1] !== "") throw new TypeError(`Unsupported Key: The key must be ${keyDescriptions[mode]}!`);
+	return pem ? new Uint8Array(Buffer.from(pem[2], "base64")) : key;
+}
+function formatValidateSignKeySource(sks, mode) {
+	if (sks.single !== void 0) return {
+		...sks,
+		single: {
+			...sks.single.rawKey !== void 0 && { rawKey: toPKCS8DER(sks.single.rawKey, mode) },
+			...sks.single.keyId !== void 0 && { keyId: sks.single.keyId }
+		}
+	};
+	if (sks.componentKeys !== void 0) {
+		const newComponentKeyList = [];
+		for (const ks of sks.componentKeys.keys) {
+			console.error(ks);
+			if (ks.rawKey !== void 0) newComponentKeyList.push({ rawKey: toPKCS8DER(ks.rawKey, mode) });
+			else newComponentKeyList.push({ keyId: ks.keyId });
+		}
 		return {
 			...sks,
-			componentKeys: { keys: nck }
+			componentKeys: { keys: newComponentKeyList }
 		};
 	}
-	return sks;
+	throw new Error("SignKeySource is invalid");
 }
 // src/lib/conf/circuitbreaker_config.ts
 const circuitBreakerConfigFactory = (override) => {
@@ -3523,7 +3520,7 @@ function isRecord(value) {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 function assertObject(value, field) {
-	if (!isRecord(value)) throw typeError(field, "must be an object");
+	if (!isRecord(value) || Object.keys(value).length === 0) throw typeError(field, "must be a non-empty object");
 }
 function assertString(value, field, max, required = false) {
 	if (typeof value !== "string") throw typeError(field, "must be a string");
@@ -3578,7 +3575,6 @@ function validateMetadata(metadata) {
 	assertString(metadata.traceContext.correlationId, "metadata.traceContext.correlationId", maxCorrelationIdLen);
 }
 function validateSignKeySource(signKeySource) {
-	if (signKeySource === void 0) return;
 	assertObject(signKeySource, "keySource");
 	if (signKeySource.single !== void 0) {
 		assertObject(signKeySource.single, "keySource.single");
@@ -3587,11 +3583,11 @@ function validateSignKeySource(signKeySource) {
 	}
 	if (signKeySource.componentKeys !== void 0) {
 		assertObject(signKeySource.componentKeys, "keySource.componentKeys");
-		if (!Array.isArray(signKeySource.componentKeys.keys)) throw typeError("keySource.componentKeys.keys", "must be an array");
-		signKeySource.componentKeys.keys.forEach((value, index) => {
-			assertObject(value, `keySource.componentKeys.keys[${index}]`);
-			assertOptionalString(value, "keySource.componentKeys.keys[${index}].keyId", maxKeyIdLen);
-			assertOptionalUint8Array(value, "keySource.componentKeys.keys[${index}].rawKey");
+		if (!signKeySource.componentKeys.keys || !Array.isArray(signKeySource.componentKeys.keys)) throw typeError("keySource.componentKeys.keys", "must be an array");
+		signKeySource.componentKeys.keys.forEach((keySource, index) => {
+			assertObject(keySource, `keySource.componentKeys.keys[${index}]`);
+			assertOptionalString(keySource.keyId, `keySource.componentKeys.keys[${index}].keyId`, maxKeyIdLen);
+			assertOptionalUint8Array(keySource.rawKey, `keySource.componentKeys.keys[${index}].rawKey`);
 		});
 	}
 	if (signKeySource.single !== void 0 && signKeySource.componentKeys !== void 0) throw typeError("keySource", "too many key sources - either single or componentKeys must be provided");
@@ -3780,7 +3776,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 	async signCertificate(payload) {
 		validateSignCertificatePayload(payload);
-		const keySource = formatSignKeySource(payload.keySource, "private");
+		const keySource = formatValidateSignKeySource(payload.keySource, "private");
 		const req = {
 			profile: payload.profile,
 			csr: payload.csr,
@@ -3828,7 +3824,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 	async signData(payload) {
 		validateSignDataPayload(payload);
-		const keySource = formatSignKeySource(payload.keySource, "private");
+		const keySource = formatValidateSignKeySource(payload.keySource, "private");
 		const req = {
 			profile: payload.profile,
 			keySource,
@@ -3843,7 +3839,7 @@ var CryptoBrokerClient = class CryptoBrokerClient {
 	}
 	async verifyData(payload) {
 		validateVerifyDataPayload(payload);
-		const keySource = formatSignKeySource(payload.keySource, "public");
+		const keySource = formatValidateSignKeySource(payload.keySource, "public");
 		const req = {
 			profile: payload.profile,
 			keySource,
@@ -3871,7 +3867,7 @@ __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "signData", null)
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "verifyData", null);
 __decorate([WithCircuitBreaker], CryptoBrokerClient.prototype, "healthData", null);
 const VERSION = "0.5.0";
-const GIT_HASH = "5e857302c0eb11b7fab18d47a52fcf9f164d3c30";
+const GIT_HASH = "f500d538f2e9533b8dfd0d11a9a31f376189c0d9";
 exports.CryptoBrokerClient = CryptoBrokerClient;
 exports.DecryptDataResponse = DecryptDataResponse;
 exports.EncryptDataResponse = EncryptDataResponse;

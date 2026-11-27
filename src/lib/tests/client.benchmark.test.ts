@@ -11,7 +11,9 @@ describe('CryptoBrokerClient', () => {
   });
 
   it('benchmark should autofill the metadata', async () => {
-    const response: BenchmarkResponse = await client.benchmarkData({});
+    const response: BenchmarkResponse = await client.benchmarkData({
+      metadata: undefined,
+    });
 
     // assert that the metadata was correctly autofilled
     expect(response.metadata).toBeDefined();
@@ -20,7 +22,9 @@ describe('CryptoBrokerClient', () => {
   });
 
   it('should return the mocked benchmark data response', async () => {
-    const response: BenchmarkResponse = await client.benchmarkData({});
+    const response: BenchmarkResponse = await client.benchmarkData({
+      metadata: undefined,
+    });
 
     // Test that the response is valid and has json-parsable results
     expect(response.benchmarkResults).toBeDefined();
